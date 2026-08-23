@@ -21,11 +21,11 @@ const CONTENT_WIDTH = A4_WIDTH - MARGIN_X * 2;
 
 export const REPORT_OUTLINE = [
   "1. 전체 절차 순서도",
-  "2. 우선 확인·조치사항",
-  "3. 일정 및 주요 마일스톤",
-  "4. 특별법·특례 적용결과",
-  "5. 단계별 인허가 세부절차",
-  "6. 판정에 사용한 사업조건",
+  "2. 판정에 사용한 사업조건",
+  "3. 우선 확인·조치사항",
+  "4. 일정 및 주요 마일스톤",
+  "5. 특별법·특례 적용결과",
+  "6. 단계별 인허가 세부절차",
   "7. 지역 조례 확인",
   "부록 A. 공식 법령 근거",
   "부록 B. 확인된 제외 절차",
@@ -61,6 +61,10 @@ export function calculateFlowOverviewCardLayout(
     cardHeight,
     usedHeight: rowCount ? rowCount * cardHeight + (rowCount - 1) * cardGap : 0,
   };
+}
+
+export function calculateCardRowSeparatorOffset(rowFontSize: number) {
+  return rowFontSize + 2;
 }
 
 const palette = {
@@ -323,7 +327,7 @@ class PermitPdfWriter {
   }
 
   stageHeading(title: string) {
-    this.ensureSpace(120, REPORT_OUTLINE[4]);
+    this.ensureSpace(120, REPORT_OUTLINE[5]);
     this.paragraph(title, {
       font: this.fonts.bold,
       size: 11,
@@ -535,14 +539,14 @@ class PermitPdfWriter {
       {
         x: MARGIN_X,
         title: "빠르게 검토할 때",
-        body: "1 전체 흐름 → 2 우선 확인 → 3 일정 순서로 읽으면 핵심 조치와 사업 영향 일정을 먼저 파악할 수 있습니다.",
+        body: "1 전체 흐름 → 2 사업조건 → 3 우선 확인 → 4 일정 순서로 읽으면 판정 전제와 핵심 조치, 사업 영향 일정을 차례로 파악할 수 있습니다.",
         color: palette.blue,
         background: palette.blueSoft,
       },
       {
         x: MARGIN_X + guideWidth + 12,
         title: "근거까지 확인할 때",
-        body: "4~6에서 판정 세부내용과 입력조건을 확인한 뒤 부록 A의 공식 법령 원문을 함께 검토합니다.",
+        body: "2·5·6장에서 입력조건, 특례와 절차별 판정을 확인한 뒤 부록 A의 공식 법령 원문을 함께 검토합니다.",
         color: palette.teal,
         background: palette.tealSoft,
       },
@@ -815,7 +819,7 @@ class PermitPdfWriter {
             size: 5.8,
             color: palette.amber,
           });
-          page.drawText(singleLineText(`외 ${card.count}건 · 5장 참조`, this.fonts.bold, nameSize, cardWidth - 14), {
+          page.drawText(singleLineText(`외 ${card.count}건 · 6장 참조`, this.fonts.bold, nameSize, cardWidth - 14), {
             x: cardX + 7,
             y: topY - 18,
             font: this.fonts.bold,
@@ -974,7 +978,7 @@ class PermitPdfWriter {
       );
     });
 
-    const note = "읽는 방향: 위 행 01→02→03, 아래 행 04→05→06(오른쪽→왼쪽). 큰 화살표는 보고서 탐색 방향이고, 핵심 관계 표의 화살표가 실제 법정·실무 선후행입니다. ‘병목’은 현재 일정의 착수를 구속하는 후보이며 실제 보완·협의기간에 따라 달라질 수 있습니다. W는 선행관계를 반영한 진행군입니다. ‘외 N건’과 전체 판정 근거는 5장 세부절차를 확인하십시오.";
+    const note = "읽는 방향: 위 행 01→02→03, 아래 행 04→05→06(오른쪽→왼쪽). 큰 화살표는 보고서 탐색 방향이고, 핵심 관계 표의 화살표가 실제 법정·실무 선후행입니다. ‘병목’은 현재 일정의 착수를 구속하는 후보이며 실제 보완·협의기간에 따라 달라질 수 있습니다. W는 선행관계를 반영한 진행군입니다. ‘외 N건’과 전체 판정 근거는 6장 세부절차를 확인하십시오.";
     limitedLines(note, this.fonts.regular, 6.8, contentWidth, 3)
       .forEach((line, index) => page.drawText(line, {
         x: margin,
@@ -1026,7 +1030,7 @@ class PermitPdfWriter {
   }
 
   keyValueGroup(title: string, items: Array<{ label: string; value: string; unknown?: boolean }>) {
-    this.ensureSpace(145, REPORT_OUTLINE[5]);
+    this.ensureSpace(145, REPORT_OUTLINE[1]);
     this.page.drawText(title, {
       x: MARGIN_X,
       y: this.y - 13,
@@ -1039,7 +1043,7 @@ class PermitPdfWriter {
       const labelLines = wrapText(item.label, this.fonts.bold, 7.5, 142);
       const valueLines = wrapText(truncate(item.value, 600), this.fonts.regular, 8.3, CONTENT_WIDTH - 172);
       const rowHeight = Math.max(27, Math.max(labelLines.length * 11.5, valueLines.length * 12.2) + 10);
-      this.ensureSpace(rowHeight, REPORT_OUTLINE[5]);
+      this.ensureSpace(rowHeight, REPORT_OUTLINE[1]);
       if (index % 2 === 0) {
         this.page.drawRectangle({
           x: MARGIN_X,
@@ -1169,8 +1173,14 @@ class PermitPdfWriter {
           : palette.muted;
       if (rowIndex > 0) {
         this.page.drawLine({
-          start: { x: MARGIN_X + 16, y: cursor + 5 },
-          end: { x: MARGIN_X + CONTENT_WIDTH - 16, y: cursor + 5 },
+          start: {
+            x: MARGIN_X + 16,
+            y: cursor + calculateCardRowSeparatorOffset(rowFontSize),
+          },
+          end: {
+            x: MARGIN_X + CONTENT_WIDTH - 16,
+            y: cursor + calculateCardRowSeparatorOffset(rowFontSize),
+          },
           thickness: 0.35,
           color: palette.line,
         });
@@ -1233,7 +1243,7 @@ class PermitPdfWriter {
     warnings.forEach((warning, index) => {
       const lines = wrapText(truncate(warning), this.fonts.regular, 8.2, CONTENT_WIDTH - 32);
       const rowHeight = Math.max(28, lines.length * 12 + 8);
-      this.ensureSpace(rowHeight, REPORT_OUTLINE[1]);
+      this.ensureSpace(rowHeight, REPORT_OUTLINE[2]);
       this.page.drawText(String(index + 1).padStart(2, "0"), {
         x: MARGIN_X,
         y: this.y - 10,
@@ -1658,6 +1668,12 @@ export async function renderPermitReportPdf(
 
   writer.section(
     REPORT_OUTLINE[1],
+    "화면에서 실제 판정에 사용한 현재 입력값입니다. ‘미확인’ 항목은 3장 우선 확인·조치사항과 연결됩니다.",
+  );
+  model.project.sections.forEach((section) => writer.keyValueGroup(section.title, section.items));
+
+  writer.section(
+    REPORT_OUTLINE[2],
     "미입력값과 경고 중 실제 판정·일정에 영향을 주는 항목을 앞에 배치했습니다. 영향 절차 수가 많은 항목부터 확인하십시오.",
   );
   if (!model.gaps.length) {
@@ -1676,7 +1692,7 @@ export async function renderPermitReportPdf(
   writer.warningList(model.warnings);
 
   writer.section(
-    REPORT_OUTLINE[2],
+    REPORT_OUTLINE[3],
     "공식 처리기간과 입력한 공사일을 결합한 결과입니다. 사용자 예상값은 공식값과 구분하고, 누락된 기간이 있으면 일정 하한으로만 표시합니다.",
   );
   writer.milestoneTable();
@@ -1690,7 +1706,7 @@ export async function renderPermitReportPdf(
   });
 
   writer.section(
-    REPORT_OUTLINE[3],
+    REPORT_OUTLINE[4],
     "면제, 의제, 일괄처리와 신속처리는 서로 다른 제도입니다. 시행일과 개별 요건을 충족한 상태만 현재 판정에 반영합니다.",
   );
   if (!model.specialLaws.length) {
@@ -1713,7 +1729,7 @@ export async function renderPermitReportPdf(
   });
 
   writer.section(
-    REPORT_OUTLINE[4],
+    REPORT_OUTLINE[5],
     "로드맵 포함 절차와 추가 확인 절차를 단계·선행관계 순으로 정리했습니다. 법정·공식 기간과 프로젝트 일정 반영값은 별도 행으로 표시하며, 정확한 적용대상·관할·구비서류는 접수 전 관계기관에 확인해야 합니다.",
   );
   let currentStage = "";
@@ -1749,12 +1765,6 @@ export async function renderPermitReportPdf(
       ],
     });
   });
-
-  writer.section(
-    REPORT_OUTLINE[5],
-    "화면에서 실제 판정에 사용한 현재 입력값입니다. ‘미확인’ 항목은 2장 우선 확인·조치사항과 연결됩니다.",
-  );
-  model.project.sections.forEach((section) => writer.keyValueGroup(section.title, section.items));
 
   writer.section(
     REPORT_OUTLINE[6],

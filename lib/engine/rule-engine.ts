@@ -438,7 +438,7 @@ export function resolveProcedure(
     return {
       procedure,
       status: "NEEDS_MORE_INFO",
-      reason: `판정에 필요한 입력이 부족합니다: ${stableUnique(unknownTraces.flatMap((trace) => trace.missingInputs)).join(", ")}`,
+      reason: "판정에 필요한 사업조건 입력이 부족합니다. 아래 확인 입력을 보완한 뒤 다시 검토해 주세요.",
       ...getLegalReviewDisclosure(procedure, activeRules),
       missingInputs: stableUnique(unknownTraces.flatMap((trace) => trace.missingInputs)),
       traces,

@@ -101,6 +101,48 @@ test("desktop result summary uses the available width without cramped copy", asy
   expect(collapsedFlowGeometry.scrollHeight - collapsedFlowGeometry.gridHeight).toBeLessThanOrEqual(1);
 });
 
+test("desktop wizard keeps its navigation visible and scrolls independently", async ({ page }) => {
+  await page.setViewportSize({ width: 1024, height: 768 });
+  await gotoHydratedDashboard(page);
+
+  const wizard = page.getByLabel("사업조건 입력");
+  const body = wizard.locator(".wizard-body");
+  const nextButton = wizard.getByRole("button", { name: "다음", exact: true });
+  await expect(nextButton).toBeInViewport();
+
+  const geometry = await wizard.evaluate((element) => {
+    const panel = element.getBoundingClientRect();
+    const bodyElement = element.querySelector<HTMLElement>(".wizard-body");
+    const footer = element.querySelector<HTMLElement>(".wizard-footer");
+    if (!bodyElement || !footer) return null;
+    return {
+      panelBottom: panel.bottom,
+      footerBottom: footer.getBoundingClientRect().bottom,
+      viewportHeight: window.innerHeight,
+      bodyClientHeight: bodyElement.clientHeight,
+      bodyScrollHeight: bodyElement.scrollHeight,
+      windowScrollY: window.scrollY,
+      remainingPageHeight:
+        document.documentElement.scrollHeight - (window.scrollY + window.innerHeight),
+    };
+  });
+
+  expect(geometry).not.toBeNull();
+  expect(geometry!.panelBottom).toBeLessThanOrEqual(geometry!.viewportHeight + 1);
+  expect(geometry!.footerBottom).toBeLessThanOrEqual(geometry!.viewportHeight + 1);
+  expect(geometry!.bodyScrollHeight).toBeGreaterThan(geometry!.bodyClientHeight);
+  expect(geometry!.remainingPageHeight).toBeGreaterThan(500);
+
+  await body.hover();
+  await page.mouse.wheel(0, 420);
+  await expect.poll(() => body.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+  expect(await page.evaluate(() => window.scrollY)).toBe(geometry!.windowScrollY);
+
+  await nextButton.click();
+  await expect(wizard.getByText("2 / 5", { exact: true })).toBeVisible();
+  await expect(nextButton).toBeInViewport();
+});
+
 test("a card user estimate updates the scenario and survives reload", async ({ page }) => {
   await gotoHydratedDashboard(page);
   const card = page.locator(".procedure-card").filter({

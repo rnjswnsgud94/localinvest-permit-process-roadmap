@@ -835,6 +835,27 @@ body { font-size: 16px; }
   .duration-reference-card > header strong { text-align: left; }
 }
 
+/* Keep the desktop input workflow independent from the much taller result
+   workspace. The fixed rows stay visible while only the question body scrolls. */
+@media (min-width: 821px) {
+  .wizard-panel {
+    display: grid;
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    height: calc(100vh - 180px);
+    height: calc(100dvh - 180px);
+    max-height: calc(100vh - 180px);
+    max-height: calc(100dvh - 180px);
+  }
+
+  .wizard-body {
+    min-height: 0;
+    max-height: none;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    scrollbar-gutter: stable;
+  }
+}
+
 /* Result overview: keep the duration result and status explanations on separate,
    predictable tracks so long Korean copy never competes for the same space. */
 .workspace {

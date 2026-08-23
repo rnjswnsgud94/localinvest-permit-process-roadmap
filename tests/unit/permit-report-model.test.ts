@@ -135,6 +135,15 @@ describe("permit PDF report model", () => {
     )).toBe("반도체클러스터 신속처리 요건");
   });
 
+  it("does not expose internal input paths in procedure reasons", () => {
+    const { report } = reportFor(catalog.scenarios[0].answers);
+    const procedure = report.procedures.find((item) => item.missingInputs.length > 0);
+
+    expect(procedure).toBeDefined();
+    expect(procedure?.reason).toContain("사업조건 입력이 부족합니다");
+    expect(procedure?.reason).not.toMatch(/confirmation\.|building\.|environment\.|safety\./);
+  });
+
   it("moves industry-specific special-law procedures into the excluded table for a wood project", () => {
     const answers: ScenarioAnswers = {
       ...catalog.scenarios[0].answers,

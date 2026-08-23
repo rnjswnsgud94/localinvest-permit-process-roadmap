@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { buildPermitReportModel } from "@/app/components/dashboard/pdf/permit-report-model";
 import {
+  calculateCardRowSeparatorOffset,
   calculateFlowOverviewCardLayout,
   generatePermitReportPdf,
   REPORT_OUTLINE,
@@ -104,6 +105,13 @@ describe("permit PDF renderer", () => {
     expect(exactFit.usedHeight).toBeLessThanOrEqual(157);
   });
 
+  it("keeps card dividers above the following row text", () => {
+    const rowFontSize = 8.3;
+
+    expect(calculateCardRowSeparatorOffset(rowFontSize)).toBeGreaterThan(rowFontSize);
+    expect(calculateCardRowSeparatorOffset(rowFontSize) - rowFontSize).toBeGreaterThanOrEqual(2);
+  });
+
   it("keeps a dense all-targets model within the A3 card cap", () => {
     const answers = allTargetsAnswers();
     const evaluation = evaluateProject(answers);
@@ -185,7 +193,18 @@ describe("permit PDF renderer", () => {
       expect(page.width).toBeCloseTo(595.28, 1);
       expect(page.height).toBeCloseTo(841.89, 1);
     });
-    expect(REPORT_OUTLINE).toHaveLength(10);
+    expect(REPORT_OUTLINE).toEqual([
+      "1. 전체 절차 순서도",
+      "2. 판정에 사용한 사업조건",
+      "3. 우선 확인·조치사항",
+      "4. 일정 및 주요 마일스톤",
+      "5. 특별법·특례 적용결과",
+      "6. 단계별 인허가 세부절차",
+      "7. 지역 조례 확인",
+      "부록 A. 공식 법령 근거",
+      "부록 B. 확인된 제외 절차",
+      "부록 C. 이용상 주의",
+    ]);
   }, 20_000);
 
   it("retries font loading after a transient download failure", async () => {
