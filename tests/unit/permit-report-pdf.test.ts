@@ -66,7 +66,11 @@ function allTargetsAnswers(): ScenarioAnswers {
     waterDemandM3Day: 10_000,
     wastewaterM3Day: 5_000,
     supplementalPermitReviewedIds: [...supplementalPermitTargetIds],
-    supplementalPermitTargetIds: [...supplementalPermitTargetIds],
+    supplementalPermitTargetIds: supplementalPermitTargetIds.filter(
+      (procedureId) =>
+        procedureId !== "information-communication-pre-use-inspection" &&
+        procedureId !== "marine-use-consultation",
+    ),
     chemicalsHandled: true,
     hazardousChemicalBusiness: true,
     psmCovered: true,
@@ -81,21 +85,21 @@ describe("permit PDF renderer", () => {
 
   it("caps dense A3 stage cards inside the available panel height", () => {
     [25, 36, 37, 100].forEach((requiredCount) => {
-      const layout = calculateFlowOverviewCardLayout(requiredCount, 187);
+      const layout = calculateFlowOverviewCardLayout(requiredCount, 157);
 
       expect(layout.cardCount).toBeLessThanOrEqual(24);
       expect(layout.rowCount).toBeLessThanOrEqual(8);
-      expect(layout.usedHeight).toBeLessThanOrEqual(187);
+      expect(layout.usedHeight).toBeLessThanOrEqual(157);
       expect(layout.omittedCount).toBe(requiredCount - 23);
     });
 
-    const exactFit = calculateFlowOverviewCardLayout(24, 187);
+    const exactFit = calculateFlowOverviewCardLayout(24, 157);
     expect(exactFit.omittedCount).toBe(0);
     expect(exactFit.cardCount).toBe(24);
-    expect(exactFit.usedHeight).toBeLessThanOrEqual(187);
+    expect(exactFit.usedHeight).toBeLessThanOrEqual(157);
   });
 
-  it("keeps an all-targets model with 37 and 36 required procedures within the A3 card cap", () => {
+  it("keeps a dense all-targets model within the A3 card cap", () => {
     const answers = allTargetsAnswers();
     const evaluation = evaluateProject(answers);
     const model = buildPermitReportModel({
@@ -108,10 +112,13 @@ describe("permit PDF renderer", () => {
       stage.items.filter((item) => item.category === "REQUIRED").length,
     );
 
-    expect(requiredCounts).toEqual([8, 12, 37, 2, 36, 4]);
+    expect(requiredCounts).toEqual([12, 14, 44, 4, 39, 5]);
+    expect(model.flow.coreRelations.length).toBeGreaterThan(0);
+    expect(model.flow.coreRelations.length).toBeLessThanOrEqual(10);
+    expect(model.localOrdinances.categories.length).toBeGreaterThan(0);
     requiredCounts.forEach((requiredCount) => {
-      const layout = calculateFlowOverviewCardLayout(requiredCount, 187);
-      expect(layout.usedHeight).toBeLessThanOrEqual(187);
+      const layout = calculateFlowOverviewCardLayout(requiredCount, 157);
+      expect(layout.usedHeight).toBeLessThanOrEqual(157);
       expect(layout.cardCount).toBeLessThanOrEqual(24);
     });
   });
@@ -153,6 +160,12 @@ describe("permit PDF renderer", () => {
     expect(document.getTitle()).toBe("지방투자기업 인허가 검토보고서");
     expect(document.getSubject()).toContain("인허가 판정·일정·법령 근거");
     expect(document.getPageCount()).toBeGreaterThan(3);
+    expect(
+      document.getPages().reduce(
+        (count, page) => count + (page.node.Annots()?.size() ?? 0),
+        0,
+      ),
+    ).toBeGreaterThan(0);
     const pageSizes = document.getPages().map((page, index) => ({
       index,
       width: page.getWidth(),
@@ -166,7 +179,7 @@ describe("permit PDF renderer", () => {
       expect(page.width).toBeCloseTo(595.28, 1);
       expect(page.height).toBeCloseTo(841.89, 1);
     });
-    expect(REPORT_OUTLINE).toHaveLength(9);
+    expect(REPORT_OUTLINE).toHaveLength(10);
   }, 20_000);
 
   it("retries font loading after a transient download failure", async () => {

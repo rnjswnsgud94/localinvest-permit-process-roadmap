@@ -22,8 +22,14 @@ import {
 import { StatusBadge } from "@/app/components/dashboard/StatusBadge";
 import { UserDurationEditor } from "@/app/components/dashboard/UserDurationEditor";
 import { catalog } from "@/lib/data/catalog";
+import { verifiedSequenceCitationIds } from "@/lib/data/edge-evidence";
 import type { ProcedureEdge } from "@/lib/domain/schemas";
 import type { ProcedureDecision } from "@/lib/engine/rule-engine";
+import {
+  coreFlowEdges,
+  describeFlowEdges,
+  type FlowEdgeEvidence,
+} from "@/lib/engine/flow-edges";
 import type {
   ProjectTimelineNode,
   ScheduleCompletedCheckpoint,
@@ -45,8 +51,13 @@ type ConnectorPath = {
   path: string;
   strength: ProcedureEdge["strength"];
   contextual: boolean;
+  bottleneck: boolean;
+  verifiedSequence: boolean;
+  evidencePending: boolean;
   selected: boolean;
 };
+
+type ConnectorDisplayMode = "CORE" | "LEGAL" | "ALL";
 
 type ConnectorLayout = {
   width: number;
@@ -117,6 +128,7 @@ function flowGroupTitle(decisions: ProcedureDecision[]) {
 export function Swimlane({
   decisions,
   schedule,
+  assessmentDate = catalog.coverage.assessmentDefault,
   selectedId,
   userDurationOverrides = {},
   onSelect,
@@ -124,6 +136,7 @@ export function Swimlane({
 }: {
   decisions: ProcedureDecision[];
   schedule: ScheduleResult;
+  assessmentDate?: string;
   selectedId: string | null;
   userDurationOverrides?: Record<string, UserDurationOverride>;
   onSelect: (id: string) => void;
@@ -133,10 +146,13 @@ export function Swimlane({
   ) => void;
 }) {
   const [collapsedLanes, setCollapsedLanes] = useState<string[]>([]);
+  const [connectorDisplayMode, setConnectorDisplayMode] =
+    useState<ConnectorDisplayMode>("CORE");
   const [connectorLayout, setConnectorLayout] = useState<ConnectorLayout>(emptyConnectorLayout);
   const gridRef = useRef<HTMLDivElement | null>(null);
   const cardRefs = useRef(new Map<string, HTMLElement>());
   const connectorMarkerId = `dependency-arrow-${useId().replaceAll(":", "")}`;
+  const connectorGridId = `${connectorMarkerId}-grid`;
   const timelineNodes = useMemo(
     () => new Map(
       (schedule.projectTimeline?.nodes ?? []).map((node) => [node.procedureId, node]),
@@ -211,6 +227,15 @@ export function Swimlane({
     ),
     [decisions],
   );
+  const procedureStageById = useMemo(
+    () => new Map(
+      decisions.map((decision) => [
+        decision.procedure.id,
+        decision.procedure.stage,
+      ]),
+    ),
+    [decisions],
+  );
 
   function toggleLane(lane: string) {
     setCollapsedLanes((current) => current.includes(lane)
@@ -260,54 +285,127 @@ export function Swimlane({
     : "minmax(220px, 1fr)";
 
   const sequenceCitationIds = useMemo(
-    () => new Set(
-      catalog.citations
-        .filter((citation) => citation.role === "SEQUENCE")
-        .map((citation) => citation.id),
-    ),
-    [],
+    () => verifiedSequenceCitationIds({
+      citations: catalog.citations,
+      sources: catalog.legalSources,
+      assessmentDate,
+    }),
+    [assessmentDate],
   );
   const scheduledProcedureIds = useMemo(
     () => new Set(scheduledDecisions.map((decision) => decision.procedure.id)),
     [scheduledDecisions],
   );
-  const connectorEdges = useMemo(
-    () => activeEdges
-      .filter(
+  const flowEdgeDescriptors = useMemo(
+    () => describeFlowEdges({
+      edges: activeEdges.filter(
         (edge) =>
           scheduledProcedureIds.has(edge.from) &&
           scheduledProcedureIds.has(edge.to),
-      )
-      .map((edge) => ({
-        edge,
-        verifiedSequence: edge.citationIds.some((citationId) =>
-          sequenceCitationIds.has(citationId),
-        ),
-        selected:
-          selectedId !== null &&
-          (edge.from === selectedId || edge.to === selectedId),
-      }))
-      .filter(
-        ({ edge, verifiedSequence, selected }) =>
-          verifiedSequence || (selected && edge.strength !== "ADVISORY"),
       ),
-    [activeEdges, scheduledProcedureIds, selectedId, sequenceCitationIds],
+      scheduleNodes: schedule.nodes,
+      timelineNodes: schedule.projectTimeline?.nodes ?? [],
+      criticalEdgeIds: schedule.criticalEdgeIds,
+      procedureStageById,
+      unknownDurationProcedureIds: schedule.unknownDurationProcedureIds,
+      sequenceCitationIds,
+    }),
+    [
+      activeEdges,
+      schedule.nodes,
+      schedule.criticalEdgeIds,
+      schedule.projectTimeline,
+      schedule.unknownDurationProcedureIds,
+      scheduledProcedureIds,
+      procedureStageById,
+      sequenceCitationIds,
+    ],
   );
+  const coreConnectorEdges = useMemo(
+    () => coreFlowEdges(flowEdgeDescriptors),
+    [flowEdgeDescriptors],
+  );
+  const connectorEdges = useMemo(() => {
+    const baseVisible = connectorDisplayMode === "ALL"
+      ? flowEdgeDescriptors
+      : connectorDisplayMode === "LEGAL"
+        ? flowEdgeDescriptors.filter(
+            (descriptor) =>
+              descriptor.edge.strength === "LEGAL_HARD" ||
+              descriptor.verifiedSequence,
+          )
+        : coreConnectorEdges;
+    const baseIds = new Set(baseVisible.map((descriptor) => descriptor.edge.id));
+    const visible = flowEdgeDescriptors.filter(
+      (descriptor) =>
+        baseIds.has(descriptor.edge.id) ||
+        (selectedId !== null &&
+          (descriptor.edge.from === selectedId ||
+            descriptor.edge.to === selectedId)),
+    );
+
+    return visible.map((descriptor) => ({
+      ...descriptor,
+      contextual: !baseIds.has(descriptor.edge.id),
+      selected:
+        selectedId !== null &&
+        (descriptor.edge.from === selectedId || descriptor.edge.to === selectedId),
+    }));
+  }, [connectorDisplayMode, coreConnectorEdges, flowEdgeDescriptors, selectedId]);
   const predecessorsByProcedure = useMemo(() => {
     const grouped = new Map<string, Array<{
       name: string;
       strength: ProcedureEdge["strength"];
+      evidence: FlowEdgeEvidence;
     }>>();
-    for (const edge of activeEdges) {
+    for (const descriptor of flowEdgeDescriptors) {
+      const { edge } = descriptor;
       const incoming = grouped.get(edge.to) ?? [];
       incoming.push({
         name: decisionNames.get(edge.from) ?? edge.from,
         strength: edge.strength,
+        evidence: descriptor.evidence,
       });
       grouped.set(edge.to, incoming);
     }
     return grouped;
-  }, [activeEdges, decisionNames]);
+  }, [decisionNames, flowEdgeDescriptors]);
+  const bottleneckTargets = useMemo(() => {
+    const targetIds = new Set(
+      flowEdgeDescriptors
+        .filter((descriptor) => descriptor.bottleneckCandidate)
+        .map((descriptor) => descriptor.edge.to),
+    );
+    return [...targetIds]
+      .map((procedureId) => {
+        const incoming = flowEdgeDescriptors.filter(
+          (descriptor) => descriptor.edge.to === procedureId,
+        );
+        return {
+          procedureId,
+          name: decisionNames.get(procedureId) ?? procedureId,
+          incomingCount: incoming.length,
+          verifiedCount: incoming.filter(
+            (descriptor) => descriptor.verifiedSequence,
+          ).length,
+          practicalCount: incoming.filter(
+            (descriptor) => descriptor.evidence === "PRACTICAL_RELATION",
+          ).length,
+          reviewCount: incoming.filter(
+            (descriptor) =>
+              descriptor.evidence === "REGISTERED_LEGAL_RELATION",
+          ).length,
+          score: Math.max(...incoming.map((descriptor) => descriptor.score)),
+        };
+      })
+      .sort(
+        (left, right) =>
+          right.score - left.score ||
+          right.incomingCount - left.incomingCount ||
+          left.name.localeCompare(right.name, "ko"),
+      )
+      .slice(0, 3);
+  }, [decisionNames, flowEdgeDescriptors]);
   const officialDurationSummaryByProcedure = useMemo(
     () => new Map(decisions.map((decision) => {
       const officialDuration = decision.procedure.durationId
@@ -346,14 +444,24 @@ export function Swimlane({
       gridRect,
       { width, height },
     );
-    const paths = connectorEdges.flatMap(({ edge, verifiedSequence, selected }) => {
+    const paths = connectorEdges.flatMap(({
+      edge,
+      verifiedSequence,
+      bottleneckCandidate,
+      contextual,
+      selected,
+    }) => {
       const path = routeConnector(edge.from, edge.to);
       if (!path) return [];
       return [{
         id: edge.id,
         path,
         strength: edge.strength,
-        contextual: !verifiedSequence,
+        contextual,
+        bottleneck: !verifiedSequence && bottleneckCandidate,
+        verifiedSequence,
+        evidencePending:
+          edge.strength === "LEGAL_HARD" && !verifiedSequence,
         selected,
       } satisfies ConnectorPath];
     });
@@ -383,11 +491,34 @@ export function Swimlane({
     };
   }, [collapsedKey, flowColumnTemplate, measureConnectors]);
 
-  function strengthLabel(strength: "LEGAL_HARD" | "PRACTICAL" | "ADVISORY") {
-    if (strength === "LEGAL_HARD") return "법정";
+  function strengthLabel(
+    strength: "LEGAL_HARD" | "PRACTICAL" | "ADVISORY",
+    evidence: FlowEdgeEvidence,
+  ) {
+    if (evidence === "VERIFIED_LEGAL_SEQUENCE") return "조문 연결";
+    if (strength === "LEGAL_HARD") return "모델·검토";
     if (strength === "PRACTICAL") return "실무";
     return "참고";
   }
+
+  const verifiedConnectorCount = flowEdgeDescriptors.filter(
+    (descriptor) => descriptor.verifiedSequence,
+  ).length;
+  const bottleneckCandidateCount = flowEdgeDescriptors.filter(
+    (descriptor) => descriptor.bottleneckCandidate,
+  ).length;
+  const relationReviewCount = flowEdgeDescriptors.filter(
+    (descriptor) => descriptor.evidence === "REGISTERED_LEGAL_RELATION",
+  ).length;
+  const bottleneckCalculationIsPartial =
+    !schedule.complete ||
+    schedule.projectTimeline === null ||
+    !schedule.projectTimeline.complete;
+  const displayModeCopy = connectorDisplayMode === "CORE"
+    ? `선후행 조문 연결과 확인된 기간 기준 병목 후보 ${connectorEdges.length}건을 표시합니다.`
+    : connectorDisplayMode === "LEGAL"
+      ? `법정 선행으로 분류된 연결 ${connectorEdges.length}건을 표시합니다. 점선은 선후행 조문 보강이 필요합니다.`
+      : `현재 일정 계산에 반영된 연결 ${connectorEdges.length}건을 모두 표시합니다.`;
 
   return (
     <section className="swimlane-shell" aria-label="선후행 순서와 병렬 진행을 표시한 인허가 흐름">
@@ -396,20 +527,125 @@ export function Swimlane({
           <li key={stage}><span>{index + 1}</span><strong>{label}</strong></li>
         ))}
       </ol>
+      <div className="flow-connector-toolbar">
+        <div className="flow-connector-heading">
+          <span>병목 가시화</span>
+          <strong>연결선 표시 범위</strong>
+          <small>카드를 선택하면 어느 모드에서도 해당 절차의 직접 연결을 함께 펼칩니다.</small>
+        </div>
+        <div
+          className="connector-mode-switch"
+          role="group"
+          aria-label="연결선 표시 범위"
+        >
+          <button
+            type="button"
+            className={connectorDisplayMode === "CORE" ? "is-selected" : ""}
+            aria-pressed={connectorDisplayMode === "CORE"}
+            aria-controls={connectorGridId}
+            onClick={() => setConnectorDisplayMode("CORE")}
+          >
+            핵심 병목 <span>{coreConnectorEdges.length}</span>
+          </button>
+          <button
+            type="button"
+            className={connectorDisplayMode === "LEGAL" ? "is-selected" : ""}
+            aria-pressed={connectorDisplayMode === "LEGAL"}
+            aria-controls={connectorGridId}
+            onClick={() => setConnectorDisplayMode("LEGAL")}
+          >
+            법정 분류 <span>{flowEdgeDescriptors.filter(
+              (descriptor) => descriptor.edge.strength === "LEGAL_HARD",
+            ).length}</span>
+          </button>
+          <button
+            type="button"
+            className={connectorDisplayMode === "ALL" ? "is-selected" : ""}
+            aria-pressed={connectorDisplayMode === "ALL"}
+            aria-controls={connectorGridId}
+            onClick={() => setConnectorDisplayMode("ALL")}
+          >
+            전체 연결 <span>{flowEdgeDescriptors.length}</span>
+          </button>
+        </div>
+        <p className="connector-mode-status" aria-live="polite" aria-atomic="true">
+          <strong>{displayModeCopy}</strong>
+          <span>
+            조문 연결 {verifiedConnectorCount}건 · 법정 분류 중 관계근거 보강 {relationReviewCount}건
+            {bottleneckCalculationIsPartial
+              ? schedule.unknownDurationProcedureIds.length
+                ? ` · 기간 미확인 ${schedule.unknownDurationProcedureIds.length}개를 제외한 부분 계산`
+                : " · 보완·협의 등 일부 공백을 제외한 부분 계산"
+              : " · 확인된 기간 기준 계산"}
+          </span>
+        </p>
+      </div>
       <div className="swimlane-legend" aria-label="표시 범례">
-        <span><i className="legend-line hard" /> 법정 선후행</span>
-        <span><i className="legend-line practical" /> 실무 선후행 · 선택 시 확장</span>
+        <span><i className="legend-line bottleneck" /> 일정 계산상 병목 후보</span>
+        <span><i className="legend-line hard" /> 선후행 조문 연결</span>
+        <span><i className="legend-line pending" /> 법정 분류 · 관계근거 보강</span>
+        <span><i className="legend-line practical" /> 실무 연결</span>
         <span><i className="legend-overlap" /> 공사와 병행</span>
         <span><i className="legend-critical" /> 총기간 연장</span>
       </div>
-      <p className="flow-instruction">왼쪽에서 오른쪽 순서로 진행합니다. 조문에서 선후행이 확인된 절차는 화살표로 잇고, 카드를 선택하면 관련 실무 연결도 점선으로 펼칩니다. 같은 열은 선행조건 충족 후 병행할 수 있습니다.</p>
+      <p className="flow-instruction">기본은 현재 입력·기간값으로 계산한 병목 후보와 선후행 조문이 연결된 관계를 표시합니다. 점선은 법적 강제순서로 단정하지 않으며, 법정 분류·전체 연결에서 검토 범위를 넓힐 수 있습니다. 같은 열은 선행조건 충족 후 병행할 수 있습니다.</p>
+      {bottleneckTargets.length ? (
+        <section className="bottleneck-focus" aria-label="연결이 집중되는 확인 지점">
+          <header>
+            <span>집중 확인 지점</span>
+            <p>후속 단계로 넘어가거나 선행절차가 모이는 곳입니다. 보완·협의 지연 시 다음 일정에 영향이 커질 수 있습니다.</p>
+          </header>
+          <div>
+            {bottleneckTargets.map((target, index) => (
+              <button
+                type="button"
+                key={target.procedureId}
+                aria-label={`집중 확인 지점 ${index + 1} 상세 열기`}
+                aria-describedby={`${connectorGridId}-focus-${target.procedureId}`}
+                onClick={() => onSelect(target.procedureId)}
+              >
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <strong id={`${connectorGridId}-focus-${target.procedureId}`}>{target.name}</strong>
+                <small>
+                  직접 선행 {target.incomingCount}건 · 조문 연결 {target.verifiedCount}건
+                  {target.reviewCount ? ` · 근거보강 ${target.reviewCount}건` : ""}
+                  {target.practicalCount ? ` · 실무 ${target.practicalCount}건` : ""}
+                </small>
+              </button>
+            ))}
+          </div>
+        </section>
+      ) : null}
+      <ul className="sr-only" aria-label="현재 표시된 선후행 연결">
+        {connectorEdges.map((descriptor) => (
+          <li key={`accessible-${descriptor.edge.id}`}>
+            {decisionNames.get(descriptor.edge.from) ?? descriptor.edge.from}
+            {" → "}
+            {decisionNames.get(descriptor.edge.to) ?? descriptor.edge.to}
+            {": "}
+            {descriptor.verifiedSequence
+              ? "선후행 조문 연결"
+              : descriptor.bottleneckCandidate
+                ? "일정 계산상 병목 후보"
+                : descriptor.evidence === "REGISTERED_LEGAL_RELATION"
+                  ? "법정 분류·관계근거 보강 필요"
+                  : "실무 연결"}
+          </li>
+        ))}
+      </ul>
       <div className="swimlane-scroll" tabIndex={0} aria-label="가로로 스크롤할 수 있는 인허가 순서표">
         <div
+          id={connectorGridId}
           ref={gridRef}
           className="swimlane-grid flow-grid"
           style={{ gridTemplateColumns: `180px ${flowColumnTemplate}` }}
+          data-connector-mode={connectorDisplayMode}
+          data-visible-edge-count={connectorEdges.length}
+          data-core-edge-count={coreConnectorEdges.length}
+          data-bottleneck-edge-count={bottleneckCandidateCount}
+          data-total-edge-count={flowEdgeDescriptors.length}
           data-evidence-edge-count={connectorEdges.filter((item) => item.verifiedSequence).length}
-          data-context-edge-count={connectorEdges.filter((item) => !item.verifiedSequence).length}
+          data-context-edge-count={connectorEdges.filter((item) => item.contextual).length}
         >
           {connectorLayout.width > 0 && connectorLayout.height > 0 ? (
             <svg
@@ -422,6 +658,49 @@ export function Swimlane({
               <defs>
                 <marker
                   id={connectorMarkerId}
+                  className="connector-marker-verified"
+                  markerUnits="userSpaceOnUse"
+                  viewBox="-1 -5 12 10"
+                  refX="9"
+                  refY="0"
+                  markerWidth="12"
+                  markerHeight="10"
+                  orient="auto"
+                  overflow="visible"
+                >
+                  <path d="M 0 -3.5 L 9 0 L 0 3.5 Z" />
+                </marker>
+                <marker
+                  id={`${connectorMarkerId}-bottleneck`}
+                  className="connector-marker-bottleneck"
+                  markerUnits="userSpaceOnUse"
+                  viewBox="-1 -5 12 10"
+                  refX="9"
+                  refY="0"
+                  markerWidth="12"
+                  markerHeight="10"
+                  orient="auto"
+                  overflow="visible"
+                >
+                  <path d="M 0 -3.5 L 9 0 L 0 3.5 Z" />
+                </marker>
+                <marker
+                  id={`${connectorMarkerId}-pending`}
+                  className="connector-marker-pending"
+                  markerUnits="userSpaceOnUse"
+                  viewBox="-1 -5 12 10"
+                  refX="9"
+                  refY="0"
+                  markerWidth="12"
+                  markerHeight="10"
+                  orient="auto"
+                  overflow="visible"
+                >
+                  <path d="M 0 -3.5 L 9 0 L 0 3.5 Z" />
+                </marker>
+                <marker
+                  id={`${connectorMarkerId}-practical`}
+                  className="connector-marker-practical"
                   markerUnits="userSpaceOnUse"
                   viewBox="-1 -5 12 10"
                   refX="9"
@@ -438,9 +717,15 @@ export function Swimlane({
                 <g key={connector.id}>
                   <path className="dependency-connector-halo" d={connector.path} />
                   <path
-                    className={`dependency-connector-line strength-${connector.strength.toLowerCase()}${connector.contextual ? " is-contextual" : ""}${connector.selected ? " is-selected" : ""}`}
+                    className={`dependency-connector-line strength-${connector.strength.toLowerCase()}${connector.verifiedSequence ? " is-verified-sequence" : ""}${connector.bottleneck ? " is-bottleneck" : ""}${connector.evidencePending ? " is-evidence-pending" : ""}${connector.contextual ? " is-contextual" : ""}${connector.selected ? " is-selected" : ""}`}
                     d={connector.path}
-                    markerEnd={`url(#${connectorMarkerId})`}
+                    markerEnd={`url(#${connector.bottleneck
+                      ? `${connectorMarkerId}-bottleneck`
+                      : connector.evidencePending
+                        ? `${connectorMarkerId}-pending`
+                        : connector.strength === "PRACTICAL"
+                          ? `${connectorMarkerId}-practical`
+                          : connectorMarkerId})`}
                   />
                 </g>
               ))}
@@ -523,8 +808,8 @@ export function Swimlane({
                                 <b>← 선행절차</b>
                                 <span className="procedure-route-list">
                                   {incoming.slice(0, 3).map((item) => (
-                                    <span className={`route-chip route-${item.strength.toLowerCase()}`} key={`${item.name}-${item.strength}`}>
-                                      <em>{strengthLabel(item.strength)}</em>{item.name}
+                                    <span className={`route-chip route-${item.strength.toLowerCase()}${item.evidence === "VERIFIED_LEGAL_SEQUENCE" ? " is-verified" : ""}`} key={`${item.name}-${item.strength}`}>
+                                      <em>{strengthLabel(item.strength, item.evidence)}</em>{item.name}
                                     </span>
                                   ))}
                                   {incoming.length > 3 ? <span className="route-more">외 {incoming.length - 3}개</span> : null}

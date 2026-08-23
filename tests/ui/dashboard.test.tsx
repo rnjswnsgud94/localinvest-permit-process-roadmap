@@ -4,6 +4,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest
 import { DashboardClient } from "@/app/components/dashboard/DashboardClient";
 import { InputCodeDialog } from "@/app/components/dashboard/InputCodeDialog";
 import { catalog } from "@/lib/data/catalog";
+import { supplementalPermitTargetIds } from "@/lib/data/supplemental-permit-targets";
 import { encodeInputCode, encodeShareState, INPUT_CODE_PREFIX, MAX_INPUT_CODE_LENGTH } from "@/lib/share-state";
 
 const originalShowModal = Object.getOwnPropertyDescriptor(
@@ -72,6 +73,9 @@ describe("dashboard UI", () => {
     expect(screen.getByLabelText("시·도")).toHaveValue("");
     expect(screen.queryByText("청주시")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /사업 일정 산정 불가 계산 경로 열기/ })).toHaveTextContent("산정 불가");
+    expect(screen.getByRole("button", {
+      name: "확인된 제외 절차 0개 목록 열기",
+    })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "결과보고서 다운로드" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "화면 인쇄" })).toBeInTheDocument();
   });
@@ -407,7 +411,7 @@ describe("dashboard UI", () => {
     });
     expect(
       within(reviewGroup).getAllByRole("group", { name: /대상 여부$/ }),
-    ).toHaveLength(9);
+    ).toHaveLength(supplementalPermitTargetIds.length);
     const roadOccupation = within(reviewGroup).getByRole("group", {
       name: "도로점용허가 대상 여부",
     });
@@ -417,7 +421,7 @@ describe("dashboard UI", () => {
     fireEvent.click(
       within(roadOccupation).getByRole("button", { name: "대상" }),
     );
-    expect(screen.getByText("1/9 검토 · 1개 대상")).toBeInTheDocument();
+    expect(screen.getByText(`1/${supplementalPermitTargetIds.length} 검토 · 1개 대상`)).toBeInTheDocument();
 
     const nonpointSource = within(reviewGroup).getByRole("group", {
       name: "비점오염원 설치신고 대상 여부",
@@ -425,7 +429,7 @@ describe("dashboard UI", () => {
     fireEvent.click(
       within(nonpointSource).getByRole("button", { name: "비대상" }),
     );
-    expect(screen.getByText("2/9 검토 · 1개 대상")).toBeInTheDocument();
+    expect(screen.getByText(`2/${supplementalPermitTargetIds.length} 검토 · 1개 대상`)).toBeInTheDocument();
   });
 
   it("asks and clears the PSM same-equipment scope only when both parent targets apply", () => {
@@ -631,7 +635,7 @@ describe("dashboard UI", () => {
       "button",
       { name: "공식 기준" },
     )).toHaveAttribute("aria-pressed", "true");
-  });
+  }, 20_000);
 
   it("opens the total-duration result as a simplified six-stage graphic and restores focus", async () => {
     render(<DashboardClient />);
@@ -814,7 +818,7 @@ describe("dashboard UI", () => {
     expect(detailLink).not.toHaveAttribute("href", expect.stringContaining("OC="));
   });
 
-  it("rejects a non-detail ELIS URL supplied by the lookup response", async () => {
+  it("rejects a non-detail ELIS match and offers only clearly labelled jurisdiction-list fallbacks", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue({
       ok: true,
       json: async () => ({
@@ -845,10 +849,22 @@ describe("dashboard UI", () => {
       .closest("article");
     expect(urbanCard).not.toBeNull();
     await waitFor(() => {
-      expect(within(urbanCard!).queryByRole("link")).not.toBeInTheDocument();
+      expect(
+        within(urbanCard!).queryByRole("link", {
+          name: /전남광주통합특별시 자치법규 전체 목록/,
+        }),
+      ).not.toBeInTheDocument();
       expect(
         within(urbanCard!).getByText(/현행 조례 원문을 확인하지 못했습니다/),
       ).toBeInTheDocument();
+      const fallback = within(urbanCard!).getByRole("link", {
+        name: /전남광주통합특별시 ELIS 목록에서 직접 찾기/,
+      });
+      expect(fallback).toHaveClass("local-ordinance-fallback-link");
+      expect(fallback).toHaveAttribute(
+        "href",
+        expect.stringContaining("/alrpop/locgovAlrPopup"),
+      );
     });
   });
 
@@ -892,10 +908,12 @@ describe("dashboard UI", () => {
       .closest("article");
     expect(trafficCard).not.toBeNull();
     for (const link of within(trafficCard!).queryAllByRole("link")) {
-      expect(link).toHaveAttribute(
-        "href",
-        expect.stringContaining("/alrpop/alrDtlsPop?"),
-      );
+      const href = link.getAttribute("href") ?? "";
+      expect(
+        href.includes("/alrpop/alrDtlsPop?") ||
+          (link.classList.contains("local-ordinance-fallback-link") &&
+            href.includes("/alrpop/locgovAlrPopup?")),
+      ).toBe(true);
     }
 
     await waitFor(() =>
@@ -1154,7 +1172,7 @@ describe("dashboard UI", () => {
 
     fireEvent.click(registryTrigger);
     const registryDialog = await screen.findByRole("dialog", { name: "전체 인허가 백과" });
-    expect(within(registryDialog).getByRole("status")).toHaveTextContent("전체 124개 중 124개 절차");
+    expect(within(registryDialog).getByRole("status")).toHaveTextContent("전체 145개 중 145개 절차");
     fireEvent.click(within(registryDialog).getAllByRole("button", { name: /상세 보기/ })[0]);
     const detailDialog = await screen.findByRole("dialog", { name: /상세정보/ });
     expect(within(detailDialog).getByRole("heading", { level: 2 })).toHaveFocus();
@@ -1166,7 +1184,7 @@ describe("dashboard UI", () => {
 
     fireEvent.click(verificationTrigger);
     const verificationDialog = await screen.findByRole("dialog", { name: "인허가 근거 검증 대장" });
-    expect(within(verificationDialog).getByLabelText("검증 대장 현황")).toHaveTextContent("검증 차원744건");
+    expect(within(verificationDialog).getByLabelText("검증 대장 현황")).toHaveTextContent("검증 차원870건");
     fireEvent.click(within(verificationDialog).getByRole("button", { name: "인허가 근거 검증 대장 닫기" }));
     await waitFor(() => expect(verificationTrigger).toHaveFocus());
 

@@ -11,8 +11,10 @@ import {
   getReviewedElisOrdinanceRecords,
   reviewedElisSnapshotCheckedAt,
 } from "@/lib/regions/elis-reviewed-snapshot";
+import { getTransitionalElisOrdinanceRecords } from "@/lib/regions/elis-transitional-records";
 import {
   getElisJurisdictionTargets,
+  getElisTransitionalJurisdictionTargets,
   getOfficialLocalOrdinanceLinks,
   isElisOrdinanceDetailUrl,
   localOrdinanceCoverageCaveat,
@@ -43,7 +45,7 @@ function priorityReason(categoryId: string, answers: ScenarioAnswers): string | 
   if (
     categoryId === "air-water-standards" &&
     (answers.airEmissionFacility !== false || answers.waterDischargeFacility !== false)
-  ) return "대기·폐수 시설의 지역 강화기준 확인";
+  ) return "대기·폐수 시설의 지역 기준·정책 확인";
   if (
     categoryId === "sewerage-wastewater-cost" &&
     (answers.publicSewerConnection !== false || (answers.wastewaterM3Day ?? 0) > 0)
@@ -122,12 +124,16 @@ export function LocalOrdinancePanel({ answers }: { answers: ScenarioAnswers }) {
     if (!answers.province) {
       return new Map<string, LocalOrdinanceCategoryLookup["ordinances"]>();
     }
+    const canonicalProvince = getOfficialLocalOrdinanceLinks(
+      answers.province,
+      answers.city,
+    ).province?.name ?? answers.province;
     const records = getElisJurisdictionTargets(
       answers.province,
       answers.city,
     ).flatMap((target) =>
       getReviewedElisOrdinanceRecords(
-        answers.province,
+        canonicalProvince,
         target.name,
         target.level,
       ),
@@ -139,11 +145,31 @@ export function LocalOrdinancePanel({ answers }: { answers: ScenarioAnswers }) {
       ]),
     );
   }, [answers.province, answers.city]);
+  const transitionalByCategory = useMemo(
+    () =>
+      new Map(
+        matchOrdinancesToCategories(
+          getTransitionalElisOrdinanceRecords(
+            answers.province,
+            answers.city,
+          ),
+        ).map((item) => [item.categoryId, item.ordinances]),
+      ),
+    [answers.province, answers.city],
+  );
   const hasReviewedFallback = [...reviewedByCategory.values()].some(
     (ordinances) => ordinances.length > 0,
   );
   if (!answers.province) return null;
   const links = getOfficialLocalOrdinanceLinks(answers.province, answers.city);
+  const jurisdictionTargets = getElisJurisdictionTargets(
+    answers.province,
+    answers.city,
+  );
+  const transitionalTargets = getElisTransitionalJurisdictionTargets(
+    answers.province,
+    answers.city,
+  );
   const prioritized = localOrdinanceReviewCategories
     .map((category) => ({ category, reason: priorityReason(category.id, answers) }))
     .filter((item): item is typeof item & { reason: string } => item.reason !== null);
@@ -157,7 +183,26 @@ export function LocalOrdinancePanel({ answers }: { answers: ScenarioAnswers }) {
   ) => {
     const liveOrdinances = actualByCategory.get(category.id) ?? [];
     const reviewedOrdinances = reviewedByCategory.get(category.id) ?? [];
-    const actualOrdinances = [...liveOrdinances, ...reviewedOrdinances].filter(
+    const currentOrdinances = [
+      ...liveOrdinances,
+      ...reviewedOrdinances,
+    ].filter(
+      (ordinance, index, list) =>
+        list.findIndex(
+          (candidate) =>
+            candidate.level === ordinance.level &&
+            candidate.name === ordinance.name,
+        ) === index,
+    );
+    const transitionalOrdinances = currentOrdinances.some(
+      (ordinance) => ordinance.level === "PROVINCE",
+    )
+      ? []
+      : transitionalByCategory.get(category.id) ?? [];
+    const actualOrdinances = [
+      ...currentOrdinances,
+      ...transitionalOrdinances,
+    ].filter(
       (ordinance, index, list) =>
         list.findIndex(
           (candidate) =>
@@ -172,6 +217,31 @@ export function LocalOrdinancePanel({ answers }: { answers: ScenarioAnswers }) {
         : hasReviewedFallback
           ? "검증 저장본에서 이 범주의 관련 조례를 찾지 못했습니다. 상단 관할 목록에서 다시 확인해 주세요."
           : "이 지역의 검증된 상세 링크를 준비 중입니다. 상단 관할 목록에서 확인해 주세요.";
+    const matchedJurisdictions = new Set(
+      actualOrdinances.map(
+        (ordinance) => `${ordinance.level}|${ordinance.jurisdictionName}`,
+      ),
+    );
+    const fallbackTargets = [
+      ...jurisdictionTargets.map((target) => ({
+        ...target,
+        notice: null,
+      })),
+      ...(currentOrdinances.some((ordinance) => ordinance.level === "PROVINCE")
+        ? []
+        : transitionalTargets),
+    ]
+      .filter((target) =>
+        category.scope === "PROVINCE"
+          ? target.level === "PROVINCE"
+          : category.scope === "MUNICIPALITY"
+            ? target.level === "MUNICIPALITY"
+            : true,
+      )
+      .filter(
+        (target) =>
+          !matchedJurisdictions.has(`${target.level}|${target.name}`),
+      );
     return (
       <article className="local-ordinance-card" key={category.id}>
         <span>{reason ?? "추가 지역기준 검토"}</span>
@@ -185,13 +255,38 @@ export function LocalOrdinancePanel({ answers }: { answers: ScenarioAnswers }) {
               href={ordinance.url}
               target="_blank"
               rel="noreferrer"
-              title={`${ordinance.jurisdictionName} 현행 자치법규 상세 원문`}
+              title={ordinance.transitionNotice
+                ? `${ordinance.jurisdictionName} 종전 조례 상세 · 해당 권역 경과 적용 확인`
+                : `${ordinance.jurisdictionName} 현행 자치법규 상세 원문`}
             >
               {ordinance.name} ↗
-              <small>{ordinance.level === "PROVINCE" ? "광역" : "기초"}{ordinance.amendmentDate ? ` · ${ordinance.amendmentDate}` : ""}</small>
+              <small>
+                {ordinance.transitionNotice
+                  ? "종전 조례 · 해당 권역 한정"
+                  : ordinance.level === "PROVINCE"
+                    ? "광역"
+                    : "기초"}
+                {ordinance.amendmentDate ? ` · ${ordinance.amendmentDate}` : ""}
+              </small>
             </a>
           ))}
           {!actualOrdinances.length ? <em>{fallbackMessage}</em> : null}
+          {fallbackTargets.map((target) => (
+            <a
+              className="local-ordinance-fallback-link"
+              href={target.listUrl}
+              key={`${category.id}-${target.level}-${target.name}`}
+              target="_blank"
+              rel="noreferrer"
+              title={`${target.name} ELIS 현행 목록에서 ${category.searchTerms.join("·")} 직접 확인`}
+            >
+              {target.name} ELIS 목록에서 직접 찾기 ↗
+              <small>
+                {target.notice ??
+                  "이 관할에서 범주 일치 상세 조례가 없을 때 쓰는 전체 목록"}
+              </small>
+            </a>
+          ))}
         </div>
       </article>
     );
@@ -211,6 +306,18 @@ export function LocalOrdinancePanel({ answers }: { answers: ScenarioAnswers }) {
         </details>
       ) : null}
       {links.notice ? <p className="local-ordinance-notice">{links.notice}</p> : null}
+      {transitionalTargets.length ? (
+        <p className="local-ordinance-notice">
+          통합특별시 새 조례가 확인되지 않는 범주는 선택 권역의 종전 조례 목록도 함께 확인합니다. 종전 조례는 해당 종전 권역에 한해 경과 적용될 수 있으므로 개별 조문과 필지를 대조해야 합니다.{" "}
+          <a
+            href={transitionalTargets[0].legalBasisUrl}
+            target="_blank"
+            rel="noreferrer"
+          >
+            경과조치 근거 ↗
+          </a>
+        </p>
+      ) : null}
       {lookupState === "LOADING" && hasReviewedFallback ? (
         <p className="local-ordinance-checked">
           ELIS 실시간 확인 중 · {new Date(reviewedElisSnapshotCheckedAt).toLocaleDateString("ko-KR")} 검증 저장본 먼저 표시

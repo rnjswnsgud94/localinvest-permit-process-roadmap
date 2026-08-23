@@ -112,4 +112,45 @@ describe("official local-ordinance resolver", () => {
       }),
     );
   });
+
+  it("does not hide reviewed ELIS detail links when a category has more than five matches", () => {
+    const records = resolveOfficialOrdinanceRecords(
+      Array.from({ length: 7 }, (_, index) =>
+        ordinance(`아산시 제${index + 1}호 향토문화유산 보호 조례`),
+      ),
+      { name: "아산시", provinceName: "충청남도", level: "MUNICIPALITY" },
+    );
+    const heritage = matchOrdinancesToCategories(records).find(
+      (item) => item.categoryId === "heritage-local-assets",
+    );
+    expect(heritage?.ordinances).toHaveLength(7);
+  });
+
+  it("rejects subject-specific parking, livestock odor, amendment-bill and repeal titles", () => {
+    const names = [
+      "영동군 주차장 운영 조례",
+      "울산광역시 동구 이륜자동차 주차장 설치 및 관리 조례",
+      "김해시 축사 악취 배출허용기준 및 가축분뇨 처리 지원 조례",
+      "일본식 한자어 정비를 위한 진도군 향토문화유산 보호 조례 일부개정규칙안",
+      "가상군 도시계획 조례 폐지조례안",
+    ];
+    const lookups = matchOrdinancesToCategories(
+      names.map((name) => ({
+        name,
+        level: "MUNICIPALITY" as const,
+        jurisdictionName: "검증지역",
+        amendmentDate: "2026-08-23",
+        url: "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=52730111111111&histNo=001",
+      })),
+    );
+    const matchedNames = lookups.flatMap((lookup) =>
+      lookup.ordinances.map((ordinance) => ordinance.name),
+    );
+
+    expect(matchedNames).toContain("영동군 주차장 운영 조례");
+    expect(matchedNames).not.toContain(names[1]);
+    expect(matchedNames).not.toContain(names[2]);
+    expect(matchedNames).not.toContain(names[3]);
+    expect(matchedNames).not.toContain(names[4]);
+  });
 });

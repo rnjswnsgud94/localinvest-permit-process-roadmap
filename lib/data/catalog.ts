@@ -229,6 +229,28 @@ export const scenarioAnswerSchema = z.object({
       message: "대상으로 선택한 정밀검토 절차는 검토 완료 목록에도 포함되어야 합니다.",
     });
   }
+  for (const [left, right, message] of [
+    [
+      "information-communication-supervisor-assignment-report",
+      "information-communication-pre-use-inspection",
+      "동일 정보통신공사 범위는 감리결과보고서 제출 경로와 사용전검사 경로를 동시에 선택할 수 없습니다.",
+    ],
+    [
+      "marine-use-consultation",
+      "marine-use-impact-assessment",
+      "동일 해양 이용사업은 해양이용협의와 해양이용영향평가를 동시에 선택할 수 없습니다.",
+    ],
+  ] as const) {
+    if (
+      !answers.supplementalPermitTargetIds.includes(left) ||
+      !answers.supplementalPermitTargetIds.includes(right)
+    ) continue;
+    context.addIssue({
+      code: "custom",
+      path: ["supplementalPermitTargetIds"],
+      message,
+    });
+  }
   if (
     answers.psmCoversSameHazardPreventionScope !== null
     && (

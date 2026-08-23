@@ -13,9 +13,12 @@ const nationwide = {
   industrialComplexIds: [],
 };
 
-const selectedLaw = (lawId: string): Condition => ({
+const processTokenPath = (lawId: FastTrackLawId | PlanDeemingLawId) =>
+  `confirmation.specialLawProcessTokens.${lawId}`;
+
+const selectedLaw = (lawId: string, path: string): Condition => ({
   intersects: {
-    path: "strategicIndustrySpecialCase",
+    path,
     values: [lawId],
   },
 });
@@ -279,6 +282,7 @@ const includeRule = ({
   procedureId,
   effectiveFrom,
   lawId,
+  processLawId,
   parentLawId,
   citationIds,
   explanation,
@@ -287,6 +291,7 @@ const includeRule = ({
   procedureId: string;
   effectiveFrom: string;
   lawId: string;
+  processLawId: FastTrackLawId | PlanDeemingLawId;
   parentLawId?: string;
   citationIds: string[];
   explanation: string;
@@ -299,9 +304,14 @@ const includeRule = ({
   effectiveTo: null,
   jurisdiction: nationwide,
   condition: parentLawId
-    ? { all: [selectedLaw(parentLawId), selectedLaw(lawId)] }
-    : selectedLaw(lawId),
-  requiredInputs: ["strategicIndustrySpecialCase"],
+    ? {
+        all: [
+          selectedLaw(parentLawId, processTokenPath(processLawId)),
+          selectedLaw(lawId, processTokenPath(processLawId)),
+        ],
+      }
+    : selectedLaw(lawId, processTokenPath(processLawId)),
+  requiredInputs: [processTokenPath(processLawId)],
   missingPolicy: "INDETERMINATE",
   citationIds,
   explanationTemplate: explanation,
@@ -318,6 +328,7 @@ export const specialLawProcessRules: ApplicabilityRule[] = [
       procedureId: `${config.prefix}-request`,
       effectiveFrom: config.effectiveFrom,
       lawId: config.lawId,
+      processLawId: config.lawId,
       citationIds: config.citationIds,
       explanation: `${config.scope} 사업의 관계 인허가 신속처리 요청 요건을 확인해 요청·대상목록 관리 절차를 포함합니다.`,
     }),
@@ -326,6 +337,7 @@ export const specialLawProcessRules: ApplicabilityRule[] = [
       procedureId: `${config.prefix}-result-check`,
       effectiveFrom: config.effectiveFrom,
       lawId: config.lawId,
+      processLawId: config.lawId,
       citationIds: config.citationIds,
       explanation: `${config.scope} 신속처리 요청 후 개별 법정기한·60일 조건과 실제 처리결과를 확인하는 절차를 포함합니다.`,
     }),
@@ -336,6 +348,7 @@ export const specialLawProcessRules: ApplicabilityRule[] = [
       procedureId: `${config.prefix}-application`,
       effectiveFrom: config.effectiveFrom,
       lawId: `${config.lawId}:PHASE:APPLICATION`,
+      processLawId: config.lawId as PlanDeemingLawId,
       citationIds: config.citationIds,
       explanation: `${config.planName}에 사업과 의제대상 서류를 포함해 승인 신청하는 절차를 포함합니다.`,
     }),
@@ -344,6 +357,7 @@ export const specialLawProcessRules: ApplicabilityRule[] = [
       procedureId: `${config.prefix}-consultation`,
       effectiveFrom: config.effectiveFrom,
       lawId: `${config.lawId}:PHASE:CONSULTATION`,
+      processLawId: config.lawId as PlanDeemingLawId,
       citationIds: config.citationIds,
       explanation: `${config.planName}의 개별 인허가 의제를 위한 관계기관 협의 절차를 포함합니다.`,
     }),
@@ -352,6 +366,7 @@ export const specialLawProcessRules: ApplicabilityRule[] = [
       procedureId: `${config.prefix}-approval`,
       effectiveFrom: config.effectiveFrom,
       lawId: `${config.lawId}:PHASE:APPROVAL`,
+      processLawId: config.lawId as PlanDeemingLawId,
       citationIds: config.citationIds,
       explanation: `${config.planName} 승인과 협의 완료된 개별 인허가의 의제 결과 확인 절차를 포함합니다.`,
     }),
@@ -365,12 +380,23 @@ export const specialLawProcessRules: ApplicabilityRule[] = [
       jurisdiction: nationwide,
       condition: {
         all: [
-          selectedLaw(config.lawId),
-          selectedLaw(`${config.lawId}:${procedureId}`),
+          selectedLaw(
+            config.lawId,
+            processTokenPath(config.lawId as PlanDeemingLawId),
+          ),
+          selectedLaw(
+            `${config.lawId}:${procedureId}`,
+            processTokenPath(config.lawId as PlanDeemingLawId),
+          ),
         ],
       },
-      requiredInputs: ["strategicIndustrySpecialCase"],
-      missingPolicy: "INDETERMINATE",
+      requiredInputs: [
+        processTokenPath(config.lawId as PlanDeemingLawId),
+      ],
+      // A plan approval is deemed only after every approval/evidence fact is
+      // confirmed. Until then this exceptional exclusion must stay neutral so
+      // it cannot hide or delay the ordinary permit route.
+      missingPolicy: "NON_MATCH",
       citationIds: config.citationIds,
       explanationTemplate: `${config.planName}에 이 인허가의 법정서류가 포함되고 관계기관 협의 및 계획 승인·고시 완료 증거가 확인되어 별도 신청 대신 계획승인 의제 경로로 표시합니다.`,
       priority: 900,
@@ -390,6 +416,7 @@ export function buildFastTrackTargetRules(
       procedureId: `${config.prefix}-request`,
       effectiveFrom: config.effectiveFrom,
       lawId: `${config.lawId}:${procedureId}`,
+      processLawId: config.lawId,
       parentLawId: config.lawId,
       citationIds: config.citationIds,
       explanation: `${config.scope} 신속처리 요청 공문의 대상목록에 ${procedureId} 절차가 포함된 것으로 확인했습니다.`,

@@ -39,7 +39,7 @@ import {
   ShareStateTooLongError,
 } from "@/lib/share-state";
 
-const defaultAnswers: ScenarioAnswers = {
+export const defaultAnswers: ScenarioAnswers = {
   assessmentDate: catalog.coverage.assessmentDefault,
   plannedConstructionStartDate: null,
   plannedConstructionEndDate: null,
@@ -655,7 +655,7 @@ export function DashboardClient() {
           ) : null}
 
           <div id="dashboard-result-panel" className="view-panel" role="tabpanel" aria-labelledby={`tab-${activeTab}`}>
-            {activeTab === "SWIMLANE" ? <Swimlane decisions={filteredDecisions} schedule={schedule} selectedId={selectedId} userDurationOverrides={answers.userDurationOverrides} onSelect={setSelectedId} onUserDurationOverrideChange={changeUserDurationOverride} /> : null}
+            {activeTab === "SWIMLANE" ? <Swimlane decisions={filteredDecisions} schedule={schedule} assessmentDate={answers.assessmentDate} selectedId={selectedId} userDurationOverrides={answers.userDurationOverrides} onSelect={setSelectedId} onUserDurationOverrideChange={changeUserDurationOverride} /> : null}
             {activeTab === "ACTION" ? <ActionPlanView decisions={evaluation.decisions} schedule={schedule} answers={answers} onSelect={setSelectedId} /> : null}
             {activeTab === "LIST" ? <ProcedureList decisions={filteredDecisions} schedule={schedule} onSelect={setSelectedId} /> : null}
             {activeTab === "SCHEDULE" ? <ScheduleView schedule={schedule} answers={answers} /> : null}
@@ -719,7 +719,7 @@ export function DashboardClient() {
           />
         </WorkspaceToolDialog>
       ) : null}
-      <ProcedureDrawer decision={selectedDecision} schedule={schedule} onClose={closeProcedureDrawer} />
+      <ProcedureDrawer decision={selectedDecision} schedule={schedule} assessmentDate={answers.assessmentDate} onClose={closeProcedureDrawer} />
       {shareMessage ? <div className="toast" role="status">{shareMessage}</div> : null}
     </main>
   );

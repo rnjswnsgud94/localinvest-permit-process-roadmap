@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import { procedureCategoryForDecision } from "@/app/components/dashboard/constants";
-import { catalog, type ScenarioAnswers } from "@/lib/data/catalog";
+import {
+  catalog,
+  scenarioAnswerSchema,
+  type ScenarioAnswers,
+} from "@/lib/data/catalog";
 import { supplementalPermitTargetIds } from "@/lib/data/supplemental-permit-targets";
 import { evaluateProject } from "@/lib/engine/pipeline";
 
@@ -18,6 +22,11 @@ function evaluate(overrides: Partial<ScenarioAnswers>) {
     chemicalsHandled: false,
     hazardousMaterials: false,
     psmCovered: false,
+    advancedStrategicIndustryFastTrackConfirmed: false,
+    semiconductorClusterFastTrackConfirmed: false,
+    semiconductorClusterPlanDeemingConfirmed: false,
+    industrialComplexPlanSpecialCaseConfirmed: false,
+    regionalSpecialZonePlanDeemingConfirmed: false,
     ...overrides,
   });
 }
@@ -88,6 +97,110 @@ describe("supplemental permit threshold review", () => {
       ),
     ).toBe("CONFIRM");
   });
+
+  it("routes supervised information-communications work to the result-report path instead of pre-use inspection", () => {
+    const evaluation = evaluate({
+      supplementalPermitReviewedIds: [
+        "information-communication-supervisor-assignment-report",
+        "information-communication-pre-use-inspection",
+      ],
+      supplementalPermitTargetIds: [
+        "information-communication-supervisor-assignment-report",
+      ],
+    });
+    const preUse = decision(
+      evaluation,
+      "information-communication-pre-use-inspection",
+    );
+
+    expect(procedureCategoryForDecision(decision(
+      evaluation,
+      "information-communication-supervisor-assignment-report",
+    ))).toBe("REQUIRED");
+    expect(procedureCategoryForDecision(decision(
+      evaluation,
+      "information-communication-supervision-result-submission",
+    ))).toBe("REQUIRED");
+    expect(procedureCategoryForDecision(preUse)).toBe("NOT_REQUIRED");
+    expect(preUse.matchedRuleIds).toContain(
+      "rule-exp-information-pre-use-supervision-exclusion",
+    );
+    expect(evaluation.schedules.TYPICAL.topologicalOrder).not.toContain(
+      "information-communication-pre-use-inspection",
+    );
+  });
+
+  it("keeps non-supervised pre-use inspection and rejects mutually exclusive threshold selections", () => {
+    const evaluation = evaluate({
+      supplementalPermitReviewedIds: [
+        "information-communication-supervisor-assignment-report",
+        "information-communication-pre-use-inspection",
+      ],
+      supplementalPermitTargetIds: [
+        "information-communication-pre-use-inspection",
+      ],
+    });
+
+    expect(procedureCategoryForDecision(decision(
+      evaluation,
+      "information-communication-pre-use-inspection",
+    ))).toBe("REQUIRED");
+    expect(procedureCategoryForDecision(decision(
+      evaluation,
+      "information-communication-supervision-result-submission",
+    ))).toBe("NOT_REQUIRED");
+
+    for (const mutuallyExclusiveIds of [
+      [
+        "information-communication-supervisor-assignment-report",
+        "information-communication-pre-use-inspection",
+      ],
+      ["marine-use-consultation", "marine-use-impact-assessment"],
+    ]) {
+      const parsed = scenarioAnswerSchema.safeParse({
+        ...catalog.scenarios[0].answers,
+        supplementalPermitReviewedIds: mutuallyExclusiveIds,
+        supplementalPermitTargetIds: mutuallyExclusiveIds,
+      });
+      expect(parsed.success, mutuallyExclusiveIds.join(" + ")).toBe(false);
+    }
+  });
+
+  it.each([
+    {
+      procedureId: "information-communication-pre-use-inspection",
+      alternateId: "information-communication-supervisor-assignment-report",
+    },
+    {
+      procedureId: "marine-use-consultation",
+      alternateId: "marine-use-impact-assessment",
+    },
+  ] as const)(
+    "does not let an unreviewed alternate path contaminate the reviewed $procedureId decision",
+    ({ procedureId, alternateId }) => {
+      const excluded = evaluate({
+        supplementalPermitReviewedIds: [procedureId],
+        supplementalPermitTargetIds: [],
+      });
+      const included = evaluate({
+        supplementalPermitReviewedIds: [procedureId],
+        supplementalPermitTargetIds: [procedureId],
+      });
+
+      expect(procedureCategoryForDecision(decision(excluded, procedureId))).toBe(
+        "NOT_REQUIRED",
+      );
+      expect(decision(excluded, procedureId).missingInputs).not.toContain(
+        `confirmation.supplementalPermitTargets.${alternateId}`,
+      );
+      expect(procedureCategoryForDecision(decision(included, procedureId))).toBe(
+        "REQUIRED",
+      );
+      expect(decision(included, procedureId).missingInputs).not.toContain(
+        `confirmation.supplementalPermitTargets.${alternateId}`,
+      );
+    },
+  );
 
   it.each([
     {

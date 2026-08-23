@@ -26,6 +26,7 @@ export const REPORT_OUTLINE = [
   "4. 특별법·특례 적용결과",
   "5. 단계별 인허가 세부절차",
   "6. 판정에 사용한 사업조건",
+  "7. 지역 조례 확인",
   "부록 A. 공식 법령 근거",
   "부록 B. 확인된 제외 절차",
   "부록 C. 이용상 주의",
@@ -634,7 +635,7 @@ class PermitPdfWriter {
     const panelGapX = 14;
     const panelGapY = 14;
     const panelWidth = (contentWidth - panelGapX * 2) / 3;
-    const panelHeight = 265;
+    const panelHeight = 235;
     const panelTop = 646;
     const panelPositions = this.model.flow.stages.map((stage, index) => ({
       stage,
@@ -876,13 +877,89 @@ class PermitPdfWriter {
     );
     drawArrow(margin + panelWidth + panelGapX - 3, secondRowY, margin + panelWidth + 3, secondRowY);
 
-    const note = "읽는 방향: 위 행 01→02→03, 아래 행 04→05→06(오른쪽→왼쪽). 단계는 사업 생애주기상 분류이며 같은 단계와 단계 사이의 절차도 병행될 수 있습니다. 화살표는 보고서 탐색 방향으로, 개별 절차의 법정 선후행을 뜻하지 않습니다. W는 법정·실무 선행관계를 반영한 진행군입니다. 지면상 일부 명칭·기간은 축약·생략되고 ‘외 N건’은 5장에서 이어집니다. 전체 절차와 판정 근거는 5장 세부절차를 확인하십시오.";
-    limitedLines(note, this.fonts.regular, 6.8, contentWidth, 3)
+    const relationTop = 152;
+    page.drawRectangle({
+      x: margin,
+      y: 82,
+      width: contentWidth,
+      height: relationTop - 82,
+      color: palette.white,
+      borderColor: palette.line,
+      borderWidth: 0.6,
+    });
+    page.drawText("핵심 선후행·병목 관계", {
+      x: margin + 12,
+      y: relationTop - 15,
+      font: this.fonts.bold,
+      size: 8.5,
+      color: palette.ink,
+    });
+    page.drawText("현재 입력과 일정에서 활성화된 법정·실무 관계 중 핵심 10건 이내", {
+      x: margin + 138,
+      y: relationTop - 15,
+      font: this.fonts.regular,
+      size: 6.5,
+      color: palette.muted,
+    });
+    const relationColumnGap = 18;
+    const relationColumnWidth = (contentWidth - 24 - relationColumnGap) / 2;
+    if (!this.model.flow.coreRelations.length) {
+      page.drawText("표시할 활성 핵심 관계가 없습니다.", {
+        x: margin + 12,
+        y: relationTop - 38,
+        font: this.fonts.regular,
+        size: 7,
+        color: palette.muted,
+      });
+    }
+    this.model.flow.coreRelations.forEach((relation, index) => {
+      const column = Math.floor(index / 5);
+      const row = index % 5;
+      const x = margin + 12 + column * (relationColumnWidth + relationColumnGap);
+      const y = relationTop - 31 - row * 9.2;
+      const badge = relation.bottleneck
+        ? "병목"
+        : relation.evidence.startsWith("법")
+          ? "법정"
+          : relation.evidence.startsWith("실무")
+            ? "실무"
+            : "관계";
+      const accent = relation.bottleneck
+        ? palette.red
+        : badge === "법정"
+          ? palette.blue
+          : palette.amber;
+      page.drawText(badge, {
+        x,
+        y,
+        font: this.fonts.bold,
+        size: 5.8,
+        color: accent,
+      });
+      page.drawText(
+        singleLineText(
+          `${relation.from} → ${relation.to} · ${relation.relation}`,
+          this.fonts.regular,
+          6.3,
+          relationColumnWidth - 34,
+        ),
+        {
+          x: x + 29,
+          y,
+          font: this.fonts.regular,
+          size: 6.3,
+          color: palette.body,
+        },
+      );
+    });
+
+    const note = "읽는 방향: 위 행 01→02→03, 아래 행 04→05→06(오른쪽→왼쪽). 큰 화살표는 보고서 탐색 방향이고, 핵심 관계 표의 화살표가 실제 법정·실무 선후행입니다. ‘병목’은 현재 일정의 착수를 구속하는 후보이며 실제 보완·협의기간에 따라 달라질 수 있습니다. W는 선행관계를 반영한 진행군입니다. ‘외 N건’과 전체 판정 근거는 5장 세부절차를 확인하십시오.";
+    limitedLines(note, this.fonts.regular, 6.4, contentWidth, 3)
       .forEach((line, index) => page.drawText(line, {
         x: margin,
-        y: 77 - index * 10,
+        y: 70 - index * 9,
         font: this.fonts.regular,
-        size: 6.8,
+        size: 6.4,
         color: palette.muted,
       }));
     this.y = PAGE_BOTTOM;
@@ -1208,6 +1285,155 @@ class PermitPdfWriter {
     });
   }
 
+  localOrdinanceCategory(
+    category: PermitReportModel["localOrdinances"]["categories"][number],
+  ) {
+    const rows = [
+      ...category.ordinances.map((ordinance) => ({
+        name: ordinance.name,
+        jurisdiction: `${ordinance.jurisdictionName} · ${ordinance.transitionNotice
+          ? "종전 권역"
+          : ordinance.level === "PROVINCE"
+            ? "광역"
+            : "기초"}`,
+        date: ordinance.amendmentDate ?? "날짜 미수록",
+        url: ordinance.url,
+        fallback: false,
+      })),
+      ...category.fallbackLinks.map((link) => ({
+        name: link.name,
+        jurisdiction: "범주 미일치 · 직접 확인",
+        date: "관할 목록",
+        url: link.url,
+        fallback: true,
+      })),
+    ];
+    const nameWidth = 250;
+    const jurisdictionWidth = 145;
+    const dateWidth = 72;
+    const linkWidth = CONTENT_WIDTH - nameWidth - jurisdictionWidth - dateWidth;
+    const drawHeading = (continued = false) => {
+      this.ensureSpace(82, REPORT_OUTLINE[6]);
+      this.page.drawText(`${category.title}${continued ? " (계속)" : ""}`, {
+        x: MARGIN_X,
+        y: this.y - 11,
+        font: this.fonts.bold,
+        size: 10,
+        color: palette.blue,
+      });
+      this.y -= 20;
+      limitedLines(
+        `영향 · ${category.affects} / 확인 · ${category.reviewPoint}`,
+        this.fonts.regular,
+        7.2,
+        CONTENT_WIDTH,
+        2,
+      )
+        .forEach((line, index) => this.page.drawText(line, {
+          x: MARGIN_X,
+          y: this.y - 7 - index * 9.5,
+          font: this.fonts.regular,
+          size: 7.2,
+          color: palette.muted,
+        }));
+      this.y -= 25;
+      this.page.drawRectangle({
+        x: MARGIN_X,
+        y: this.y - 20,
+        width: CONTENT_WIDTH,
+        height: 20,
+        color: palette.blue,
+      });
+      [
+        ["조례·목록", MARGIN_X + 6],
+        ["관할·구분", MARGIN_X + nameWidth],
+        ["개정일", MARGIN_X + nameWidth + jurisdictionWidth],
+        ["링크", MARGIN_X + nameWidth + jurisdictionWidth + dateWidth],
+      ].forEach(([label, x]) => this.page.drawText(String(label), {
+        x: Number(x),
+        y: this.y - 13,
+        font: this.fonts.bold,
+        size: 6.8,
+        color: palette.white,
+      }));
+      this.y -= 20;
+    };
+
+    drawHeading();
+    if (!rows.length) {
+      this.paragraph("연결된 상세 조례 또는 관할 목록이 없습니다.", {
+        size: 7.5,
+        color: palette.muted,
+      });
+    }
+    rows.forEach((row, index) => {
+      const nameLines = limitedLines(row.name, this.fonts.bold, 7.2, nameWidth - 12, 2);
+      const jurisdictionLines = limitedLines(
+        row.jurisdiction,
+        this.fonts.regular,
+        6.8,
+        jurisdictionWidth - 10,
+        2,
+      );
+      const rowHeight = Math.max(24, Math.max(nameLines.length, jurisdictionLines.length) * 9.5 + 7);
+      if (this.ensureSpace(rowHeight + 18, REPORT_OUTLINE[6])) drawHeading(true);
+      if (index % 2 === 0) {
+        this.page.drawRectangle({
+          x: MARGIN_X,
+          y: this.y - rowHeight,
+          width: CONTENT_WIDTH,
+          height: rowHeight,
+          color: row.fallback ? palette.amberSoft : palette.panel,
+        });
+      }
+      nameLines.forEach((line, lineIndex) => this.page.drawText(line, {
+        x: MARGIN_X + 6,
+        y: this.y - 10 - lineIndex * 9.5,
+        font: this.fonts.bold,
+        size: 7.2,
+        color: row.fallback ? palette.amber : palette.ink,
+      }));
+      jurisdictionLines.forEach((line, lineIndex) => this.page.drawText(line, {
+        x: MARGIN_X + nameWidth,
+        y: this.y - 10 - lineIndex * 9.5,
+        font: this.fonts.regular,
+        size: 6.8,
+        color: row.fallback ? palette.amber : palette.teal,
+      }));
+      this.page.drawText(singleLineText(row.date, this.fonts.regular, 6.7, dateWidth - 8), {
+        x: MARGIN_X + nameWidth + jurisdictionWidth,
+        y: this.y - 10,
+        font: this.fonts.regular,
+        size: 6.7,
+        color: palette.body,
+      });
+      const linkLabel = "원문 ↗";
+      const linkX = MARGIN_X + nameWidth + jurisdictionWidth + dateWidth;
+      this.page.drawText(linkLabel, {
+        x: linkX,
+        y: this.y - 10,
+        font: this.fonts.bold,
+        size: 6.8,
+        color: palette.blue,
+      });
+      this.addLink(
+        this.page,
+        linkX,
+        this.y - 13,
+        Math.min(linkWidth, this.fonts.bold.widthOfTextAtSize(linkLabel, 6.8)),
+        10,
+        row.url,
+      );
+      this.y -= rowHeight;
+    });
+    this.paragraph(`적용 한계 · ${category.limitation}`, {
+      size: 6.8,
+      lineHeight: 9.5,
+      color: palette.muted,
+    });
+    this.space(7);
+  }
+
   namesOnlyTable(names: string[], sectionLabel: string) {
     if (!names.length) {
       this.paragraph("현재 입력값에서 확인된 제외 절차가 없습니다.", {
@@ -1490,6 +1716,28 @@ export async function renderPermitReportPdf(
 
   writer.section(
     REPORT_OUTLINE[6],
+    `선택 지역의 ELIS 검증 저장본(${model.localOrdinances.checkedAt.slice(0, 10)})과 관할 목록을 기준으로 확인할 조례를 정리했습니다. 상세 링크가 없는 범주는 관할 전체 목록 링크를 제공하며, 해당 조례가 존재하거나 사업에 적용된다는 뜻은 아닙니다.`,
+  );
+  if (!model.localOrdinances.categories.length) {
+    writer.paragraph(model.localOrdinances.notice ?? "지역을 입력해야 조례 링크를 구성할 수 있습니다.", {
+      color: palette.amber,
+      font: bold,
+    });
+  }
+  model.localOrdinances.transitionBasisLinks.forEach((basis) => writer.card({
+    title: basis.name,
+    badge: "권역별 경과 적용 확인",
+    accent: palette.amber,
+    background: palette.amberSoft,
+    rows: [{ label: "주의", value: basis.note, tone: "warning" }],
+    link: { label: "통합특별시 설치 특별법 경과조치 열기", url: basis.url },
+  }));
+  model.localOrdinances.categories.forEach((category) =>
+    writer.localOrdinanceCategory(category),
+  );
+
+  writer.section(
+    REPORT_OUTLINE[7],
     "보고서에 포함된 절차의 공식 근거입니다. 시행 예정 근거는 기준일 현재 미적용으로 별도 표시합니다.",
   );
   model.legalSources.forEach((source) => writer.card({
@@ -1505,12 +1753,12 @@ export async function renderPermitReportPdf(
   }));
 
   writer.section(
-    REPORT_OUTLINE[7],
-    "현재 입력값이 검토된 제외규칙과 일치한 절차명만 간략히 수록합니다. 사업조건이 바뀌면 다시 판정해야 합니다.",
+    REPORT_OUTLINE[8],
+    "현재 입력에서 적용조건 불충족 또는 검토된 제외근거가 확인된 절차명만 간략히 수록합니다. 사업조건이 바뀌면 다시 판정해야 합니다.",
   );
-  writer.namesOnlyTable(model.excluded, REPORT_OUTLINE[7]);
+  writer.namesOnlyTable(model.excluded, REPORT_OUTLINE[8]);
 
-  writer.section(REPORT_OUTLINE[8]);
+  writer.section(REPORT_OUTLINE[9]);
   writer.card({
     title: "보고서 사용 전 확인",
     accent: palette.red,

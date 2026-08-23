@@ -7,6 +7,10 @@ import {
 import { StatusBadge } from "@/app/components/dashboard/StatusBadge";
 import { catalog } from "@/lib/data/catalog";
 import type { ScenarioAnswers } from "@/lib/data/catalog";
+import {
+  isVerifiedLegalSequence,
+  verifiedSequenceCitationIds,
+} from "@/lib/data/edge-evidence";
 import { planningDurationNotice } from "@/lib/data/planning-durations";
 import type { ProcedureDecision } from "@/lib/engine/rule-engine";
 import type { ScheduleResult } from "@/lib/engine/schedule";
@@ -195,6 +199,11 @@ export function ActionPlanView({
   onSelect: (id: string) => void;
 }) {
   const activeEdgeIds = new Set(schedule.activeEdgeIds);
+  const sequenceCitationIds = verifiedSequenceCitationIds({
+    citations: catalog.citations,
+    sources: catalog.legalSources,
+    assessmentDate: answers.assessmentDate,
+  });
   const timelineById = new Map(
     (schedule.projectTimeline?.nodes ?? []).map((node) => [node.procedureId, node]),
   );
@@ -222,13 +231,17 @@ export function ActionPlanView({
       const predecessorName = (procedureId: string) =>
         catalog.procedures.find((procedure) => procedure.id === procedureId)?.name ?? procedureId;
       const legalPrerequisites = incoming
-        .filter((edge) => edge.strength === "LEGAL_HARD" && edge.citationIds.length > 0)
+        .filter((edge) => isVerifiedLegalSequence(edge, sequenceCitationIds))
         .map((edge) => predecessorName(edge.from));
       const recommendedPrerequisites = incoming
         .filter((edge) => edge.strength !== "LEGAL_HARD")
         .map((edge) => predecessorName(edge.from));
       const unsupportedLegalPrerequisites = incoming
-        .filter((edge) => edge.strength === "LEGAL_HARD" && edge.citationIds.length === 0)
+        .filter(
+          (edge) =>
+            edge.strength === "LEGAL_HARD" &&
+            !isVerifiedLegalSequence(edge, sequenceCitationIds),
+        )
         .map((edge) => predecessorName(edge.from));
       const receivingAuthority = resolveAuthority(
         decision.procedure.receivingAuthority,
@@ -327,7 +340,7 @@ export function ActionPlanView({
   };
 
   function downloadCsv() {
-    const header = ["순번", "절차", "판정", "법정·공식 처리기간", "다음 행동", "권장 사내 담당", "접수기관", "법정 결정권자", "협의기관", "권한근거 상태", "법정 선행", "실무 권장 선행", "근거 미연결 선행", "목표 착수일", "준비서류", "서류근거 상태"];
+    const header = ["순번", "절차", "판정", "법정·공식 처리기간", "다음 행동", "권장 사내 담당", "접수기관", "법정 결정권자", "협의기관", "권한근거 상태", "선후행 조문 연결", "실무 권장 선행", "법정 분류·관계근거 보강", "목표 착수일", "준비서류", "서류근거 상태"];
     const body = rows.map((row, index) => [
       String(index + 1),
       row.decision.procedure.name,
@@ -343,7 +356,7 @@ export function ActionPlanView({
       authorityExportText(row.statutoryDecisionMaker),
       row.consultationAuthorities.map(authorityExportText).join(" · ") || "별도 협의기관 없음",
       row.hasAuthorityCitation ? "법정 권한 인용 연결" : "권한 원문 근거 미연결·관할 확인 필요",
-      row.legalPrerequisites.join(" · ") || "법정 근거가 연결된 직접 선행 없음",
+      row.legalPrerequisites.join(" · ") || "선후행 조문이 연결된 직접 선행 없음",
       row.recommendedPrerequisites.join(" · ") || "직접 실무 권장 선행 없음",
       row.unsupportedLegalPrerequisites.join(" · ") || "없음",
       row.targetDate,
@@ -393,9 +406,9 @@ export function ActionPlanView({
               <div><dt>법정 결정권자</dt><dd>{row.statutoryDecisionMaker.label}{row.statutoryDecisionMaker.note ? <small>{row.statutoryDecisionMaker.note}</small> : null}</dd></div>
               <div><dt>협의기관</dt><dd>{row.consultationAuthorities.length ? row.consultationAuthorities.map((authority, authorityIndex) => <span key={`${authority.label}-${authorityIndex}`}>{authority.label}{authority.note ? <small>{authority.note}</small> : null}</span>) : "별도 협의기관 없음"}</dd></div>
               <div><dt>법정·공식 처리기간</dt><dd>{formatResolvedOfficialDurationSummary(row.officialDuration, row.planningDuration)}<small>{row.officialDuration?.statutoryPeriod ?? "공식 기간자료 없음"}</small></dd></div>
-              <div><dt>법정 선행</dt><dd>{row.legalPrerequisites.length ? row.legalPrerequisites.join(" · ") : "법정 근거가 연결된 직접 선행 없음"}</dd></div>
+              <div><dt>선후행 조문 연결</dt><dd>{row.legalPrerequisites.length ? row.legalPrerequisites.join(" · ") : "선후행 조문이 연결된 직접 선행 없음"}</dd></div>
               <div><dt>실무 권장 선행</dt><dd>{row.recommendedPrerequisites.length ? row.recommendedPrerequisites.join(" · ") : "직접 실무 권장 선행 없음"}</dd></div>
-              {row.unsupportedLegalPrerequisites.length ? <div><dt>근거 미연결 선행</dt><dd>{row.unsupportedLegalPrerequisites.join(" · ")}<small>edge에 인용 근거가 없어 법정 선행으로 단정하지 않습니다.</small></dd></div> : null}
+              {row.unsupportedLegalPrerequisites.length ? <div><dt>법정 분류·관계근거 보강</dt><dd>{row.unsupportedLegalPrerequisites.join(" · ")}<small>선후행 역할의 현행 공식 조문이 확인되기 전에는 법적 강제순서로 단정하지 않습니다.</small></dd></div> : null}
               <div><dt>목표 착수일</dt><dd>{row.targetDate}{row.timeline?.processingDuration === null ? " · 총경과 산정 제외" : ""}</dd></div>
               <div><dt>준비서류</dt><dd>{row.decision.procedure.submissions.join(" · ") || "수록 자료 없음"}<small>{row.hasSubmissionCitation ? "법정 제출자료 인용 연결" : "초안 목록 · 공식 서식/원문 대조 필요"}</small></dd></div>
             </dl>

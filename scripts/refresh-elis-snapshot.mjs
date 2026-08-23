@@ -5,6 +5,7 @@ import { nonCapitalRegions } from "../lib/regions.ts";
 import {
   buildElisOrdinanceDetailUrl,
   getElisJurisdictionTargets,
+  isOrdinanceReviewTitleCandidate,
   listSupportedMunicipalities,
   localOrdinanceReviewCategories,
 } from "../lib/regions/local-ordinances.ts";
@@ -57,7 +58,7 @@ const relevantTitlePatterns = [
 
 function isRelevantTitle(title) {
   const candidate = normalized(title);
-  if (/(?:일부|전부)개정조례|폐지조례/.test(candidate)) return false;
+  if (!isOrdinanceReviewTitleCandidate(title)) return false;
   return relevantTitlePatterns.some((pattern) => candidate.includes(pattern));
 }
 

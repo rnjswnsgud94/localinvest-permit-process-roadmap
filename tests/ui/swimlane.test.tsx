@@ -1,4 +1,4 @@
-import { fireEvent, render, waitFor, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import {
@@ -47,6 +47,7 @@ function denseFixture(count: number): {
       })),
       topologicalOrder: ids,
       activeEdgeIds: [],
+      criticalEdgeIds: [],
       criticalProcedureIds: [],
       unknownDurationProcedureIds: [],
       completedCheckpoints: [],
@@ -274,7 +275,7 @@ describe("swimlane dense procedure columns", () => {
     }
   });
 
-  it("exposes only citation-backed sequence edges until a related card is selected", () => {
+  it("shows verified sequences and calculated bottleneck candidates with expandable modes", () => {
     const evaluation = evaluateProject(catalog.scenarios[0].answers);
     const schedule = evaluation.schedules.TYPICAL;
     const onSelect = vi.fn();
@@ -282,18 +283,43 @@ describe("swimlane dense procedure columns", () => {
       <Swimlane
         decisions={evaluation.decisions}
         schedule={schedule}
+        assessmentDate={catalog.scenarios[0].answers.assessmentDate}
         selectedId={null}
         onSelect={onSelect}
       />,
     );
     const grid = view.container.querySelector(".swimlane-grid");
+    expect(grid).toHaveAttribute("data-connector-mode", "CORE");
     expect(Number(grid?.getAttribute("data-evidence-edge-count"))).toBeGreaterThan(0);
+    expect(Number(grid?.getAttribute("data-bottleneck-edge-count"))).toBeGreaterThan(0);
+    expect(Number(grid?.getAttribute("data-visible-edge-count"))).toBeGreaterThan(
+      Number(grid?.getAttribute("data-evidence-edge-count")),
+    );
     expect(grid).toHaveAttribute("data-context-edge-count", "0");
+    expect(
+      screen.getByRole("list", { name: "현재 표시된 선후행 연결" }),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /법정 분류/ }));
+    expect(view.container.querySelector(".swimlane-grid")).toHaveAttribute(
+      "data-connector-mode",
+      "LEGAL",
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /전체 연결/ }));
+    const allGrid = view.container.querySelector(".swimlane-grid");
+    expect(allGrid).toHaveAttribute("data-connector-mode", "ALL");
+    expect(allGrid?.getAttribute("data-visible-edge-count")).toBe(
+      allGrid?.getAttribute("data-total-edge-count"),
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /핵심 병목/ }));
 
     view.rerender(
       <Swimlane
         decisions={evaluation.decisions}
         schedule={schedule}
+        assessmentDate={catalog.scenarios[0].answers.assessmentDate}
         selectedId="building-permit"
         onSelect={onSelect}
       />,

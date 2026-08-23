@@ -280,6 +280,52 @@ describe("deterministic four-state rules", () => {
     });
   });
 
+  it("keeps an explicitly non-matching exceptional rule neutral until its evidence is confirmed", () => {
+    const procedure = {
+      ...catalog.procedures.find((item) => item.id === "farmland-conversion-permit")!,
+      verificationStatus: "INTERNAL_REVIEWED" as const,
+    };
+    const baseRule = catalog.rules.find(
+      (item) => item.id === "rule-exp-farmland-conversion-permit",
+    )!;
+    const input = scenarioAnswersToProjectInput({
+      ...catalog.scenarios[2].answers,
+      landCategory: "FARMLAND",
+    });
+    const ruleWithMissingEvidence = {
+      ...baseRule,
+      status: "INTERNAL_REVIEWED" as const,
+      requiredInputs: [...baseRule.requiredInputs, "site.restrictedFactors"],
+    };
+
+    const indeterminate = resolveProcedure(
+      procedure,
+      [ruleWithMissingEvidence],
+      input,
+      "test",
+    );
+    const nonMatch = resolveProcedure(
+      procedure,
+      [{ ...ruleWithMissingEvidence, missingPolicy: "NON_MATCH" as const }],
+      input,
+      "test",
+    );
+
+    expect(indeterminate).toMatchObject({
+      status: "NEEDS_MORE_INFO",
+      missingInputs: ["site.restrictedFactors"],
+    });
+    expect(nonMatch).toMatchObject({
+      status: "DOES_NOT_APPLY",
+      missingInputs: [],
+      provisionalEffect: "EXCLUDE",
+    });
+    expect(nonMatch.traces[0]).toMatchObject({
+      status: "DOES_NOT_APPLY",
+      missingInputs: [],
+    });
+  });
+
   it("keeps a false condition excluded even when another required input is unknown", () => {
     const procedure = {
       ...catalog.procedures.find((item) => item.id === "farmland-conversion-permit")!,

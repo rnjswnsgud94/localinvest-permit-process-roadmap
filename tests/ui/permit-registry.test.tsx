@@ -23,7 +23,9 @@ describe("permit registry", () => {
     expect(screen.getByRole("status")).toHaveTextContent(
       `전체 ${catalog.procedures.length}개 중 ${catalog.procedures.length}개 절차`,
     );
-    expect(screen.getByRole("list", { name: /전체 124개 중 124개 절차/ }))
+    expect(screen.getByRole("list", {
+      name: new RegExp(`전체 ${catalog.procedures.length}개 중 ${catalog.procedures.length}개 절차`),
+    }))
       .toBeInTheDocument();
     expect(screen.getAllByRole("button", { name: /상세 보기$/ })).toHaveLength(
       catalog.procedures.length,
@@ -52,7 +54,7 @@ describe("permit registry", () => {
     fireEvent.change(screen.getByRole("combobox", { name: "기간 상태" }), {
       target: { value: "NO_NATIONWIDE_TOTAL" },
     });
-    expect(screen.getByRole("status")).toHaveTextContent("전체 124개 중 4개 절차");
+    expect(screen.getByRole("status")).toHaveTextContent("전체 145개 중 17개 절차");
     expect(screen.queryByRole("button", { name: "AI 데이터센터 인허가 일괄처리 결과 상세 보기" }))
       .not.toBeInTheDocument();
 
@@ -67,12 +69,12 @@ describe("permit registry", () => {
     fireEvent.change(screen.getByRole("combobox", { name: "분야" }), {
       target: { value: "AI 데이터센터" },
     });
-    expect(screen.getByRole("status")).toHaveTextContent("전체 124개 중 3개 절차");
+    expect(screen.getByRole("status")).toHaveTextContent("전체 145개 중 3개 절차");
 
     fireEvent.change(screen.getByRole("combobox", { name: "자료 검토 상태" }), {
       target: { value: "INTERNAL_REVIEWED" },
     });
-    expect(screen.getByRole("status")).toHaveTextContent("전체 124개 중 3개 절차");
+    expect(screen.getByRole("status")).toHaveTextContent("전체 145개 중 3개 절차");
   });
 
   it("treats the AI data center Act period as current only on and after its effective date", () => {
@@ -82,7 +84,7 @@ describe("permit registry", () => {
       target: { value: "NO_NATIONWIDE_TOTAL" },
     });
 
-    expect(screen.getByRole("status")).toHaveTextContent("전체 124개 중 6개 절차");
+    expect(screen.getByRole("status")).toHaveTextContent("전체 145개 중 20개 절차");
     const result = screen.getByRole("button", {
       name: "AI 데이터센터 인허가 일괄처리 결과 상세 보기",
     });
@@ -100,7 +102,7 @@ describe("permit registry", () => {
 
     fireEvent.keyDown(search, { key: "Escape" });
     expect(search).toHaveValue("");
-    expect(screen.getByRole("status")).toHaveTextContent("전체 124개 중 124개 절차");
+    expect(screen.getByRole("status")).toHaveTextContent("전체 145개 중 145개 절차");
 
     const clearButton = screen.getByRole("button", { name: "검색어 지우기" });
     expect(clearButton).toBeDisabled();

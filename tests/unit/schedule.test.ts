@@ -117,6 +117,7 @@ describe("business-day DAG and critical path", () => {
 
     expect(result.total).toBe(7);
     expect(result.criticalProcedureIds).toEqual(["a", "c"]);
+    expect(result.criticalEdgeIds).toEqual(["a-c"]);
     expect(result.nodes.find((node) => node.procedureId === "b")?.slack).toBe(2);
   });
 
@@ -131,6 +132,22 @@ describe("business-day DAG and critical path", () => {
 
     expect(calculateSchedule({ ...common, scenario: "MIN" }).total).toBe(7);
     expect(calculateSchedule({ ...common, scenario: "TYPICAL" }).total).toBe(20);
+  });
+
+  it("identifies binding start-to-start and finish-to-finish critical edges", () => {
+    const result = calculateSchedule({
+      decisions: decisions(["anchor", "parallel", "finish-together"]),
+      edges: [
+        edge("ss", "anchor", "parallel", { relation: "START_TO_START" }),
+        edge("ff", "anchor", "finish-together", { relation: "FINISH_TO_FINISH" }),
+      ],
+      durations: durations({ anchor: 5, parallel: 5, "finish-together": 3 }),
+      scenario: "TYPICAL",
+      includeConditional: true,
+      includePractical: true,
+    });
+
+    expect(result.criticalEdgeIds).toEqual(["ff", "ss"]);
   });
 
   it("marks a missing official duration as an incomplete partial path", () => {
@@ -181,6 +198,7 @@ describe("business-day DAG and critical path", () => {
     expect(result.nodes.find((node) => node.procedureId === "minister-request")?.wave).toBe(0);
     expect(result.nodes.find((node) => node.procedureId === "later-permit")?.wave).toBe(1);
     expect(result.total).toBe(5);
+    expect(result.criticalEdgeIds).toEqual([]);
   });
 
   it("activates a conditioned edge only when its rule matched", () => {

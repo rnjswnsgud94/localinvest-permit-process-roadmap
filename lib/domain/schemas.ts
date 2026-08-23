@@ -138,6 +138,7 @@ export const projectInputSchema = z.object({
   confirmation: z.object({
     forestRestorationObligation: factSchema,
     supplementalPermitTargets: z.record(z.string(), factSchema),
+    specialLawProcessTokens: z.record(z.string(), factSchema),
     fireWorkSupervisionTarget: factSchema,
     firstFireSelfInspectionTarget: factSchema,
     highPressureGasBusinessStartTarget: factSchema,
@@ -301,7 +302,7 @@ export const applicabilityRuleSchema = z.object({
   }),
   condition: conditionSchema,
   requiredInputs: z.array(z.string()),
-  missingPolicy: z.literal("INDETERMINATE"),
+  missingPolicy: z.enum(["INDETERMINATE", "NON_MATCH"]),
   citationIds: z.array(z.string()),
   explanationTemplate: z.string(),
   priority: z.number().int(),

@@ -57,6 +57,29 @@ export interface ElisJurisdictionTarget {
   listUrl: string;
 }
 
+export interface ElisTransitionalJurisdictionTarget
+  extends ElisJurisdictionTarget {
+  notice: string;
+  legalBasisUrl: string;
+}
+
+/**
+ * Reject ordinance-list titles that are not a current, generally applicable
+ * ordinance for the dashboard's factory-site review categories.
+ */
+export function isOrdinanceReviewTitleCandidate(title: string): boolean {
+  const candidate = title
+    .normalize("NFKC")
+    .replace(/[\s·ㆍ・,.'’‘"“”()（）\-_/]/g, "")
+    .toLowerCase();
+  if (/(?:일부|전부)개정(?:조례|규칙)(?:안)?|폐지(?:조례|규칙)(?:안)?/.test(candidate)) {
+    return false;
+  }
+  if (candidate.includes("이륜자동차")) return false;
+  if (/축사.*악취|악취.*축사/.test(candidate)) return false;
+  return true;
+}
+
 interface MunicipalityDirectoryEntry {
   name: string;
   elisMunicipalityCode: string | null;
@@ -275,7 +298,7 @@ export const officialLocalOrdinanceDirectorySource = {
   title: "행정안전부 자치법규정보시스템 자치단체별 자치법규",
   url: "https://www.elis.go.kr/locgovalr/locgovClAlrList",
   guideUrl: "https://www.elis.go.kr/sysinfo/guide",
-  reviewedAt: "2026-08-21",
+  reviewedAt: "2026-08-23",
   coverageNote:
     "관할 링크는 전체 현행 목록으로 이동하며, 대시보드의 지역기준 카드는 실제 관련 조례 상세 원문을 별도로 조회합니다.",
 } as const;
@@ -403,6 +426,51 @@ export function getElisJurisdictionTargets(
     .map((link) => ({ name: link.name, level: link.level, listUrl: link.url }));
 }
 
+const formerGwangjuDistricts = new Set([
+  "동구",
+  "서구",
+  "남구",
+  "북구",
+  "광산구",
+]);
+
+/**
+ * The 2026 integrated city keeps former Gwangju/Jeonnam ordinances in force
+ * for their former territories until replacement ordinances are enacted.
+ * These are deliberately returned as labelled list fallbacks, not as a claim
+ * that any individual legacy ordinance applies to the selected parcel.
+ */
+export function getElisTransitionalJurisdictionTargets(
+  provinceName: string,
+  municipalityName = "",
+): readonly ElisTransitionalJurisdictionTarget[] {
+  const province = findProvince(provinceName);
+  if (province?.name !== "전남광주통합특별시") return [];
+
+  const selected = findMunicipality(province, municipalityName);
+  const selectedName = selected?.name ?? "";
+  if (!selectedName) return [];
+  const legacyAreas = formerGwangjuDistricts.has(selectedName)
+      ? (["GWANGJU"] as const)
+      : (["JEONNAM"] as const);
+  const legalBasisUrl =
+    "https://www.law.go.kr/법령/전남광주통합특별시설치를위한특별법";
+
+  return legacyAreas.map((area) => ({
+    name: area === "GWANGJU" ? "종전 광주광역시" : "종전 전라남도",
+    level: "PROVINCE" as const,
+    listUrl: buildElisJurisdictionListUrl(
+      area === "GWANGJU" ? "29" : "46",
+      "000",
+    ),
+    notice:
+      area === "GWANGJU"
+        ? "통합 전 광주광역시 권역에 한해 종전 조례의 경과 적용 여부를 확인합니다."
+        : "통합 전 전라남도 권역에 한해 종전 조례의 경과 적용 여부를 확인합니다.",
+    legalBasisUrl,
+  }));
+}
+
 export function buildElisOrdinanceDetailUrl(
   _ordinanceName: string,
   alrNo: string,
@@ -454,7 +522,13 @@ export const localOrdinanceReviewCategories: readonly LocalOrdinanceReviewCatego
     title: "도시계획·개발행위 기준",
     scope: "PROVINCE_AND_MUNICIPALITY",
     searchTerms: ["도시계획 조례", "개발행위", "공장", "경사도", "입목축적"],
-    ordinanceNamePatterns: ["도시·군계획 조례", "도시계획 조례", "군계획 조례"],
+    ordinanceNamePatterns: [
+      "도시·군계획 조례",
+      "도시계획 조례",
+      "군계획 조례",
+      "장흥군 관리계획 조례",
+      "무안군 관리계획 조례",
+    ],
     affects:
       "용도지역별 공장 건축 가능 여부와 개발행위허가의 경사도·표고·입목·도로 등 입지 심사기준",
     reviewPoint:
@@ -494,7 +568,19 @@ export const localOrdinanceReviewCategories: readonly LocalOrdinanceReviewCatego
     title: "부설주차장 설치기준",
     scope: "PROVINCE_AND_MUNICIPALITY",
     searchTerms: ["주차장 조례", "부설주차장", "공장", "시설면적"],
-    ordinanceNamePatterns: ["주차장 조례", "주차장 설치 및 관리 조례", "부설주차장 설치비용"],
+    ordinanceNamePatterns: [
+      "주차장 조례",
+      "주차장 설치 및 관리 조례",
+      "부설주차장 설치비용",
+      "영광군 주차장 설치 및 관리운영 조례",
+      "영동군 주차장 운영 조례",
+      "논산시 주차장 설치 및 사용료 징수 조례",
+      "금산군 주차장 설치 및 사용료 징수 조례",
+      "계룡시 주차장 설치 조례",
+      "예산군 주차장 설치 조례",
+      "청양군 주차장 설치 조례",
+      "홍성군 주차장설치 조례",
+    ],
     affects: "공장 면적에 따른 부설주차장 대수, 설치제한지역과 인근 설치 범위",
     reviewPoint:
       "건축물 용도와 시설면적을 조례 별표의 공장 설치기준에 적용합니다.",
@@ -533,7 +619,11 @@ export const localOrdinanceReviewCategories: readonly LocalOrdinanceReviewCatego
     title: "경관심의 기준",
     scope: "PROVINCE_AND_MUNICIPALITY",
     searchTerms: ["경관 조례", "경관심의", "건축물", "개발사업"],
-    ordinanceNamePatterns: ["경관 조례"],
+    ordinanceNamePatterns: [
+      "경관 조례",
+      "경관관리 조례",
+      "경관 및 공공디자인 조례",
+    ],
     affects: "지역별 경관심의·자문 대상, 제출자료와 심의시점",
     reviewPoint:
       "경관계획·중점경관관리구역, 공장 규모·높이와 조례가 추가한 심의대상을 확인합니다.",
@@ -549,11 +639,11 @@ export const localOrdinanceReviewCategories: readonly LocalOrdinanceReviewCatego
   },
   {
     id: "air-water-standards",
-    title: "지역 대기·수질 배출기준",
+    title: "지역 대기·수질 기준·환경정책",
     scope: "PROVINCE_AND_MUNICIPALITY",
     searchTerms: ["대기환경 조례", "배출허용기준", "수질환경 조례", "엄격한 배출허용기준"],
     ordinanceNamePatterns: ["대기환경", "수질환경", "배출허용기준"],
-    affects: "국가 기준보다 강화된 지역 대기·폐수 배출허용기준과 적용시기",
+    affects: "강화된 지역 배출기준이 있는지와 대기·수질 환경정책 조례가 추가하는 협의·지원·관리사항",
     reviewPoint:
       "배출물질·농도·시설종류와 시·도 또는 대도시 조례의 강화기준·적용지역을 대조합니다.",
     legalBasis: [
@@ -569,7 +659,7 @@ export const localOrdinanceReviewCategories: readonly LocalOrdinanceReviewCatego
       },
     ],
     limitation:
-      "강화조례가 없는 지역도 있으며, 대도시 권한과 시설별 국가 고시·특별대책지역 기준을 함께 확인합니다.",
+      "조례 제목에 대기·수질이 포함돼도 강화 배출기준을 뜻하지 않을 수 있습니다. 별표의 수치기준과 위임근거를 확인한 경우에만 지역 강화기준으로 적용합니다.",
   },
   {
     id: "sewerage-wastewater-cost",
@@ -581,6 +671,7 @@ export const localOrdinanceReviewCategories: readonly LocalOrdinanceReviewCatego
       "하수도 사용조례",
       "하수도 원인자부담금",
       "하수도 조례",
+      "하수도 설치 및 관리 조례",
       "공공폐수처리시설 운영",
       "공공폐수처리시설 비용부담",
       "폐수종말처리시설 운영",
@@ -609,6 +700,10 @@ export const localOrdinanceReviewCategories: readonly LocalOrdinanceReviewCatego
       "수도급수 조례",
       "상수도 원인자부담금",
       "수도 원인자부담금",
+      "수도시설 원인자부담금",
+      "수도시설의 원인자부담금",
+      "수도급수 및 상수도특별회계 설치 조례",
+      "수도급수 및 상수도 특별회계 설치 조례",
       "상수도 조례",
     ],
     affects: "급수공사 승인·준공검사, 시설분담금·원인자부담금과 대규모 수요 협의",
@@ -632,9 +727,20 @@ export const localOrdinanceReviewCategories: readonly LocalOrdinanceReviewCatego
     ordinanceNamePatterns: [
       "문화유산 보호 조례",
       "문화유산의 보존 및 활용에 관한 조례",
+      "문화유산 보존 및 활용에 관한 조례",
       "문화유산 보존 및 활용 조례",
+      "문화유산보호관리 조례",
+      "국가유산 보호관리 조례",
+      "문화유산 및 자연유산 보호 조례",
       "향토문화유산 보호 조례",
+      "향토문화유산 보호",
       "향토유산 보호 조례",
+      "향토유산 보호",
+      "향토문화재 보호",
+      "향토문화유적 보호",
+      "향토유산 발굴 및 보호",
+      "향토유산 보존 및 활용",
+      "향토유산 조례",
       "문화재 보호 조례",
       "자연유산의 보존 및 활용에 관한 조례",
       "역사문화환경 보존",

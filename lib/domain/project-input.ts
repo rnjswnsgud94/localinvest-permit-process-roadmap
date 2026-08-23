@@ -90,6 +90,58 @@ function planSpecialLawTokens({
   ];
 }
 
+function fastTrackProcessFact({
+  qualificationConfirmed,
+  applicantRoleConfirmed,
+  delayRiskConfirmed,
+  committeeResolved,
+  requestDate,
+  effectiveFrom,
+  assessmentDate,
+  targetPermitIds,
+  tokens,
+}: {
+  qualificationConfirmed: boolean | null;
+  applicantRoleConfirmed: boolean | null;
+  delayRiskConfirmed: boolean | null;
+  committeeResolved: boolean | null;
+  requestDate: string | null;
+  effectiveFrom: string;
+  assessmentDate: string;
+  targetPermitIds: readonly string[];
+  tokens: string[];
+}): Fact {
+  const confirmations = [
+    qualificationConfirmed,
+    applicantRoleConfirmed,
+    delayRiskConfirmed,
+    committeeResolved,
+  ];
+  if (confirmations.some((value) => value === false)) return known([]);
+
+  const requestDateIsValid =
+    requestDate !== null &&
+    requestDate >= effectiveFrom &&
+    requestDate <= assessmentDate;
+  if (
+    confirmations.every((value) => value === true) &&
+    requestDateIsValid &&
+    targetPermitIds.length > 0
+  ) {
+    return known(tokens);
+  }
+  if (requestDate !== null && !requestDateIsValid) return known([]);
+  return unknown();
+}
+
+function planProcessFact(
+  qualificationConfirmed: boolean | null,
+  tokens: string[],
+): Fact {
+  if (qualificationConfirmed === null) return unknown();
+  return qualificationConfirmed ? known(tokens) : known([]);
+}
+
 export function scenarioAnswersToProjectInput(
   answers: ScenarioAnswers,
   fastTrackTargetProcedures: readonly Pick<
@@ -372,9 +424,45 @@ export function scenarioAnswersToProjectInput(
             ? known(true)
             : answers.supplementalPermitReviewedIds.includes(procedureId)
               ? known(false)
-              : unknown(),
+          : unknown(),
         ]),
       ),
+      specialLawProcessTokens: {
+        ADVANCED_STRATEGIC_INDUSTRY_FAST_TRACK: fastTrackProcessFact({
+          qualificationConfirmed: answers.advancedStrategicIndustryFastTrackConfirmed,
+          applicantRoleConfirmed: answers.advancedStrategicIndustryApplicantRoleConfirmed,
+          delayRiskConfirmed: answers.advancedStrategicIndustryDelayRiskConfirmed,
+          committeeResolved: answers.advancedStrategicIndustryCommitteeResolved,
+          requestDate: answers.advancedStrategicIndustryMinisterRequestDate,
+          effectiveFrom: "2023-07-01",
+          assessmentDate: answers.assessmentDate,
+          targetPermitIds: advancedStrategicIndustryFastTrackPermitIds,
+          tokens: advancedStrategicIndustryFastTrackTokens,
+        }),
+        SEMICONDUCTOR_CLUSTER_FAST_TRACK: fastTrackProcessFact({
+          qualificationConfirmed: answers.semiconductorClusterFastTrackConfirmed,
+          applicantRoleConfirmed: answers.semiconductorClusterApplicantRoleConfirmed,
+          delayRiskConfirmed: answers.semiconductorClusterDelayRiskConfirmed,
+          committeeResolved: answers.semiconductorClusterCommitteeResolved,
+          requestDate: answers.semiconductorClusterMinisterRequestDate,
+          effectiveFrom: "2026-08-11",
+          assessmentDate: answers.assessmentDate,
+          targetPermitIds: semiconductorClusterFastTrackPermitIds,
+          tokens: semiconductorClusterFastTrackTokens,
+        }),
+        SEMICONDUCTOR_CLUSTER_PLAN_DEEMING: planProcessFact(
+          answers.semiconductorClusterPlanDeemingConfirmed,
+          semiconductorClusterPlanTokens,
+        ),
+        INDUSTRIAL_COMPLEX_PLAN_INTEGRATED_APPROVAL: planProcessFact(
+          answers.industrialComplexPlanSpecialCaseConfirmed,
+          industrialComplexPlanTokens,
+        ),
+        REGIONAL_SPECIAL_ZONE_PLAN_DEEMING: planProcessFact(
+          answers.regionalSpecialZonePlanDeemingConfirmed,
+          regionalSpecialZonePlanTokens,
+        ),
+      },
       fireWorkSupervisionTarget: nullableFact(answers.fireWorkSupervisionTarget),
       firstFireSelfInspectionTarget: nullableFact(answers.firstFireSelfInspectionTarget),
       highPressureGasBusinessStartTarget: nullableFact(answers.highPressureGasBusinessStartTarget),

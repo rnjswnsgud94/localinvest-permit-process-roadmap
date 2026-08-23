@@ -245,8 +245,12 @@ function traceRule(rule: ApplicabilityRule, input: ProjectInput): RuleTrace {
       (path) => resolveFact(input, path).state === "UNKNOWN",
     ),
   ]);
+  const missingFactsAreNonMatch =
+    missingInputs.length > 0 && rule.missingPolicy === "NON_MATCH";
   const status: ApplicabilityStatus =
-    trace.truth === "TRUE"
+    missingFactsAreNonMatch
+      ? "DOES_NOT_APPLY"
+      : trace.truth === "TRUE"
       ? missingInputs.length
         ? "NEEDS_MORE_INFO"
         : "APPLIES"
@@ -259,7 +263,7 @@ function traceRule(rule: ApplicabilityRule, input: ProjectInput): RuleTrace {
     procedureId: rule.procedureId,
     status,
     usedInputs: trace.usedInputs,
-    missingInputs,
+    missingInputs: missingFactsAreNonMatch ? [] : missingInputs,
     passedConditions: trace.passedConditions,
     failedConditions: trace.failedConditions,
     citationIds: rule.citationIds,

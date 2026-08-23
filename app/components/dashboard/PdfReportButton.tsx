@@ -84,7 +84,7 @@ export function PdfReportButton({
         {status === "GENERATING" ? "보고서 생성 중" : "결과보고서 다운로드"}
       </button>
       <span id="pdf-report-help" className="sr-only">
-        현재 입력값, 판정결과, 공식 처리기간, 일정, 특별법과 법령 근거를 A4 세로 본문과 A3 가로 전체 순서도로 구성한 PDF로 다운로드합니다.
+        현재 입력값, 판정결과, 공식 처리기간, 일정, 핵심 병목, 특별법, 지역 조례와 법령 근거를 A4 세로 본문과 A3 가로 전체 순서도로 구성한 PDF로 다운로드합니다.
       </span>
       {message ? (
         <span

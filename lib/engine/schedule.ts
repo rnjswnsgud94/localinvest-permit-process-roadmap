@@ -177,6 +177,8 @@ export type ScheduleResult = {
   nodes: ScheduleNode[];
   topologicalOrder: string[];
   activeEdgeIds: string[];
+  /** Business-day relations that actively bind consecutive critical nodes. */
+  criticalEdgeIds: string[];
   criticalProcedureIds: string[];
   unknownDurationProcedureIds: string[];
   /** Validated past events that stay visible even when no dated construction plan exists. */
@@ -1256,6 +1258,29 @@ export function calculateSchedule({
       parallel: (countByWave.get(nodeWave) ?? 0) > 1,
     } satisfies ScheduleNode;
   });
+  const nodeByProcedureId = new Map(
+    nodes.map((node) => [node.procedureId, node]),
+  );
+  const criticalEdgeIds = activeEdges
+    .filter((edge) => {
+      const source = nodeByProcedureId.get(edge.from);
+      const target = nodeByProcedureId.get(edge.to);
+      if (!source?.critical || !target?.critical) return false;
+      if (edge.relation === "FINISH_TO_START") {
+        return Math.abs(
+          target.earliestStart - (source.earliestFinish + edge.lag),
+        ) < 1e-9;
+      }
+      if (edge.relation === "START_TO_START") {
+        return Math.abs(
+          target.earliestStart - (source.earliestStart + edge.lag),
+        ) < 1e-9;
+      }
+      return Math.abs(
+        target.earliestFinish - (source.earliestFinish + edge.lag),
+      ) < 1e-9;
+    })
+    .map((edge) => edge.id);
 
   const warnings: string[] = [];
   if (unknownDurationProcedureIds.length) {
@@ -1302,6 +1327,7 @@ export function calculateSchedule({
     nodes,
     topologicalOrder: order,
     activeEdgeIds: effectiveEdges.map((edge) => edge.id),
+    criticalEdgeIds,
     criticalProcedureIds: nodes.filter((node) => node.critical).map((node) => node.procedureId),
     unknownDurationProcedureIds,
     completedCheckpoints,

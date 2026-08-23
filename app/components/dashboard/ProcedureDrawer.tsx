@@ -6,6 +6,10 @@ import { actionLabels, inputLabel, laneLabels, stageLabels } from "@/app/compone
 import { LawApiVerifier } from "@/app/components/dashboard/LawApiVerifier";
 import { StatusBadge } from "@/app/components/dashboard/StatusBadge";
 import { catalog } from "@/lib/data/catalog";
+import {
+  isVerifiedLegalSequence,
+  verifiedSequenceCitationIds,
+} from "@/lib/data/edge-evidence";
 import type { ProcedureDecision } from "@/lib/engine/rule-engine";
 import type { ScheduleResult } from "@/lib/engine/schedule";
 import {
@@ -165,9 +169,15 @@ const citationRoleLabels: Record<string, string> = {
   SUBMISSION: "제출자료",
 };
 
-export function ProcedureDrawer({ decision, schedule, onClose }: {
+export function ProcedureDrawer({
+  decision,
+  schedule,
+  assessmentDate = catalog.coverage.assessmentDefault,
+  onClose,
+}: {
   decision: ProcedureDecision | null;
   schedule: ScheduleResult;
+  assessmentDate?: string;
   onClose: () => void;
 }) {
   const drawerRef = useRef<HTMLElement>(null);
@@ -231,6 +241,11 @@ export function ProcedureDrawer({ decision, schedule, onClose }: {
     (item) => item.procedureId === procedure.id,
   );
   const relatedEdges = catalog.edges.filter((edge) => edge.from === procedure.id || edge.to === procedure.id);
+  const sequenceCitationIds = verifiedSequenceCitationIds({
+    citations: catalog.citations,
+    sources: catalog.legalSources,
+    assessmentDate,
+  });
   const decisionCitationIds = [...new Set([
     ...procedure.citationIds,
     ...decision.traces.flatMap((trace) => trace.citationIds),
@@ -301,13 +316,15 @@ export function ProcedureDrawer({ decision, schedule, onClose }: {
             const other = catalog.procedures.find((item) => item.id === otherId)?.name ?? otherId;
             const direction = edge.from === procedure.id ? "후속" : "선행";
             const relation = edge.relation === "FINISH_TO_START" ? "완료 후 시작" : edge.relation === "START_TO_START" ? "병행 시작" : "완료 연계";
-            const strength = edge.strength === "LEGAL_HARD"
-              ? edge.citationIds.length
-                ? "법정 근거 연결"
-                : "근거 미연결 선행"
-              : edge.strength === "PRACTICAL"
-                ? "실무"
-                : "권고";
+            const strength = isVerifiedLegalSequence(edge, sequenceCitationIds)
+              ? "선후행 조문 연결"
+              : edge.strength === "LEGAL_HARD"
+                ? edge.citationIds.length
+                  ? "법정 분류 · 선후행 조문 보강"
+                  : "법정 분류 · 관계근거 미연결"
+                : edge.strength === "PRACTICAL"
+                  ? "실무 연결"
+                  : "참고 연결";
             return <li key={edge.id}><strong>{direction} · {strength}</strong> — {other} ({relation}{edge.lag ? ` + ${edge.lag} ${lagUnitLabels[edge.lagUnit]}` : ""})</li>;
           })}</ul> : <p>현재 카탈로그에 직접 연결된 선후행 관계가 없습니다.</p>}
         </section>

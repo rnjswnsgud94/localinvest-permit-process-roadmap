@@ -11,7 +11,9 @@ import {
   getVisibleProjectInputSections,
 } from "@/app/components/dashboard/ScenarioPicker";
 import { catalog, type ScenarioAnswers } from "@/lib/data/catalog";
+import { verifiedSequenceCitationIds } from "@/lib/data/edge-evidence";
 import type { SpecialLawEffect } from "@/lib/data/special-laws";
+import { coreFlowEdges, describeFlowEdges } from "@/lib/engine/flow-edges";
 import type { evaluateProject } from "@/lib/engine/pipeline";
 import type { DurationScenario, ScheduleResult } from "@/lib/engine/schedule";
 import {
@@ -19,6 +21,18 @@ import {
   formatResolvedOfficialDurationSummary,
   formatTimelineProcessingDuration,
 } from "@/lib/format-duration";
+import {
+  getReviewedElisOrdinanceRecords,
+  reviewedElisSnapshotCheckedAt,
+} from "@/lib/regions/elis-reviewed-snapshot";
+import { getTransitionalElisOrdinanceRecords } from "@/lib/regions/elis-transitional-records";
+import {
+  getElisJurisdictionTargets,
+  getElisTransitionalJurisdictionTargets,
+  getOfficialLocalOrdinanceLinks,
+  localOrdinanceReviewCategories,
+} from "@/lib/regions/local-ordinances";
+import { matchOrdinancesToCategories } from "@/lib/regions/ordinance-resolution";
 
 type ProjectEvaluation = ReturnType<typeof evaluateProject>;
 
@@ -114,6 +128,16 @@ export type PermitReportModel = {
         timingSource: "OFFICIAL" | "USER_EXPECTED" | null;
       }>;
     }>;
+    coreRelations: Array<{
+      id: string;
+      from: string;
+      to: string;
+      relation: string;
+      evidence: string;
+      bottleneck: boolean;
+      binding: boolean;
+      note: string;
+    }>;
   };
   specialLaws: Array<{
     title: string;
@@ -150,6 +174,35 @@ export type PermitReportModel = {
     input: string;
     affectedProcedures: string[];
   }>;
+  localOrdinances: {
+    checkedAt: string;
+    notice: string | null;
+    transitionBasisLinks: Array<{
+      name: string;
+      url: string;
+      note: string;
+    }>;
+    categories: Array<{
+      id: string;
+      title: string;
+      affects: string;
+      reviewPoint: string;
+      limitation: string;
+      ordinances: Array<{
+        name: string;
+        level: "PROVINCE" | "MUNICIPALITY";
+        jurisdictionName: string;
+        url: string;
+        amendmentDate: string | null;
+        transitionNotice: string | null;
+      }>;
+      fallbackLinks: Array<{
+        name: string;
+        url: string;
+        note: string;
+      }>;
+    }>;
+  };
   excluded: string[];
   legalSources: Array<{
     title: string;
@@ -248,6 +301,122 @@ function buildMilestones(answers: ScenarioAnswers, schedule: ScheduleResult) {
       ? [{ label: "가동 후 절차 완료", value: timeline.postOperationCompletionDate }]
       : []),
   ];
+}
+
+function buildLocalOrdinanceSummary(
+  answers: ScenarioAnswers,
+): PermitReportModel["localOrdinances"] {
+  const links = getOfficialLocalOrdinanceLinks(answers.province, answers.city);
+  if (!links.province) {
+    return {
+      checkedAt: reviewedElisSnapshotCheckedAt,
+      notice: links.notice,
+      transitionBasisLinks: [],
+      categories: [],
+    };
+  }
+
+  const jurisdictionTargets = getElisJurisdictionTargets(
+    answers.province,
+    answers.city,
+  );
+  const transitionalTargets = getElisTransitionalJurisdictionTargets(
+    answers.province,
+    answers.city,
+  );
+  const reviewedRecords = jurisdictionTargets.flatMap((target) =>
+    getReviewedElisOrdinanceRecords(
+      links.province?.name ?? answers.province,
+      target.name,
+      target.level,
+    ),
+  );
+  const currentByCategory = new Map(
+    matchOrdinancesToCategories(reviewedRecords).map((item) => [
+      item.categoryId,
+      item.ordinances,
+    ]),
+  );
+  const transitionalByCategory = new Map(
+    matchOrdinancesToCategories(
+      getTransitionalElisOrdinanceRecords(answers.province, answers.city),
+    ).map((item) => [
+      item.categoryId,
+      item.ordinances,
+    ]),
+  );
+
+  return {
+    checkedAt: reviewedElisSnapshotCheckedAt,
+    notice: links.notice,
+    transitionBasisLinks: transitionalTargets.map((target) => ({
+      name: `${target.name} 조례 경과조치 근거`,
+      url: target.legalBasisUrl,
+      note: target.notice,
+    })),
+    categories: localOrdinanceReviewCategories.map((category) => {
+      const currentOrdinances = currentByCategory.get(category.id) ?? [];
+      const transitionalOrdinances = currentOrdinances.some(
+        (ordinance) => ordinance.level === "PROVINCE",
+      )
+        ? []
+        : transitionalByCategory.get(category.id) ?? [];
+      const ordinances = [...currentOrdinances, ...transitionalOrdinances].filter(
+        (ordinance, index, list) =>
+          list.findIndex(
+            (candidate) =>
+              candidate.level === ordinance.level &&
+              candidate.name === ordinance.name &&
+              candidate.url === ordinance.url,
+          ) === index,
+      );
+      const matchedJurisdictions = new Set(
+        ordinances.map(
+          (ordinance) => `${ordinance.level}|${ordinance.jurisdictionName}`,
+        ),
+      );
+      const fallbackTargets = [
+        ...jurisdictionTargets.map((target) => ({
+          ...target,
+          notice: "정확히 일치하는 조례가 없을 때 확인하는 관할 전체 목록",
+        })),
+        ...(currentOrdinances.some((ordinance) => ordinance.level === "PROVINCE")
+          ? []
+          : transitionalTargets),
+      ]
+        .filter((target) =>
+          category.scope === "PROVINCE"
+            ? target.level === "PROVINCE"
+            : category.scope === "MUNICIPALITY"
+              ? target.level === "MUNICIPALITY"
+              : true,
+        )
+        .filter(
+          (target) =>
+            !matchedJurisdictions.has(`${target.level}|${target.name}`),
+        );
+      return {
+        id: category.id,
+        title: category.title,
+        affects: category.affects,
+        reviewPoint: category.reviewPoint,
+        limitation: category.limitation,
+        ordinances: ordinances.map((ordinance) => ({
+          name: ordinance.name,
+          level: ordinance.level,
+          jurisdictionName: ordinance.jurisdictionName,
+          url: ordinance.url,
+          amendmentDate: ordinance.amendmentDate,
+          transitionNotice: ordinance.transitionNotice ?? null,
+        })),
+        fallbackLinks: fallbackTargets.map((target) => ({
+          name: `${target.name} ELIS 현행 목록`,
+          url: target.listUrl,
+          note: target.notice,
+        })),
+      };
+    }),
+  };
 }
 
 export function buildPermitReportModel({
@@ -419,6 +588,67 @@ export function buildPermitReportModel({
       left.input.localeCompare(right.input, "ko"),
     );
 
+  const scheduledProcedureIds = new Set(schedule.nodes.map((node) => node.procedureId));
+  const activeEdgeIds = new Set(schedule.activeEdgeIds);
+  const procedureById = new Map(catalog.procedures.map((procedure) => [procedure.id, procedure]));
+  const procedureStageById = new Map(
+    catalog.procedures.map((procedure) => [procedure.id, procedure.stage]),
+  );
+  const coreRelations = coreFlowEdges(
+    describeFlowEdges({
+      edges: catalog.edges.filter(
+        (edge) =>
+          activeEdgeIds.has(edge.id) &&
+          scheduledProcedureIds.has(edge.from) &&
+          scheduledProcedureIds.has(edge.to),
+      ),
+      scheduleNodes: schedule.nodes,
+      timelineNodes: schedule.projectTimeline?.nodes ?? [],
+      criticalEdgeIds: schedule.criticalEdgeIds,
+      procedureStageById,
+      unknownDurationProcedureIds: schedule.unknownDurationProcedureIds,
+      sequenceCitationIds: verifiedSequenceCitationIds({
+        citations: catalog.citations,
+        sources: catalog.legalSources,
+        assessmentDate: answers.assessmentDate,
+      }),
+    }),
+  )
+    .sort(
+      (left, right) =>
+        Number(right.bottleneckCandidate) - Number(left.bottleneckCandidate) ||
+        Number(right.binding) - Number(left.binding) ||
+        Number(right.verifiedSequence) - Number(left.verifiedSequence) ||
+        right.score - left.score ||
+        left.edge.id.localeCompare(right.edge.id),
+    )
+    .slice(0, 10)
+    .map((descriptor) => {
+      const edge = descriptor.edge;
+      const evidence = descriptor.evidence === "VERIFIED_LEGAL_SEQUENCE"
+        ? "법령 조문으로 확인된 선후행"
+        : descriptor.evidence === "REGISTERED_LEGAL_RELATION"
+          ? "법정 관계 · 조문 순서 추가 확인"
+          : descriptor.evidence === "PRACTICAL_RELATION"
+            ? "실무 선행관계"
+            : "참고 관계";
+      const relation = edge.relation === "FINISH_TO_START"
+        ? "완료 후 착수"
+        : edge.relation === "START_TO_START"
+          ? "착수 연동"
+          : "완료 연동";
+      return {
+        id: edge.id,
+        from: procedureById.get(edge.from)?.name ?? edge.from,
+        to: procedureById.get(edge.to)?.name ?? edge.to,
+        relation,
+        evidence,
+        bottleneck: descriptor.bottleneckCandidate,
+        binding: descriptor.binding,
+        note: edge.note,
+      };
+    });
+
   const flow: PermitReportModel["flow"] = {
     stages: stageOrder.map((stageId) => ({
       id: stageId,
@@ -439,6 +669,7 @@ export function buildPermitReportModel({
           timingSource: timelineNodeByProcedureId.get(procedure.id)?.durationSource ?? null,
         })),
     })),
+    coreRelations,
   };
 
   const selectedSpecialLawCitationIds = stableUnique([
@@ -552,6 +783,7 @@ export function buildPermitReportModel({
     specialLaws,
     procedures,
     gaps,
+    localOrdinances: buildLocalOrdinanceSummary(answers),
     excluded,
     legalSources,
     warnings: stableUnique([

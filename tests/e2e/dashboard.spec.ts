@@ -58,6 +58,20 @@ test("desktop result summary uses the available width without cramped copy", asy
     markerViewBox: "-1 -5 12 10",
   });
 
+  const flowGrid = page.locator(".swimlane-grid");
+  await expect(flowGrid).toHaveAttribute("data-connector-mode", "CORE");
+  await page.getByRole("button", { name: /법정 분류/ }).click();
+  await expect(flowGrid).toHaveAttribute("data-connector-mode", "LEGAL");
+  await page.getByRole("button", { name: /전체 연결/ }).click();
+  await expect(flowGrid).toHaveAttribute("data-connector-mode", "ALL");
+  const allEdgeCounts = await flowGrid.evaluate((element) => ({
+    visible: element.getAttribute("data-visible-edge-count"),
+    total: element.getAttribute("data-total-edge-count"),
+  }));
+  expect(allEdgeCounts.visible).toBe(allEdgeCounts.total);
+  await page.getByRole("button", { name: /핵심 병목/ }).click();
+  await expect(flowGrid).toHaveAttribute("data-connector-mode", "CORE");
+
   for (const lane of await page.locator(".lane-header").all()) await lane.click();
   await expect(page.locator('.lane-header[aria-expanded="false"]')).toHaveCount(
     await page.locator(".lane-header").count(),

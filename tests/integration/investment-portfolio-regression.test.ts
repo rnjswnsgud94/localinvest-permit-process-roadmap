@@ -1,9 +1,15 @@
+import { readFile } from "node:fs/promises";
+import { resolve } from "node:path";
+
+import { PDFDocument } from "pdf-lib";
 import { describe, expect, it } from "vitest";
 
 import {
   procedureCategoryForDecision,
   type ProcedureCategory,
 } from "@/app/components/dashboard/constants";
+import { renderPermitReportPdf } from "@/app/components/dashboard/pdf/generate-permit-report-pdf";
+import { buildPermitReportModel } from "@/app/components/dashboard/pdf/permit-report-model";
 import {
   catalog,
   scenarioAnswerSchema,
@@ -16,6 +22,11 @@ import {
 import { evaluateProject } from "@/lib/engine/pipeline";
 
 type Evaluation = ReturnType<typeof evaluateProject>;
+
+const reportFontsPromise = Promise.all([
+  readFile(resolve("public/fonts/nanum-gothic-coding/NanumGothicCoding-Regular.ttf")),
+  readFile(resolve("public/fonts/nanum-gothic-coding/NanumGothicCoding-Bold.ttf")),
+]).then(([regular, bold]) => ({ regular, bold }));
 
 type InvestmentRegressionCase = {
   name: string;
@@ -198,6 +209,12 @@ const cases: readonly InvestmentRegressionCase[] = [
         "business-waste-generator-report",
         "construction-waste-plan-report",
         "hazard-prevention-plan",
+        "odor-emission-facility-report",
+        "water-tank-installation-report",
+        "building-energy-saving-plan-review",
+        "elevator-installation-report",
+        "information-communication-design-confirmation",
+        "information-communication-pre-use-inspection",
       ],
     }),
     include: [
@@ -206,6 +223,13 @@ const cases: readonly InvestmentRegressionCase[] = [
       "water-facility-operation-start-report",
       "business-waste-generator-report",
       "hazard-prevention-plan",
+      "odor-emission-facility-report",
+      "water-tank-installation-report",
+      "building-energy-saving-plan-review",
+      "elevator-installation-report",
+      "elevator-installation-inspection",
+      "information-communication-design-confirmation",
+      "information-communication-pre-use-inspection",
       "factory-completion-report-complex",
     ],
     exclude: [
@@ -220,6 +244,8 @@ const cases: readonly InvestmentRegressionCase[] = [
       ["industrial-complex-occupancy-contract", "factory-completion-report-complex"],
       ["water-discharge-installation-permit", "water-facility-operation-start-report"],
       ["building-permit", "construction-start-report"],
+      ["construction-start-report", "information-communication-pre-use-inspection"],
+      ["information-communication-pre-use-inspection", "building-use-approval"],
       ["building-use-approval", "factory-completion-report-complex"],
     ],
     completionProcedureId: "factory-completion-report-complex",
@@ -281,6 +307,11 @@ const cases: readonly InvestmentRegressionCase[] = [
         "construction-waste-plan-report",
         "soil-contamination-facility-report",
         "hazard-prevention-plan",
+        "chemical-emission-reduction-plan-review",
+        "gas-pipeline-excavation-confirmation",
+        "information-communication-design-confirmation",
+        "information-communication-supervisor-assignment-report",
+        "building-structure-construction-report",
       ],
     }),
     include: [
@@ -293,9 +324,18 @@ const cases: readonly InvestmentRegressionCase[] = [
       "hazardous-chemical-facility-inspection",
       "hazardous-chemical-business-permit",
       "process-safety-report",
+      "chemical-emission-reduction-plan-review",
+      "gas-pipeline-excavation-confirmation",
+      "information-communication-design-confirmation",
+      "information-communication-supervisor-assignment-report",
+      "information-communication-supervision-result-submission",
+      "building-structure-construction-report",
       "factory-completion-report-complex",
     ],
-    exclude: ["factory-completion-report-offsite"],
+    exclude: [
+      "factory-completion-report-offsite",
+      "information-communication-pre-use-inspection",
+    ],
     deemed: [
       "factory-establishment-approval",
       "air-emission-installation-permit",
@@ -309,6 +349,8 @@ const cases: readonly InvestmentRegressionCase[] = [
       ["integrated-environmental-permit", "integrated-environmental-operation-start-report"],
       ["chemical-accident-prevention-plan", "hazardous-chemical-facility-inspection"],
       ["hazardous-chemical-facility-inspection", "hazardous-chemical-business-permit"],
+      ["information-communication-supervisor-assignment-report", "information-communication-supervision-result-submission"],
+      ["information-communication-supervision-result-submission", "building-use-approval"],
       ["industrial-complex-occupancy-contract", "factory-completion-report-complex"],
     ],
     completionProcedureId: "factory-completion-report-complex",
@@ -336,6 +378,7 @@ const cases: readonly InvestmentRegressionCase[] = [
       disasterImpactAssessmentType: "DISASTER_IMPACT",
       undergroundSafetyAssessmentType: "UNDERGROUND_SAFETY",
       nationalHeritageAssessmentType: "IMPACT_DIAGNOSIS",
+      publicWaterOccupationRequired: true,
       airEmissionFacility: true,
       airTotalManagementBusinessTarget: true,
       waterDischargeFacility: true,
@@ -363,6 +406,10 @@ const cases: readonly InvestmentRegressionCase[] = [
         "construction-waste-plan-report",
         "soil-contamination-facility-report",
         "hazard-prevention-plan",
+        "land-transaction-contract-permit",
+        "buried-heritage-excavation-permit",
+        "construction-quality-plan-submission",
+        "marine-use-impact-assessment",
       ],
     }),
     include: [
@@ -379,6 +426,14 @@ const cases: readonly InvestmentRegressionCase[] = [
       "hazardous-chemical-facility-inspection",
       "hazardous-chemical-business-permit",
       "hazard-prevention-plan",
+      "land-transaction-contract-permit",
+      "buried-heritage-excavation-permit",
+      "buried-heritage-excavation-investigation",
+      "construction-quality-plan-submission",
+      "marine-use-impact-assessment",
+      "public-water-occupation-use-permit",
+      "public-water-implementation-plan-approval-report",
+      "public-water-completion-inspection-report",
       "factory-completion-report-offsite",
     ],
     exclude: [
@@ -391,6 +446,8 @@ const cases: readonly InvestmentRegressionCase[] = [
     orderedPairs: [
       ["environmental-impact-assessment", "development-activity-permit"],
       ["farmland-conversion-permit", "development-activity-permit"],
+      ["buried-heritage-excavation-permit", "buried-heritage-excavation-investigation"],
+      ["buried-heritage-excavation-investigation", "construction-start-report"],
       ["chemical-accident-prevention-plan", "hazardous-chemical-facility-inspection"],
       ["hazardous-chemical-facility-inspection", "hazardous-chemical-business-permit"],
       ["building-use-approval", "factory-completion-report-offsite"],
@@ -484,6 +541,7 @@ const cases: readonly InvestmentRegressionCase[] = [
         "construction-waste-plan-report",
         "soil-contamination-facility-report",
         "hazard-prevention-plan",
+        "road-work-police-report",
       ],
     }),
     include: [
@@ -496,6 +554,7 @@ const cases: readonly InvestmentRegressionCase[] = [
       "hazardous-materials-facility-installation-permit",
       "hazardous-materials-facility-completion-inspection",
       "hazard-prevention-plan",
+      "road-work-police-report",
       "factory-completion-report-offsite",
     ],
     exclude: [
@@ -540,6 +599,8 @@ const cases: readonly InvestmentRegressionCase[] = [
         "business-waste-generator-report",
         "construction-waste-plan-report",
         "hazard-prevention-plan",
+        "pasture-conversion-permit",
+        "small-stream-occupation-permit",
       ],
     }),
     include: [
@@ -550,6 +611,8 @@ const cases: readonly InvestmentRegressionCase[] = [
       "environmental-impact-assessment",
       "disaster-impact-assessment-consultation",
       "river-occupation-permit",
+      "pasture-conversion-permit",
+      "small-stream-occupation-permit",
       "development-activity-permit",
       "air-emission-installation-permit",
       "water-discharge-installation-permit",
@@ -598,6 +661,7 @@ const cases: readonly InvestmentRegressionCase[] = [
         "nonpoint-source-installation-report",
         "business-waste-generator-report",
         "construction-waste-plan-report",
+        "marine-use-consultation",
       ],
     }),
     include: [
@@ -606,6 +670,7 @@ const cases: readonly InvestmentRegressionCase[] = [
       "public-water-occupation-use-permit",
       "public-water-implementation-plan-approval-report",
       "public-water-completion-inspection-report",
+      "marine-use-consultation",
       "factory-completion-report-complex",
     ],
     exclude: [
@@ -856,7 +921,7 @@ describe("ten reviewed investment portfolio regressions", () => {
     }
   });
 
-  it.each(cases)("$name", (scenario) => {
+  it.each(cases)("$name", async (scenario) => {
     const evaluation = evaluateProject(scenario.answers);
     const repeated = evaluateProject(scenario.answers);
     const schedule = evaluation.schedules.TYPICAL;
@@ -1055,5 +1120,57 @@ describe("ten reviewed investment portfolio regressions", () => {
         `${scenario.name}: ${lawId}`,
       ).toMatchObject({ id: lawId, status });
     }
-  });
+
+    const report = buildPermitReportModel({
+      answers: scenario.answers,
+      evaluation,
+      durationScenario: "TYPICAL",
+      generatedAt: new Date("2026-08-23T00:00:00.000Z"),
+    });
+    const expectedCounts = evaluation.decisions.reduce(
+      (counts, item) => {
+        counts[procedureCategoryForDecision(item)] += 1;
+        return counts;
+      },
+      { REQUIRED: 0, CONFIRM: 0, NOT_REQUIRED: 0 } as Record<ProcedureCategory, number>,
+    );
+    expect(report.summary.counts, `${scenario.name}: report counts`).toEqual(expectedCounts);
+    expect(report.procedures, `${scenario.name}: report roadmap rows`).toHaveLength(
+      expectedCounts.REQUIRED + expectedCounts.CONFIRM,
+    );
+    expect(report.excluded, `${scenario.name}: report excluded rows`).toHaveLength(
+      expectedCounts.NOT_REQUIRED,
+    );
+    expect(
+      new Set(report.flow.stages.flatMap((stage) => stage.items.map((item) => item.id))).size,
+      `${scenario.name}: report flow duplicates`,
+    ).toBe(report.flow.stages.flatMap((stage) => stage.items).length);
+    expect(report.flow.coreRelations.length, `${scenario.name}: report core relations`).toBeLessThanOrEqual(10);
+    expect(report.localOrdinances.categories.length, `${scenario.name}: report ELIS categories`).toBeGreaterThan(0);
+    if (scenario.answers.province === "전라남도") {
+      const ordinances = report.localOrdinances.categories.flatMap(
+        (category) => category.ordinances,
+      );
+      expect(
+        ordinances.some((ordinance) => ordinance.jurisdictionName === "나주시"),
+        `${scenario.name}: canonical current municipality links`,
+      ).toBe(true);
+      expect(
+        ordinances.some((ordinance) => ordinance.transitionNotice !== null),
+        `${scenario.name}: former Jeonnam transition links`,
+      ).toBe(true);
+    }
+    expect(JSON.stringify(report), `${scenario.name}: server identifier leak`).not.toContain(
+      "LAW_API_OC",
+    );
+
+    const bytes = await renderPermitReportPdf(report, await reportFontsPromise);
+    expect(new TextDecoder("latin1").decode(bytes.slice(0, 5))).toBe("%PDF-");
+    const pdf = await PDFDocument.load(bytes);
+    expect(
+      pdf.getPages().filter((page) => Math.abs(page.getWidth() - 1190.55) < 0.2),
+      `${scenario.name}: A3 flow page`,
+    ).toHaveLength(1);
+    expect(pdf.getPageCount(), `${scenario.name}: report page count`).toBeGreaterThan(3);
+  }, 30_000);
 });

@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import { catalog } from "@/lib/data/catalog";
-import { formatOfficialDurationSummary } from "@/lib/format-duration";
+import {
+  formatOfficialDurationSummary,
+  hasQuantifiedOfficialPeriod,
+} from "@/lib/format-duration";
 
 describe("catalog integrity", () => {
   it("loads a cross-referenced acyclic catalog", () => {
@@ -166,6 +169,13 @@ describe("catalog integrity", () => {
   });
 
   it("gives every procedure a visible quantified period or an explicit no-total finding", () => {
+    const quantified = catalog.durations.filter((duration) =>
+      hasQuantifiedOfficialPeriod(duration),
+    );
+    expect(catalog.durations).toHaveLength(145);
+    expect(quantified).toHaveLength(135);
+    expect(catalog.durations.length - quantified.length).toBe(10);
+
     for (const duration of catalog.durations) {
       const summary = formatOfficialDurationSummary(duration);
       expect(summary, duration.procedureId).toMatch(/\d|미규정/);
@@ -448,6 +458,266 @@ describe("catalog integrity", () => {
 
     expect(duration("groundwater-development-use-permit-report")?.elapsed).toMatchObject({ min: 7, base: 20, max: 30, unit: "BUSINESS_DAY" });
     expect(duration("water-discharge-installation-permit")?.elapsed).toMatchObject({ min: 10, base: 10, max: 60, unit: "BUSINESS_DAY" });
+  });
+
+  it("keeps 2026 branch deadlines and post-permit fieldwork separate from total processing time", () => {
+    const duration = (procedureId: string) =>
+      catalog.durations.find((item) => item.procedureId === procedureId);
+    const procedure = (procedureId: string) =>
+      catalog.procedures.find((item) => item.id === procedureId);
+
+    expect(duration("gas-pipeline-excavation-confirmation")).toMatchObject({
+      elapsed: null,
+      planningBasis: "MILESTONE_ONLY",
+    });
+    expect(duration("gas-pipeline-excavation-confirmation")?.referencePeriods).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "ref-gas-pipeline-excavation-request-deadline",
+          label: expect.stringContaining("24시간 전"),
+          range: null,
+        }),
+        expect.objectContaining({
+          id: "ref-gas-pipeline-presence-response-deadline",
+          label: expect.stringContaining("24시간"),
+          range: null,
+        }),
+        expect.objectContaining({
+          id: "ref-gas-pipeline-no-pipe-start-notice-deadline",
+          label: expect.stringContaining("24시간"),
+          range: null,
+        }),
+        expect.objectContaining({
+          id: "ref-gas-pipeline-marked-start-notice-deadline",
+          label: expect.stringContaining("1시간"),
+          range: null,
+        }),
+        expect.objectContaining({
+          id: "ref-gas-pipeline-location-marking-validity",
+          label: expect.stringContaining("15일"),
+          range: null,
+        }),
+      ]),
+    );
+    const gasSummary = formatOfficialDurationSummary(
+      duration("gas-pipeline-excavation-confirmation"),
+    );
+    expect(gasSummary).toContain("24시간");
+    expect(gasSummary).toContain("1시간");
+    expect(gasSummary).toContain("15일");
+
+    expect(duration("information-communication-supervision-result-submission")).toMatchObject({
+      elapsed: null,
+      planningBasis: "MILESTONE_ONLY",
+    });
+    expect(duration("information-communication-supervision-result-submission")?.referencePeriods).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "ref-information-communication-supervision-result-notice-deadline",
+          range: { min: null, base: null, max: 7, unit: "CALENDAR_DAY" },
+        }),
+      ]),
+    );
+    expect(formatOfficialDurationSummary(
+      duration("information-communication-supervision-result-submission"),
+    )).toContain("전국 공통 법정 총기간 미규정");
+
+    const supervisorSummary = formatOfficialDurationSummary(
+      duration("information-communication-supervisor-assignment-report"),
+    );
+    expect(supervisorSummary).toContain("7업무일");
+    expect(supervisorSummary).toContain("30일");
+
+    expect(duration("elevator-installation-report")?.referencePeriods).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "ref-elevator-installation-report-deadline",
+          range: { min: null, base: null, max: 10, unit: "CALENDAR_DAY" },
+          startsWhen: "승강기 설치공사업자가 승강기 설치를 끝낸 날",
+        }),
+      ]),
+    );
+    const elevatorReportSummary = formatOfficialDurationSummary(
+      duration("elevator-installation-report"),
+    );
+    expect(elevatorReportSummary).toContain("7업무일");
+    expect(elevatorReportSummary).toContain("10일");
+
+    expect(duration("elevator-installation-inspection")).toMatchObject({
+      elapsed: null,
+      planningBasis: "MILESTONE_ONLY",
+    });
+    expect(duration("elevator-installation-inspection")?.referencePeriods).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "ref-elevator-installation-inspection-application-deadline",
+          range: { min: null, base: null, max: 1, unit: "CALENDAR_DAY" },
+        }),
+        expect.objectContaining({
+          id: "ref-elevator-installation-inspection-schedule-notice",
+          range: { min: null, base: null, max: 7, unit: "CALENDAR_DAY" },
+        }),
+        expect.objectContaining({
+          id: "ref-elevator-installation-inspection-failure-authority-notice",
+          label: expect.stringContaining("당일"),
+          range: null,
+        }),
+        expect.objectContaining({
+          id: "ref-elevator-installation-inspection-supplement-cap",
+          range: { min: null, base: null, max: 30, unit: "CALENDAR_DAY" },
+        }),
+      ]),
+    );
+    const elevatorInspectionSummary = formatOfficialDurationSummary(
+      duration("elevator-installation-inspection"),
+    );
+    expect(elevatorInspectionSummary).toContain("1·3·5·7·30일");
+    expect(elevatorInspectionSummary).toContain("불합격 당일");
+    expect(elevatorInspectionSummary).toContain("전국 공통 법정 총기간 미규정");
+
+    const roadWorkSummary = formatOfficialDurationSummary(
+      duration("road-work-police-report"),
+    );
+    expect(roadWorkSummary).toContain("3근무시간");
+    expect(roadWorkSummary).toContain("3일");
+
+    expect(duration("water-tank-installation-report")?.referencePeriods).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "ref-water-tank-installation-report-immediate-standard",
+          range: null,
+        }),
+        expect.objectContaining({
+          id: "ref-water-tank-installation-report-deadline",
+          startsWhen: "저수조를 실제 설치한 날",
+          range: { min: null, base: null, max: 30, unit: "CALENDAR_DAY" },
+        }),
+      ]),
+    );
+    expect(procedure("water-tank-installation-report")?.stage).toBe(
+      "DURING_CONSTRUCTION",
+    );
+
+    expect(duration("chemical-emission-reduction-plan-review")?.referencePeriods).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "ref-chemical-emission-reduction-plan-cycle",
+          range: { min: 60, base: 60, max: 60, unit: "MONTH" },
+        }),
+      ]),
+    );
+    const chemicalSummary = formatOfficialDurationSummary(
+      duration("chemical-emission-reduction-plan-review"),
+    );
+    expect(chemicalSummary).toContain("60업무일");
+    expect(chemicalSummary).toContain("60개월");
+    expect(procedure("chemical-emission-reduction-plan-review")?.stage).toBe(
+      "POST_OPERATION",
+    );
+
+    expect(duration("buried-heritage-excavation-permit")?.elapsed).toMatchObject({
+      min: 10,
+      base: 10,
+      max: 10,
+      unit: "BUSINESS_DAY",
+    });
+    expect(duration("buried-heritage-excavation-permit")?.referencePeriods).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "ref-buried-heritage-excavation-permit-application-decision",
+          range: { min: null, base: null, max: 10, unit: "CALENDAR_DAY" },
+        }),
+        expect.objectContaining({
+          id: "ref-buried-heritage-excavation-permit-committee-decision",
+          range: { min: null, base: null, max: 7, unit: "CALENDAR_DAY" },
+        }),
+      ]),
+    );
+    expect(duration("buried-heritage-excavation-investigation")).toMatchObject({
+      elapsed: null,
+      planningBasis: "MILESTONE_ONLY",
+    });
+    expect(duration("buried-heritage-excavation-investigation")?.referencePeriods).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "ref-buried-heritage-investigation-start-deadline",
+          range: { min: null, base: null, max: 12, unit: "MONTH" },
+        }),
+        expect.objectContaining({
+          id: "ref-buried-heritage-investigation-completion-report-deadline",
+          range: { min: null, base: null, max: 20, unit: "CALENDAR_DAY" },
+        }),
+        expect.objectContaining({
+          id: "ref-buried-heritage-investigation-final-report-deadline",
+          range: { min: null, base: null, max: 24, unit: "MONTH" },
+        }),
+      ]),
+    );
+    expect(procedure("buried-heritage-excavation-investigation")?.citationIds).toEqual(
+      expect.arrayContaining(["cit-exp-buried-heritage-excavation-investigation"]),
+    );
+
+    expect(duration("marine-use-consultation")).toMatchObject({
+      authorityProcessing: { min: null, base: null, max: 60, unit: "BUSINESS_DAY" },
+      planningBasis: "OFFICIAL_CAP_ONLY",
+      stopClockRules: expect.arrayContaining([
+        expect.stringContaining("보완·조정"),
+        expect.stringContaining("토요일과 공휴일"),
+      ]),
+    });
+    expect(duration("marine-use-impact-assessment")).toMatchObject({
+      authorityProcessing: { min: null, base: null, max: 75, unit: "BUSINESS_DAY" },
+      planningBasis: "OFFICIAL_CAP_ONLY",
+      stopClockRules: expect.arrayContaining([
+        expect.stringContaining("보완·조정"),
+        expect.stringContaining("토요일과 공휴일"),
+      ]),
+    });
+
+    expect(duration("odor-emission-facility-report")?.referencePeriods).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "ref-odor-report-specific-service-branch",
+          range: { min: null, base: null, max: 10, unit: "BUSINESS_DAY" },
+        }),
+        expect.objectContaining({
+          id: "ref-odor-existing-facility-report-deadline",
+          range: { min: null, base: null, max: 6, unit: "MONTH" },
+        }),
+        expect.objectContaining({
+          id: "ref-odor-existing-facility-control-deadline",
+          range: { min: null, base: null, max: 12, unit: "MONTH" },
+        }),
+      ]),
+    );
+    const odorSummary = formatOfficialDurationSummary(
+      duration("odor-emission-facility-report"),
+    );
+    expect(odorSummary).toContain("10업무일");
+    expect(odorSummary).toContain("6·12개월");
+    expect(odorSummary).toContain("전국 공통 법정 총기간 미규정");
+
+    expect(duration("water-tank-installation-report")?.referencePeriods).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "ref-water-tank-installation-report-deadline",
+          citationIds: ["cit-exp-water-tank-installation-report-deadline"],
+        }),
+      ]),
+    );
+
+    for (const edgeId of [
+      "edge-exp-small-stream-to-start",
+      "edge-exp-excavation-investigation-to-start",
+      "edge-exp-road-police-report-to-start",
+      "edge-exp-gas-excavation-to-start",
+      "edge-exp-structure-report-to-start",
+    ]) {
+      expect(catalog.edges.find((edge) => edge.id === edgeId)).toMatchObject({
+        strength: "PRACTICAL",
+        note: expect.stringContaining("대리 이정표"),
+      });
+    }
   });
 
   it("places special-law form processing caps only on the correct procedure", () => {

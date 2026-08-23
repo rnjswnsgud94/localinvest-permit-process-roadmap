@@ -1,5 +1,6 @@
 import type { NormalizedLawDocument } from "@/lib/law-api/types";
 import {
+  isOrdinanceReviewTitleCandidate,
   localOrdinanceReviewCategories,
   type OrdinanceGovernmentLevel,
 } from "@/lib/regions/local-ordinances";
@@ -10,6 +11,8 @@ export interface OfficialOrdinanceRecord {
   jurisdictionName: string;
   amendmentDate: string | null;
   url: string;
+  transitionNotice?: string;
+  transitionBasisUrl?: string;
 }
 
 export interface LocalOrdinanceCategoryLookup {
@@ -119,7 +122,11 @@ export function matchOrdinancesToCategories(
             ]);
     const patterns = category.ordinanceNamePatterns.map(normalized);
     const ordinances = records
-      .filter((record) => allowedLevels.has(record.level))
+      .filter(
+        (record) =>
+          allowedLevels.has(record.level) &&
+          isOrdinanceReviewTitleCandidate(record.name),
+      )
       .map((record) => {
         const title = normalized(record.name);
         return {
@@ -142,10 +149,9 @@ export function matchOrdinancesToCategories(
           list.findIndex(
             (candidate) =>
               candidate.name === record.name &&
-              candidate.level === record.level,
+            candidate.level === record.level,
           ) === index,
-      )
-      .slice(0, 5);
+      );
     return { categoryId: category.id, ordinances };
   });
 }

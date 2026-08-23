@@ -106,6 +106,49 @@ function compactRange(range: NonNullable<DurationEstimate["elapsed"]>) {
   return `${unique.join("·")}${suffix}`;
 }
 
+function rangeIsRepresentedByReferences(
+  range: NonNullable<DurationEstimate["elapsed"]>,
+  periods: NonNullable<DurationEstimate["referencePeriods"]>,
+) {
+  const primaryValues = new Set(
+    [range.min, range.base, range.max].filter(
+      (value): value is number => value !== null,
+    ),
+  );
+  if (!primaryValues.size) return true;
+
+  const referenceValues = new Set(
+    periods
+      .filter((period) => period.range?.unit === range.unit)
+      .flatMap((period) => period.range
+        ? [period.range.min, period.range.base, period.range.max]
+        : [])
+      .filter((value): value is number => value !== null),
+  );
+  return [...primaryValues].every((value) => referenceValues.has(value));
+}
+
+function formatPrimaryOfficialRange(
+  duration: Pick<DurationEstimate, "authorityProcessing" | "elapsed" | "planningBasis">,
+  range: NonNullable<DurationEstimate["elapsed"]>,
+) {
+  const compact = compactRange(range);
+  if (duration.planningBasis === "OFFICIAL_CAP_ONLY") {
+    return `법정·공식 상한 ${compact} · 실제 평균 아님`;
+  }
+  if (duration.elapsed === null) {
+    return `기관 공식 처리 ${compact} · 전체 경과는 별도`;
+  }
+  const hasSeveralBranches = new Set(
+    [range.min, range.base, range.max].filter(
+      (value): value is number => value !== null,
+    ),
+  ).size > 1;
+  return hasSeveralBranches
+    ? `공식 처리분기 ${compact} · 세부요건별 선택`
+    : `법정·공식 처리 ${compact}`;
+}
+
 function detailedReferenceRange(
   range: NonNullable<NonNullable<DurationEstimate["referencePeriods"]>[number]["range"]>,
 ) {
@@ -129,7 +172,23 @@ function hasImmediateOfficialStandard(
 }
 
 function hasNoNationalTotalWording(value: string) {
-  return /없음|두지 않|미규정|정하지 않|정해져 있지 않|정해지지 않|희망일/.test(value);
+  return /없음|두지 않|미규정|규정되지 않|정하지 않|정해져 있지 않|정해지지 않|희망일/.test(value);
+}
+
+function compactInlineTimeValues(value: string) {
+  const matches = value.matchAll(/\d+(?:\.\d+)?\s*(?:근무시간|시간|업무일|일|개월|년)/g);
+  return [...new Set([...matches].map((match) => match[0].replace(/\s+/g, "")))];
+}
+
+function compactQualitativeReferenceMilestones(
+  periods: DurationEstimate["referencePeriods"] | undefined,
+) {
+  return [...new Set((periods ?? [])
+    .filter((period) => period.range === null)
+    .flatMap((period) => {
+      if (/불합격.*당일/.test(period.label)) return ["불합격 당일"];
+      return period.label.includes("당일") ? ["당일"] : [];
+    }))];
 }
 
 export function hasQuantifiedOfficialPeriod(
@@ -163,6 +222,7 @@ export function formatOfficialDurationSummary(
 
   const statutoryPeriod = duration.statutoryPeriod ?? "";
   const isImmediate = hasImmediateOfficialStandard(duration);
+  const primaryRange = duration.elapsed ?? duration.authorityProcessing;
 
   const references = quantifiedOfficialReferences(duration.referencePeriods);
   if (references.length) {
@@ -176,40 +236,44 @@ export function formatOfficialDurationSummary(
         period.kind === "NATIONWIDE_OFFICIAL_STANDARD" ||
         period.kind === "OFFICIAL_OPERATION_CAP",
     );
-    const prefix = isImmediate ? "즉시(3근무시간 이내) · " : "";
+    const parts = isImmediate ? ["즉시(3근무시간 이내)"] : [];
+    if (primaryRange && !rangeIsRepresentedByReferences(primaryRange, references)) {
+      parts.push(formatPrimaryOfficialRange(duration, primaryRange));
+    }
+    const qualitativeMilestones = compactQualitativeReferenceMilestones(
+      duration.referencePeriods,
+    );
+    if (qualitativeMilestones.length) {
+      parts.push(`별도 법정 이정표 ${qualitativeMilestones.join("·")}`);
+    }
+    const noNationalTotalSuffix = !primaryRange && hasNoNationalTotalWording(statutoryPeriod)
+      ? " · 전국 공통 법정 총기간 미규정"
+      : "";
     if (duration.planningBasis === "OFFICIAL_CAP_ONLY" || hasTotalCap) {
-      return `${prefix}법정·공식 상한·분기 ${values} · 실제 총 경과는 별도`;
+      parts.push(`법정·공식 상한·분기 ${values} · 실제 총 경과는 별도`);
+      return `${parts.join(" · ")}${noNationalTotalSuffix}`;
     }
     if (onlyMilestones) {
-      return `${prefix}법정 단계기한 ${values} · 단계별 기산점 적용`;
+      parts.push(`법정 단계기한 ${values} · 단계별 기산점 적용`);
+      return `${parts.join(" · ")}${noNationalTotalSuffix}`;
     }
-    return `${prefix}법정·공식 기간 ${values}`;
+    parts.push(`법정·공식 기간 ${values}`);
+    return `${parts.join(" · ")}${noNationalTotalSuffix}`;
   }
 
   if (isImmediate) {
     return "즉시 · 3근무시간 이내";
   }
 
-  const primaryRange = duration.elapsed ?? duration.authorityProcessing;
   if (primaryRange) {
-    const compact = compactRange(primaryRange);
-    if (duration.planningBasis === "OFFICIAL_CAP_ONLY") {
-      return `법정·공식 상한 ${compact} · 실제 평균 아님`;
-    }
-    if (duration.elapsed === null) {
-      return `기관 공식 처리 ${compact} · 전체 경과는 별도`;
-    }
-    const hasSeveralBranches = new Set(
-      [primaryRange.min, primaryRange.base, primaryRange.max].filter(
-        (value): value is number => value !== null,
-      ),
-    ).size > 1;
-    return hasSeveralBranches
-      ? `공식 처리분기 ${compact} · 세부요건별 선택`
-      : `법정·공식 처리 ${compact}`;
+    return formatPrimaryOfficialRange(duration, primaryRange);
   }
 
   if (hasNoNationalTotalWording(statutoryPeriod)) {
+    const inlineValues = compactInlineTimeValues(statutoryPeriod);
+    if (inlineValues.length) {
+      return `법정 단계기한 ${inlineValues.join("·")} · 단계별 기산점 적용 · 전국 공통 법정 총기간 미규정`;
+    }
     return "전국 공통 법정 총기간 미규정";
   }
   return statutoryPeriod ? "법정 기간은 상세 기준 참조" : "법정·공식 기간 확인 필요";

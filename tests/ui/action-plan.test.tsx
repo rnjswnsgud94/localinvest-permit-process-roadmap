@@ -167,15 +167,15 @@ describe("action plan", () => {
     expect(completionCard).not.toBeNull();
     const card = within(completionCard!);
 
-    expect(card.getByText("법정 선행")).toBeInTheDocument();
+    expect(card.getByText("선후행 조문 연결")).toBeInTheDocument();
     const practicalRow = card.getByText("실무 권장 선행").closest("div");
     expect(practicalRow).toHaveTextContent("산업단지 입주계약·변경계약");
 
-    const unsupportedLabels = screen.queryAllByText("근거 미연결 선행");
+    const unsupportedLabels = screen.queryAllByText("법정 분류·관계근거 보강");
     expect(unsupportedLabels.length).toBeGreaterThan(0);
     for (const label of unsupportedLabels) {
       const row = label.closest("div");
-      expect(row).toHaveTextContent("법정 선행으로 단정하지 않습니다");
+      expect(row).toHaveTextContent("법적 강제순서로 단정하지 않습니다");
     }
   });
 
@@ -207,9 +207,9 @@ describe("action plan", () => {
       expect(csv).toContain('"법정 결정권자"');
       expect(csv).toContain('"협의기관"');
       expect(csv).toContain('"권한근거 상태"');
-      expect(csv).toContain('"법정 선행"');
+      expect(csv).toContain('"선후행 조문 연결"');
       expect(csv).toContain('"실무 권장 선행"');
-      expect(csv).toContain('"근거 미연결 선행"');
+      expect(csv).toContain('"법정 분류·관계근거 보강"');
       expect(csv).toContain("아산시 산업단지 담당부서");
       expect(csv).toContain("아산시장(관리기관 보고 경로)");
     } finally {

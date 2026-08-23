@@ -346,15 +346,34 @@ export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
     procedureId: SupplementalPermitTargetId,
     value: boolean | null,
   ) {
+    const mutuallyExclusiveTarget: Partial<
+      Record<SupplementalPermitTargetId, SupplementalPermitTargetId>
+    > = {
+      "information-communication-supervisor-assignment-report":
+        "information-communication-pre-use-inspection",
+      "information-communication-pre-use-inspection":
+        "information-communication-supervisor-assignment-report",
+      "marine-use-consultation": "marine-use-impact-assessment",
+      "marine-use-impact-assessment": "marine-use-consultation",
+    };
+    const excludedTarget = value === true
+      ? mutuallyExclusiveTarget[procedureId]
+      : undefined;
     const reviewed = answers.supplementalPermitReviewedIds.filter(
       (item) => item !== procedureId,
     );
     const selected = answers.supplementalPermitTargetIds.filter(
-      (item) => item !== procedureId,
+      (item) => item !== procedureId && item !== excludedTarget,
     );
     onChange(
       "supplementalPermitReviewedIds",
-      value === null ? reviewed : [...reviewed, procedureId],
+      value === null
+        ? reviewed
+        : [...new Set([
+            ...reviewed,
+            procedureId,
+            ...(excludedTarget ? [excludedTarget] : []),
+          ])],
     );
     onChange(
       "supplementalPermitTargetIds",

@@ -67,10 +67,10 @@ function durationStatusFor(procedure: Procedure, assessmentDate: string): Durati
   if (durationSourcesFor(procedure).some((source) => isFutureEffective(source, assessmentDate))) {
     return "FUTURE_EFFECTIVE";
   }
-  if (hasQuantifiedOfficialPeriod(duration)) return "QUANTIFIED";
-  if (formatOfficialDurationSummary(duration) === "전국 공통 법정 총기간 미규정") {
+  if (formatOfficialDurationSummary(duration).includes("전국 공통 법정 총기간 미규정")) {
     return "NO_NATIONWIDE_TOTAL";
   }
+  if (hasQuantifiedOfficialPeriod(duration)) return "QUANTIFIED";
   return "NEEDS_CONFIRMATION";
 }
 

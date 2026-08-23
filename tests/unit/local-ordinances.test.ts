@@ -5,6 +5,7 @@ import {
   buildElisJurisdictionListUrl,
   buildElisOrdinanceDetailUrl,
   getOfficialLocalOrdinanceLinks,
+  getElisTransitionalJurisdictionTargets,
   isElisOrdinanceDetailUrl,
   listSupportedMunicipalities,
   localOrdinanceReviewCategories,
@@ -154,6 +155,31 @@ describe("official local-ordinance directory", () => {
     expect(links.province?.url).toContain("ctpvCd=50&sggCd=000");
     expect(links.municipality).toBeNull();
     expect(links.notice).toContain("지방자치단체가 아닌 행정시");
+  });
+
+  it("routes the integrated city's legacy ordinance lists only to their former territories", () => {
+    expect(
+      getElisTransitionalJurisdictionTargets(
+        "전남광주통합특별시",
+        "광산구",
+      ).map((target) => target.listUrl),
+    ).toEqual([
+      "https://www.elis.go.kr/alrpop/locgovAlrPopup?ctpvCd=29&sggCd=000",
+    ]);
+    expect(
+      getElisTransitionalJurisdictionTargets(
+        "전남광주통합특별시",
+        "목포시",
+      ).map((target) => target.listUrl),
+    ).toEqual([
+      "https://www.elis.go.kr/alrpop/locgovAlrPopup?ctpvCd=46&sggCd=000",
+    ]);
+    expect(
+      getElisTransitionalJurisdictionTargets("전남광주통합특별시"),
+    ).toEqual([]);
+    expect(
+      getElisTransitionalJurisdictionTargets("충청남도", "아산시"),
+    ).toEqual([]);
   });
 
   it("keeps an unverified free-text municipality visibly unresolved", () => {
