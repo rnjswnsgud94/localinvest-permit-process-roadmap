@@ -1,4 +1,4 @@
-import { fireEvent, render, within } from "@testing-library/react";
+import { fireEvent, render, waitFor, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import {
@@ -301,5 +301,35 @@ describe("swimlane dense procedure columns", () => {
     expect(Number(
       view.container.querySelector(".swimlane-grid")?.getAttribute("data-context-edge-count"),
     )).toBeGreaterThan(0);
+  });
+
+  it("uses the rendered grid height instead of stale connector overflow", async () => {
+    const fixture = denseFixture(10);
+    const view = render(
+      <Swimlane
+        decisions={fixture.decisions}
+        schedule={fixture.schedule}
+        selectedId={null}
+        onSelect={vi.fn()}
+      />,
+    );
+    const grid = view.container.querySelector(".swimlane-grid") as HTMLElement;
+    Object.defineProperties(grid, {
+      scrollWidth: { configurable: true, value: 1_600 },
+      scrollHeight: { configurable: true, value: 2_400 },
+      clientHeight: { configurable: true, value: 420 },
+    });
+
+    fireEvent(window, new Event("resize"));
+
+    await waitFor(() => {
+      expect(view.container.querySelector(".dependency-connector-layer")).toHaveAttribute(
+        "height",
+        "420",
+      );
+    });
+    expect(
+      view.container.querySelector(".dependency-connector-layer"),
+    ).toHaveAttribute("width", "1600");
   });
 });

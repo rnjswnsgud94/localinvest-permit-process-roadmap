@@ -607,18 +607,24 @@ describe("dashboard UI", () => {
       expect(screen.getByText(/사용자 예상 1건 반영/)).toBeInTheDocument();
     });
 
-    fireEvent.click(within(card).getByRole("button", { name: /내 예상.*수정/ }));
-    fireEvent.click(within(card).getByRole("button", { name: "공식 기준으로 되돌리기" }));
+    const updatedCard = screen.getByRole("button", { name: /내 예상.*수정/ })
+      .closest(".procedure-card") as HTMLElement;
+    fireEvent.click(within(updatedCard).getByRole("button", { name: /내 예상.*수정/ }));
+    fireEvent.click(within(updatedCard).getByRole("button", { name: "공식 기준으로 되돌리기" }));
     expect(within(screen.getByLabelText("소요기간 기준")).getByRole(
       "button",
       { name: "공식 기준" },
     )).toHaveAttribute("aria-pressed", "true");
 
-    fireEvent.click(editorToggle);
-    fireEvent.change(within(card).getByRole("spinbutton"), {
+    const resetToggle = screen.getAllByRole("button", {
+      name: /내 예상.*기간 입력/,
+    })[0];
+    const resetCard = resetToggle.closest(".procedure-card") as HTMLElement;
+    fireEvent.click(resetToggle);
+    fireEvent.change(within(resetCard).getByRole("spinbutton"), {
       target: { value: "30" },
     });
-    fireEvent.click(within(card).getByRole("button", { name: "반영" }));
+    fireEvent.click(within(resetCard).getByRole("button", { name: "반영" }));
 
     fireEvent.click(screen.getByRole("button", { name: "예상값 전체 삭제" }));
     expect(within(screen.getByLabelText("소요기간 기준")).getByRole(

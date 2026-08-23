@@ -436,7 +436,6 @@ function buildProjectTimeline({
     return { timeline: null, warnings };
   }
 
-  const planningStartDay = Math.min(assessmentDay, plannedStartDay);
   const completedCheckpointByProcedure = new Map(
     completedCheckpoints.map((checkpoint) => [checkpoint.procedureId, checkpoint]),
   );
@@ -449,7 +448,6 @@ function buildProjectTimeline({
   };
   const plannedEndBoundary = plannedEndDay + 1;
   if (
-    !isCalendarCovered(planningStartDay) ||
     !isCalendarCovered(plannedStartDay) ||
     !isCalendarCovered(plannedEndDay)
   ) {
@@ -461,11 +459,6 @@ function buildProjectTimeline({
         "까지 지원합니다.",
     );
     return { timeline: null, warnings };
-  }
-  if (plannedStartDay < assessmentDay) {
-    warnings.push(
-      "입력한 공사 시작일이 검토 기준일보다 빠르므로, 총기간은 입력한 착공일부터 확인된 절차와 공사를 합산했습니다.",
-    );
   }
 
   const selectedIds = new Set(ids);
@@ -524,6 +517,7 @@ function buildProjectTimeline({
     planningByProcedure.get(id)?.releasePolicy ?? "EARLIEST_ALLOWED";
 
   const finishAfterDuration = (id: string, start: number) => {
+    if (calendarGapProcedureIds.has(id)) return start;
     const value = valueByProcedure.get(id);
     const unit = unitByProcedure.get(id);
     if (value === null || value === undefined || unit === null || unit === undefined) return start;
@@ -536,6 +530,7 @@ function buildProjectTimeline({
   };
 
   const startBeforeDuration = (id: string, finish: number) => {
+    if (calendarGapProcedureIds.has(id)) return finish;
     const value = valueByProcedure.get(id);
     const unit = unitByProcedure.get(id);
     if (value === null || value === undefined || unit === null || unit === undefined) return finish;
@@ -564,10 +559,27 @@ function buildProjectTimeline({
     return startBeforeDuration(itemId, laggedFinish);
   };
 
+  const rewindEdgeLag = (
+    boundary: number,
+    edge: ProcedureEdge,
+    itemId: string,
+  ) => {
+    const rewound = edge.lag === 0
+      ? boundary
+      : rewindByUnit(boundary, edge.lag, edge.lagUnit);
+    if (rewound === null || !isCalendarCovered(rewound)) {
+      calendarGapProcedureIds.add(itemId);
+      return null;
+    }
+    return rewound;
+  };
+
   const { wave } = dependencyWaves(ids, edges, order);
   const incomingByProcedure = new Map<string, ProcedureEdge[]>();
+  const outgoingByProcedure = new Map<string, ProcedureEdge[]>();
   for (const edge of edges) {
     incomingByProcedure.set(edge.to, [...(incomingByProcedure.get(edge.to) ?? []), edge]);
+    outgoingByProcedure.set(edge.from, [...(outgoingByProcedure.get(edge.from) ?? []), edge]);
   }
 
   const preConstructionIds = ids.filter((id) => policy(id) === "PRE_CONSTRUCTION");
@@ -606,16 +618,81 @@ function buildProjectTimeline({
     (id) => policy(id) !== "POST_OPERATION",
   );
 
+  // PRE_CONSTRUCTION work is a latest-start plan anchored to the requested
+  // construction date. The legal assessment date determines which rules and
+  // checkpoints apply, but it is not a lower bound for project scheduling.
+  // Rewinding each duration and dependency in its original unit preserves
+  // weekends, holidays, calendar-day lags, and month-end behavior.
+  const latestPreStart = new Map<string, number>();
+  const latestPreFinish = new Map<string, number>();
+  for (const id of [...order].reverse()) {
+    if (policy(id) !== "PRE_CONSTRUCTION") continue;
+    const completedAnchor = completedCheckpointAnchor(id);
+    if (completedAnchor !== null) {
+      latestPreStart.set(id, completedAnchor);
+      latestPreFinish.set(id, completedAnchor);
+      continue;
+    }
+
+    // Every pre-construction procedure must itself finish before construction,
+    // including nodes connected only by start-to-start dependencies.
+    let latestStart = startBeforeDuration(id, plannedStartDay);
+    for (const edge of outgoingByProcedure.get(id) ?? []) {
+      if (policy(edge.to) !== "PRE_CONSTRUCTION") continue;
+      const successorStart = latestPreStart.get(edge.to);
+      const successorFinish = latestPreFinish.get(edge.to);
+      if (successorStart === undefined || successorFinish === undefined) continue;
+
+      let candidate: number | null;
+      if (edge.relation === "START_TO_START") {
+        candidate = rewindEdgeLag(successorStart, edge, id);
+      } else {
+        const successorBoundary = edge.relation === "FINISH_TO_START"
+          ? successorStart
+          : successorFinish;
+        const allowedFinish = rewindEdgeLag(successorBoundary, edge, id);
+        candidate = allowedFinish === null
+          ? null
+          : startBeforeDuration(id, allowedFinish);
+      }
+      if (candidate !== null) latestStart = Math.min(latestStart, candidate);
+    }
+    latestPreStart.set(id, latestStart);
+    latestPreFinish.set(id, finishAfterDuration(id, latestStart));
+  }
+
+  const requiredPreConstructionStarts = preConstructionIds
+    .filter((id) => !completedCheckpointByProcedure.has(id))
+    .map((id) => latestPreStart.get(id) ?? plannedStartDay);
+  const planningStartDay = Math.min(
+    plannedStartDay,
+    ...requiredPreConstructionStarts,
+  );
+  if (!isCalendarCovered(planningStartDay)) {
+    warnings.push(
+      "자동 업무일 계산은 " +
+        KOREAN_BUSINESS_CALENDAR.validFrom +
+        "부터 " +
+        KOREAN_BUSINESS_CALENDAR.validTo +
+        "까지 지원합니다.",
+    );
+    return { timeline: null, warnings };
+  }
+  if (planningStartDay < assessmentDay) {
+    if (requiredPreConstructionStarts.some((start) => start < assessmentDay)) {
+      warnings.push(
+        "계획 착공일을 맞추려면 검토 기준일 전에 인허가 착수가 필요합니다. 표시일은 계획상 필요일이며 실제 착수·완료 여부를 확인해야 하고, 법 적용 판정은 입력한 검토 기준일을 따릅니다.",
+      );
+    } else {
+      warnings.push(
+        "입력한 계획 착공일이 검토 기준일보다 빠릅니다. 표시일은 사용자 계획일이며 실제 진행 여부를 확인해야 하고, 법 적용 판정은 입력한 검토 기준일을 따릅니다.",
+      );
+    }
+  }
+
   let phaseInversionCount = 0;
-  const preStart = new Map(
-    ids.map((id) => [id, completedCheckpointAnchor(id) ?? planningStartDay]),
-  );
-  const preFinish = new Map(
-    ids.map((id) => {
-      const start = completedCheckpointAnchor(id) ?? planningStartDay;
-      return [id, finishAfterDuration(id, start)] as const;
-    }),
-  );
+  const preStart = new Map<string, number>();
+  const preFinish = new Map<string, number>();
   for (const id of order) {
     if (policy(id) !== "PRE_CONSTRUCTION") continue;
     const completedAnchor = completedCheckpointAnchor(id);
@@ -624,7 +701,7 @@ function buildProjectTimeline({
       preFinish.set(id, completedAnchor);
       continue;
     }
-    let start = planningStartDay;
+    let start = latestPreStart.get(id) ?? planningStartDay;
     for (const edge of incomingByProcedure.get(id) ?? []) {
       if (policy(edge.from) !== "PRE_CONSTRUCTION") {
         phaseInversionCount += 1;
@@ -732,20 +809,13 @@ function buildProjectTimeline({
     : null;
 
   const completedLegalConflictEdges = edges.filter((edge) => {
-    if (
-      edge.strength !== "LEGAL_HARD" ||
-      !completedCheckpointByProcedure.has(edge.to) ||
-      completedCheckpointByProcedure.has(edge.from)
-    ) return false;
-    const checkpointAnchor = completedCheckpointAnchor(edge.to);
-    const predecessorFinish = earliestFinish.get(edge.from);
-    return checkpointAnchor !== null &&
-      predecessorFinish !== undefined &&
-      predecessorFinish > checkpointAnchor;
+    return edge.strength === "LEGAL_HARD" &&
+      completedCheckpointByProcedure.has(edge.to) &&
+      !completedCheckpointByProcedure.has(edge.from);
   });
   if (completedLegalConflictEdges.length) {
     warnings.push(
-      `완료 이정표보다 늦게 계산되는 법적 선행절차 ${completedLegalConflictEdges.length}건이 있습니다. 완료일 또는 선행절차의 완료·의제 여부를 다시 확인하십시오.`,
+      `완료 이정표에 연결된 법적 선행절차 ${completedLegalConflictEdges.length}건의 완료 여부가 확인되지 않았습니다. 완료일 또는 선행절차의 완료·의제 여부를 다시 확인하십시오.`,
     );
   }
 

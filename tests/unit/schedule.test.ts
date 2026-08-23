@@ -240,7 +240,7 @@ describe("business-day DAG and critical path", () => {
 });
 
 describe("automatic integrated construction timeline", () => {
-  it("uses MIN and TYPICAL business-day paths to adjust construction", () => {
+  it("rewinds MIN and TYPICAL business-day paths from planned construction", () => {
     const common = {
       decisions: decisions(["permit"]),
       edges: [],
@@ -266,27 +266,117 @@ describe("automatic integrated construction timeline", () => {
     const typical = calculateSchedule({ ...common, scenario: "TYPICAL" });
 
     expect(minimum.projectTimeline).toMatchObject({
+      projectStartDate: "2026-01-26",
       adjustedConstructionStartDate: "2026-02-01",
       constructionCompletionDate: "2026-03-31",
       operationReadyDate: "2026-03-31",
-      totalCalendarDays: 76,
-      permitLeadCalendarDays: 7,
+      totalCalendarDays: 65,
+      permitLeadCalendarDays: 5,
       constructionDelayCalendarDays: 0,
     });
     expect(typical.projectTimeline).toMatchObject({
-      adjustedConstructionStartDate: "2026-02-12",
-      constructionCompletionDate: "2026-04-11",
-      operationReadyDate: "2026-04-11",
-      totalCalendarDays: 87,
-      permitLeadCalendarDays: 28,
-      constructionDelayCalendarDays: 11,
+      projectStartDate: "2026-01-05",
+      adjustedConstructionStartDate: "2026-02-01",
+      constructionCompletionDate: "2026-03-31",
+      operationReadyDate: "2026-03-31",
+      totalCalendarDays: 86,
+      permitLeadCalendarDays: 26,
+      constructionDelayCalendarDays: 0,
     });
     expect(
       minimum.projectTimeline?.nodes.find((node) => node.procedureId === "permit"),
-    ).toMatchObject({ processingDuration: 5, finishDate: "2026-01-21" });
+    ).toMatchObject({
+      processingDuration: 5,
+      startDate: "2026-01-26",
+      finishDate: "2026-01-30",
+    });
     expect(
       typical.projectTimeline?.nodes.find((node) => node.procedureId === "permit"),
-    ).toMatchObject({ processingDuration: 20, finishDate: "2026-02-11" });
+    ).toMatchObject({
+      processingDuration: 20,
+      startDate: "2026-01-05",
+      finishDate: "2026-01-30",
+    });
+  });
+
+  it("keeps schedule dates independent from the legal assessment date", () => {
+    const common = {
+      decisions: decisions(["permit"]),
+      edges: [],
+      durations: durations({ permit: 5 }),
+      scenario: "MIN" as const,
+      includeConditional: true,
+      includePractical: true,
+      planningDurations: planning({
+        permit: {
+          minimum: 5,
+          unit: "BUSINESS_DAY",
+          overlapPolicy: "PRE_CONSTRUCTION",
+        },
+      }),
+    };
+    const earlyAssessment = calculateSchedule({
+      ...common,
+      constructionPlan: {
+        assessmentDate: "2026-01-15",
+        plannedStartDate: "2026-02-01",
+        plannedEndDate: "2026-03-31",
+      },
+    });
+    const laterAssessment = calculateSchedule({
+      ...common,
+      constructionPlan: {
+        assessmentDate: "2026-01-29",
+        plannedStartDate: "2026-02-01",
+        plannedEndDate: "2026-03-31",
+      },
+    });
+
+    expect(earlyAssessment.projectTimeline?.projectStartDate).toBe("2026-01-26");
+    expect(laterAssessment.projectTimeline?.projectStartDate).toBe("2026-01-26");
+    expect(earlyAssessment.projectTimeline?.nodes[0].startDate).toBe(
+      laterAssessment.projectTimeline?.nodes[0].startDate,
+    );
+    expect(laterAssessment.projectTimeline?.warnings.join(" ")).toContain(
+      "검토 기준일 전에 인허가 착수",
+    );
+  });
+
+  it("latest-start schedules independent parallel permit paths separately", () => {
+    const result = calculateSchedule({
+      decisions: decisions(["long", "short"]),
+      edges: [],
+      durations: durations({ long: 20, short: 5 }),
+      scenario: "MIN",
+      includeConditional: true,
+      includePractical: true,
+      constructionPlan: {
+        assessmentDate: "2026-01-15",
+        plannedStartDate: "2026-02-01",
+        plannedEndDate: "2026-03-31",
+      },
+      planningDurations: planning({
+        long: { minimum: 20, unit: "BUSINESS_DAY", overlapPolicy: "PRE_CONSTRUCTION" },
+        short: { minimum: 5, unit: "BUSINESS_DAY", overlapPolicy: "PRE_CONSTRUCTION" },
+      }),
+    });
+    const nodes = new Map(
+      result.projectTimeline?.nodes.map((node) => [node.procedureId, node]),
+    );
+
+    expect(result.projectTimeline).toMatchObject({
+      projectStartDate: "2026-01-05",
+      adjustedConstructionStartDate: "2026-02-01",
+      constructionDelayCalendarDays: 0,
+    });
+    expect(nodes.get("long")).toMatchObject({
+      startDate: "2026-01-05",
+      finishDate: "2026-01-30",
+    });
+    expect(nodes.get("short")).toMatchObject({
+      startDate: "2026-01-26",
+      finishDate: "2026-01-30",
+    });
   });
 
   it("calculates business-day, calendar-day and month durations without unit approximation", () => {
@@ -328,21 +418,74 @@ describe("automatic integrated construction timeline", () => {
       result.projectTimeline?.nodes.map((node) => [node.procedureId, node]),
     );
     expect(nodes.get("business")).toMatchObject({
-      startDate: "2026-01-02",
-      finishDate: "2026-01-05",
+      startDate: "2026-05-27",
+      finishDate: "2026-05-28",
       processingUnit: "BUSINESS_DAY",
     });
     expect(nodes.get("calendar")).toMatchObject({
-      startDate: "2026-01-06",
-      finishDate: "2026-01-08",
+      startDate: "2026-05-29",
+      finishDate: "2026-05-31",
       processingUnit: "CALENDAR_DAY",
     });
     expect(nodes.get("month")).toMatchObject({
-      startDate: "2026-01-09",
-      finishDate: "2026-02-08",
+      startDate: "2026-06-01",
+      finishDate: "2026-06-30",
       processingUnit: "MONTH",
     });
-    expect(result.projectTimeline?.permitLeadCalendarDays).toBe(38);
+    expect(result.projectTimeline?.permitLeadCalendarDays).toBe(35);
+  });
+
+  it("rewinds start-to-start and finish-to-finish lags in their original units", () => {
+    const result = calculateSchedule({
+      decisions: decisions(["ss-first", "ss-next", "ff-first", "ff-next"]),
+      edges: [
+        edge("ss", "ss-first", "ss-next", {
+          relation: "START_TO_START",
+          lag: 2,
+          lagUnit: "CALENDAR_DAY",
+        }),
+        edge("ff", "ff-first", "ff-next", {
+          relation: "FINISH_TO_FINISH",
+          lag: 1,
+          lagUnit: "BUSINESS_DAY",
+        }),
+      ],
+      durations: durations({ "ss-first": 4, "ss-next": 3, "ff-first": 2, "ff-next": 4 }),
+      scenario: "MIN",
+      includeConditional: true,
+      includePractical: true,
+      constructionPlan: {
+        assessmentDate: "2026-01-02",
+        plannedStartDate: "2026-07-01",
+        plannedEndDate: "2026-08-31",
+      },
+      planningDurations: planning({
+        "ss-first": { minimum: 4, unit: "CALENDAR_DAY", overlapPolicy: "PRE_CONSTRUCTION" },
+        "ss-next": { minimum: 3, unit: "CALENDAR_DAY", overlapPolicy: "PRE_CONSTRUCTION" },
+        "ff-first": { minimum: 2, unit: "BUSINESS_DAY", overlapPolicy: "PRE_CONSTRUCTION" },
+        "ff-next": { minimum: 4, unit: "BUSINESS_DAY", overlapPolicy: "PRE_CONSTRUCTION" },
+      }),
+    });
+    const nodes = new Map(
+      result.projectTimeline?.nodes.map((node) => [node.procedureId, node]),
+    );
+
+    expect(nodes.get("ss-first")).toMatchObject({
+      startDate: "2026-06-26",
+      finishDate: "2026-06-29",
+    });
+    expect(nodes.get("ss-next")).toMatchObject({
+      startDate: "2026-06-28",
+      finishDate: "2026-06-30",
+    });
+    expect(nodes.get("ff-first")).toMatchObject({
+      startDate: "2026-06-26",
+      finishDate: "2026-06-29",
+    });
+    expect(nodes.get("ff-next")).toMatchObject({
+      startDate: "2026-06-25",
+      finishDate: "2026-06-30",
+    });
   });
 
   it("clamps month-based durations to the last day of shorter months", () => {
@@ -355,7 +498,7 @@ describe("automatic integrated construction timeline", () => {
       includePractical: true,
       constructionPlan: {
         assessmentDate: "2026-01-31",
-        plannedStartDate: "2026-06-01",
+        plannedStartDate: "2026-03-31",
         plannedEndDate: "2026-12-31",
       },
       planningDurations: planning({
@@ -368,13 +511,13 @@ describe("automatic integrated construction timeline", () => {
     });
 
     expect(result.projectTimeline?.nodes[0]).toMatchObject({
-      startDate: "2026-01-31",
-      finishDate: "2026-02-27",
+      startDate: "2026-02-28",
+      finishDate: "2026-03-27",
       processingUnit: "MONTH",
     });
   });
 
-  it("moves construction and completion when pre-construction work overruns the plan", () => {
+  it("rewinds long pre-construction work instead of moving the construction plan", () => {
     const result = calculateSchedule({
       decisions: decisions(["permit"]),
       edges: [],
@@ -397,15 +540,63 @@ describe("automatic integrated construction timeline", () => {
     });
 
     expect(result.projectTimeline).toMatchObject({
+      projectStartDate: "2025-11-01",
       plannedConstructionStartDate: "2026-02-01",
       plannedConstructionEndDate: "2026-03-31",
-      adjustedConstructionStartDate: "2026-04-02",
-      constructionCompletionDate: "2026-05-30",
-      operationReadyDate: "2026-05-30",
+      adjustedConstructionStartDate: "2026-02-01",
+      constructionCompletionDate: "2026-03-31",
+      operationReadyDate: "2026-03-31",
       constructionCalendarDays: 59,
-      constructionDelayCalendarDays: 60,
-      totalCalendarDays: 149,
+      constructionDelayCalendarDays: 0,
+      totalCalendarDays: 151,
     });
+  });
+
+  it("moves construction only when a fixed completion checkpoint makes the plan infeasible", () => {
+    const result = calculateSchedule({
+      decisions: decisions(["checkpoint", "permit"]),
+      edges: [edge("checkpoint-permit", "checkpoint", "permit")],
+      durations: durations({ checkpoint: null, permit: 5 }),
+      scenario: "MIN",
+      includeConditional: true,
+      includePractical: true,
+      constructionPlan: {
+        assessmentDate: "2026-02-05",
+        plannedStartDate: "2026-02-01",
+        plannedEndDate: "2026-03-31",
+      },
+      planningDurations: planning({
+        checkpoint: {
+          minimum: 0,
+          unit: "CALENDAR_DAY",
+          overlapPolicy: "PRE_CONSTRUCTION",
+          evidenceType: "INSUFFICIENT_DATA",
+          completedCheckpoint: {
+            label: "관계기관 협의 완료",
+            completedDate: "2026-02-05",
+            confirmedAsOfDate: "2026-02-05",
+          },
+        },
+        permit: {
+          minimum: 5,
+          unit: "BUSINESS_DAY",
+          overlapPolicy: "PRE_CONSTRUCTION",
+        },
+      }),
+    });
+
+    expect(result.projectTimeline).toMatchObject({
+      plannedConstructionStartDate: "2026-02-01",
+      adjustedConstructionStartDate: "2026-02-12",
+      constructionCompletionDate: "2026-04-11",
+      constructionDelayCalendarDays: 11,
+    });
+    expect(result.projectTimeline?.nodes.find(
+      (node) => node.procedureId === "checkpoint",
+    )).toMatchObject({ startDate: "2026-02-05", finishDate: "2026-02-05" });
+    expect(result.projectTimeline?.nodes.find(
+      (node) => node.procedureId === "permit",
+    )).toMatchObject({ startDate: "2026-02-05", finishDate: "2026-02-11" });
   });
 
   it("absorbs a during-construction procedure that finishes before completion", () => {
@@ -429,7 +620,7 @@ describe("automatic integrated construction timeline", () => {
     expect(result.projectTimeline).toMatchObject({
       constructionCompletionDate: "2026-05-31",
       operationReadyDate: "2026-05-31",
-      totalCalendarDays: 150,
+      totalCalendarDays: 120,
       absorbedByConstructionCalendarDays: 33,
     });
     expect(
@@ -465,7 +656,7 @@ describe("automatic integrated construction timeline", () => {
     expect(result.projectTimeline).toMatchObject({
       constructionCompletionDate: "2026-05-31",
       operationReadyDate: "2026-06-05",
-      totalCalendarDays: 155,
+      totalCalendarDays: 125,
     });
     expect(
       result.projectTimeline?.nodes.find(
@@ -507,7 +698,7 @@ describe("automatic integrated construction timeline", () => {
     expect(result.projectTimeline).toMatchObject({
       operationReadyDate: "2026-06-05",
       postOperationCompletionDate: "2026-07-05",
-      totalCalendarDays: 155,
+      totalCalendarDays: 125,
       postOperationProcedureIds: ["report"],
     });
     expect(
@@ -545,7 +736,7 @@ describe("automatic integrated construction timeline", () => {
       totalCalendarDays: null,
       operationReadyDate: null,
       minimumKnownCompletionDate: "2026-05-31",
-      minimumKnownCalendarDays: 150,
+      minimumKnownCalendarDays: 120,
       unknownPlanningDurationProcedureIds: ["unknown"],
     });
     expect(result.projectTimeline?.warnings.join(" ")).toContain("일정 하한");
@@ -577,7 +768,7 @@ describe("automatic integrated construction timeline", () => {
     expect(result.projectTimeline).toMatchObject({
       durationStatus: "CALCULATED",
       calculationBasis: "USER_EXPECTED",
-      totalCalendarDays: 160,
+      totalCalendarDays: 130,
       operationReadyDate: "2026-06-10",
       unknownPlanningDurationProcedureIds: [],
       officialUnknownPlanningDurationProcedureIds: ["unknown"],
@@ -800,7 +991,7 @@ describe("automatic integrated construction timeline", () => {
     });
     expect(result.projectTimeline?.nodes.find(
       (node) => node.procedureId === "successor",
-    )?.startDate).toBe("2026-01-02");
+    )?.startDate).toBe("2026-01-26");
   });
 
   it("exposes only validated completed checkpoints when construction dates are absent", () => {
@@ -908,9 +1099,9 @@ describe("automatic integrated construction timeline", () => {
       includeConditional: true,
       includePractical: true,
       constructionPlan: {
-        assessmentDate: "2040-12-01",
-        plannedStartDate: "2040-12-01",
-        plannedEndDate: "2040-12-31",
+        assessmentDate: "2025-01-01",
+        plannedStartDate: "2025-01-10",
+        plannedEndDate: "2025-03-31",
       },
       planningDurations: planning({
         permit: {
@@ -975,8 +1166,8 @@ describe("automatic integrated construction timeline", () => {
       includePractical: true,
       constructionPlan: {
         assessmentDate: "2026-08-21",
-        plannedStartDate: "2025-01-01",
-        plannedEndDate: "2025-12-31",
+        plannedStartDate: "2026-07-01",
+        plannedEndDate: "2026-12-31",
       },
       planningDurations: planning({
         permit: {
@@ -988,12 +1179,18 @@ describe("automatic integrated construction timeline", () => {
     });
 
     expect(result.projectTimeline).toMatchObject({
-      projectStartDate: "2025-01-01",
-      plannedConstructionStartDate: "2025-01-01",
-      plannedConstructionEndDate: "2025-12-31",
-      constructionCalendarDays: 365,
+      projectStartDate: "2026-06-24",
+      plannedConstructionStartDate: "2026-07-01",
+      plannedConstructionEndDate: "2026-12-31",
+      constructionCalendarDays: 184,
     });
-    expect(result.projectTimeline?.warnings.join(" ")).toContain("검토 기준일보다 빠르므로");
+    expect(result.projectTimeline?.nodes[0]).toMatchObject({
+      startDate: "2026-06-24",
+      finishDate: "2026-06-30",
+    });
+    expect(result.projectTimeline?.warnings.join(" ")).toContain(
+      "검토 기준일 전에 인허가 착수",
+    );
   });
 
   it("detects a cycle present only in the integrated mixed-unit graph", () => {

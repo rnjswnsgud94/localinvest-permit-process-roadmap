@@ -330,6 +330,12 @@ export function Swimlane({
     if (!grid) return;
 
     const gridRect = grid.getBoundingClientRect();
+    const width = grid.scrollWidth;
+    // `scrollHeight` includes overflow created by the connector SVG itself.
+    // Reading it here would let a previously taller overlay keep the grid tall
+    // after cards or lanes are removed. `clientHeight` reflects the rendered
+    // grid tracks and lets the overlay shrink with the actual flow.
+    const height = grid.clientHeight;
     const visibleCardRects = new Map<string, CardRect>();
     for (const [id, card] of cardRefs.current.entries()) {
       const rect = card.getBoundingClientRect();
@@ -338,7 +344,7 @@ export function Swimlane({
     const routeConnector = createObstacleAvoidingConnectorRouter(
       visibleCardRects,
       gridRect,
-      { width: grid.scrollWidth, height: grid.scrollHeight },
+      { width, height },
     );
     const paths = connectorEdges.flatMap(({ edge, verifiedSequence, selected }) => {
       const path = routeConnector(edge.from, edge.to);
@@ -353,8 +359,8 @@ export function Swimlane({
     });
 
     setConnectorLayout({
-      width: grid.scrollWidth,
-      height: grid.scrollHeight,
+      width,
+      height,
       paths,
     });
   }, [connectorEdges]);

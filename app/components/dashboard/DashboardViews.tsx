@@ -566,7 +566,7 @@ export function ScheduleView({ schedule, answers }: { schedule: ScheduleResult; 
         <div><span>가동 후 별도</span><strong>{postNodes.length}</strong><small>개 절차</small></div>
       </div>
       <div className="timeline-milestones" aria-label="주요 일정">
-        <div><span>검토 시작</span><strong>{timeline.projectStartDate}</strong></div>
+        <div><span>계획상 인허가 착수</span><strong>{timeline.projectStartDate}</strong></div>
         <div><span>계획 착공</span><strong>{timeline.plannedConstructionStartDate}</strong></div>
         <div><span>계획 준공</span><strong>{timeline.plannedConstructionEndDate}</strong><small>사용자 입력</small></div>
         <div className={timeline.constructionDelayCalendarDays ? "is-delayed" : ""}>

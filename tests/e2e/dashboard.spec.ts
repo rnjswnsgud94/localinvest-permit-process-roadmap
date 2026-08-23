@@ -57,6 +57,23 @@ test("desktop result summary uses the available width without cramped copy", asy
     markerWidth: "12",
     markerViewBox: "-1 -5 12 10",
   });
+
+  for (const lane of await page.locator(".lane-header").all()) await lane.click();
+  await expect(page.locator('.lane-header[aria-expanded="false"]')).toHaveCount(
+    await page.locator(".lane-header").count(),
+  );
+  const collapsedFlowGeometry = await page.locator(".swimlane-grid").evaluate((element) => {
+    const connector = element.querySelector(".dependency-connector-layer");
+    return {
+      gridHeight: element.clientHeight,
+      scrollHeight: element.scrollHeight,
+      connectorHeight: Number(connector?.getAttribute("height")),
+    };
+  });
+  expect(Math.abs(
+    collapsedFlowGeometry.connectorHeight - collapsedFlowGeometry.gridHeight,
+  )).toBeLessThanOrEqual(1);
+  expect(collapsedFlowGeometry.scrollHeight - collapsedFlowGeometry.gridHeight).toBeLessThanOrEqual(1);
 });
 
 test("a card user estimate updates the scenario and survives reload", async ({ page }) => {

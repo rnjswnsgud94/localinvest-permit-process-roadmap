@@ -137,7 +137,7 @@ export function TotalDurationDialog({
         ) : (
           <div className="duration-flow-body">
             <section className="duration-route-summary" aria-label={`${isMinimumOnly ? "확인된 일정 하한" : "총 소요기간"} 주요 구간`}>
-              <div><span>검토 시작</span><strong>{timeline.projectStartDate}</strong></div>
+              <div><span>계획상 인허가 착수</span><strong>{timeline.projectStartDate}</strong></div>
               <i aria-hidden="true">→</i>
               <div><span>착공 전 인허가</span><strong>{timeline.permitLeadCalendarDays ?? timeline.plannedPreConstructionCalendarDays}일</strong></div>
               <i aria-hidden="true">→</i>
