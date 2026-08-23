@@ -6,7 +6,7 @@ const projectRoot = fileURLToPath(new URL(".", import.meta.url));
 
 export default defineConfig({
   root: fileURLToPath(new URL("./github-pages", import.meta.url)),
-  base: "/didactic-octo-palm-tree/",
+  base: "/localinvest-permit-process-roadmap/",
   publicDir: fileURLToPath(new URL("./public", import.meta.url)),
   plugins: [react()],
   resolve: {

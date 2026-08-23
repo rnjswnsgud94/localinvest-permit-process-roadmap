@@ -17,7 +17,7 @@
 
 ## 외부 공유
 
-- GitHub Pages 정적 미러: <https://rnjswnsgud94.github.io/didactic-octo-palm-tree/>
+- GitHub Pages 정적 미러: <https://rnjswnsgud94.github.io/localinvest-permit-process-roadmap/>
 - 실시간 법령 API 검증 포함 운영 사이트: <https://factory-permit-dashboard.rnjswnsgud94.chatgpt.site>
 
 GitHub Pages에서는 대시보드 판정, 입력값 복원, 공유 링크와 공식 법령 원문 링크를 사용할 수 있습니다. 서버 API가 없는 정적 호스팅에서는 검증 저장본이 있는 지역만 ELIS 상세 조례 링크를 표시하고, 그 밖의 지역은 상단 관할명에서 ELIS 현행 목록을 확인합니다. 전 지역 실시간 ELIS 조회와 `API 최신성 확인`은 운영 사이트에서 제공합니다.
