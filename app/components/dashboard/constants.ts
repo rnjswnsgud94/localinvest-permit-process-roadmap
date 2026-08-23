@@ -1,4 +1,4 @@
-import type { ApplicabilityStatus } from "@/lib/domain/schemas";
+import type { ApplicabilityStatus, Procedure } from "@/lib/domain/schemas";
 import { supplementalPermitTargetNames } from "@/lib/data/supplemental-permit-targets";
 
 export const stageLabels = {
@@ -9,6 +9,27 @@ export const stageLabels = {
   PRE_OPERATION: "준공·가동 준비",
   POST_OPERATION: "가동 이후",
 } as const;
+
+export type ProcedureSortMode = "STAGE" | "NAME";
+
+export const procedureSortLabels: Record<ProcedureSortMode, string> = {
+  STAGE: "일정 단계순",
+  NAME: "가나다순",
+};
+
+const procedureStageOrder = Object.keys(stageLabels) as Procedure["stage"][];
+
+export function compareProcedures(
+  left: Pick<Procedure, "id" | "name" | "stage">,
+  right: Pick<Procedure, "id" | "name" | "stage">,
+  mode: ProcedureSortMode,
+) {
+  const nameOrder = left.name.localeCompare(right.name, "ko-KR");
+  if (mode === "NAME") return nameOrder || left.id.localeCompare(right.id);
+  return procedureStageOrder.indexOf(left.stage) - procedureStageOrder.indexOf(right.stage)
+    || nameOrder
+    || left.id.localeCompare(right.id);
+}
 
 export const laneLabels = {
   COMPANY: "사업자·설계·대행",

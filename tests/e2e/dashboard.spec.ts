@@ -116,6 +116,7 @@ test("desktop wizard keeps its navigation visible and scrolls independently", as
     const footer = element.querySelector<HTMLElement>(".wizard-footer");
     if (!bodyElement || !footer) return null;
     return {
+      panelHeight: panel.height,
       panelBottom: panel.bottom,
       footerBottom: footer.getBoundingClientRect().bottom,
       viewportHeight: window.innerHeight,
@@ -130,6 +131,7 @@ test("desktop wizard keeps its navigation visible and scrolls independently", as
   expect(geometry).not.toBeNull();
   expect(geometry!.panelBottom).toBeLessThanOrEqual(geometry!.viewportHeight + 1);
   expect(geometry!.footerBottom).toBeLessThanOrEqual(geometry!.viewportHeight + 1);
+  expect(geometry!.bodyClientHeight / geometry!.panelHeight).toBeGreaterThan(0.55);
   expect(geometry!.bodyScrollHeight).toBeGreaterThan(geometry!.bodyClientHeight);
   expect(geometry!.remainingPageHeight).toBeGreaterThan(500);
 
@@ -140,7 +142,26 @@ test("desktop wizard keeps its navigation visible and scrolls independently", as
 
   await nextButton.click();
   await expect(wizard.getByText("2 / 5", { exact: true })).toBeVisible();
+  await expect.poll(() => body.evaluate((element) => element.scrollTop)).toBe(0);
   await expect(nextButton).toBeInViewport();
+});
+
+test("procedure lists expose stage and Korean-name sorting", async ({ page }) => {
+  await gotoHydratedDashboard(page);
+
+  await page.getByRole("button", { name: /전체 인허가 백과/ }).click();
+  const registry = page.getByRole("dialog", { name: "전체 인허가 백과" });
+  const registrySort = registry.getByRole("combobox", { name: "전체 인허가 정렬" });
+  await expect(registrySort).toHaveValue("NAME");
+  await registrySort.selectOption("STAGE");
+  await expect(registry.getByRole("status")).toContainText("일정 단계순");
+  await registry.getByRole("button", { name: "전체 인허가 백과 닫기" }).click();
+
+  await page.getByRole("tab", { name: "전체 절차" }).click();
+  const listSort = page.getByRole("combobox", { name: "전체 절차 정렬" });
+  await expect(listSort).toHaveValue("STAGE");
+  await listSort.selectOption("NAME");
+  await expect(listSort).toHaveValue("NAME");
 });
 
 test("a card user estimate updates the scenario and survives reload", async ({ page }) => {

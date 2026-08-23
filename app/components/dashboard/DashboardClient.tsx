@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import {
+  compareProcedures,
   procedureCategoryForDecision,
   procedureCategoryOrder,
   procedureCategorySummaries,
@@ -10,6 +11,7 @@ import {
   tabLabels,
   type DashboardTab,
   type ProcedureCategory,
+  type ProcedureSortMode,
 } from "@/app/components/dashboard/constants";
 import { DashboardTabIcon } from "@/app/components/dashboard/DashboardTabIcon";
 import { ActionPlanView, GapsView, LegalView, ProcedureList, ScheduleView } from "@/app/components/dashboard/DashboardViews";
@@ -203,6 +205,7 @@ export function DashboardClient() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [domain, setDomain] = useState("ALL");
+  const [procedureSortMode, setProcedureSortMode] = useState<ProcedureSortMode>("STAGE");
   const [showExcluded, setShowExcluded] = useState(false);
   const [requiredOnly, setRequiredOnly] = useState(false);
   const [includeConditional, setIncludeConditional] = useState(true);
@@ -339,6 +342,9 @@ export function DashboardClient() {
     const haystack = `${decision.procedure.name} ${decision.procedure.aliases.join(" ")} ${decision.procedure.receivingAuthority} ${legalText}`.toLowerCase();
     return haystack.includes(search.trim().toLowerCase());
   });
+  const sortedListDecisions = [...filteredDecisions].sort((left, right) =>
+    compareProcedures(left.procedure, right.procedure, procedureSortMode),
+  );
   const selectedDecision = evaluation.decisions.find((decision) => decision.procedure.id === selectedId) ?? null;
 
   function changeAnswer<K extends keyof ScenarioAnswers>(key: K, value: ScenarioAnswers[K]) {
@@ -657,6 +663,19 @@ export function DashboardClient() {
             <div className="filterbar">
               <label className="search-field"><span className="sr-only">절차 검색</span><i aria-hidden="true" /><input type="search" placeholder="절차·기관 검색" value={search} onChange={(event) => setSearch(event.target.value)} /></label>
               <label><span className="sr-only">분야 필터</span><select value={domain} onChange={(event) => setDomain(event.target.value)}><option value="ALL">모든 분야</option>{domains.map((item) => <option key={item}>{item}</option>)}</select></label>
+              {activeTab === "LIST" ? (
+                <label className="procedure-sort-control">
+                  <span>정렬</span>
+                  <select
+                    aria-label="전체 절차 정렬"
+                    value={procedureSortMode}
+                    onChange={(event) => setProcedureSortMode(event.target.value as ProcedureSortMode)}
+                  >
+                    <option value="STAGE">일정 단계순</option>
+                    <option value="NAME">가나다순</option>
+                  </select>
+                </label>
+              ) : null}
               <label className="check-control"><input type="checkbox" checked={includeConditional} onChange={(event) => setIncludeConditional(event.target.checked)} /><span>추가 확인 절차 일정 포함</span></label>
               <label className="check-control"><input type="checkbox" checked={requiredOnly} onChange={(event) => setRequiredOnly(event.target.checked)} /><span>로드맵 포함만 보기</span></label>
               <label className="check-control"><input type="checkbox" checked={includePractical} onChange={(event) => setIncludePractical(event.target.checked)} /><span>실무 선행 포함</span></label>
@@ -667,7 +686,7 @@ export function DashboardClient() {
           <div id="dashboard-result-panel" className="view-panel" role="tabpanel" aria-labelledby={`tab-${activeTab}`}>
             {activeTab === "SWIMLANE" ? <Swimlane decisions={filteredDecisions} schedule={schedule} assessmentDate={answers.assessmentDate} selectedId={selectedId} userDurationOverrides={answers.userDurationOverrides} onSelect={setSelectedId} onUserDurationOverrideChange={changeUserDurationOverride} /> : null}
             {activeTab === "ACTION" ? <ActionPlanView decisions={evaluation.decisions} schedule={schedule} answers={answers} onSelect={setSelectedId} /> : null}
-            {activeTab === "LIST" ? <ProcedureList decisions={filteredDecisions} schedule={schedule} onSelect={setSelectedId} /> : null}
+            {activeTab === "LIST" ? <ProcedureList decisions={sortedListDecisions} schedule={schedule} onSelect={setSelectedId} /> : null}
             {activeTab === "SCHEDULE" ? <ScheduleView schedule={schedule} answers={answers} /> : null}
             {activeTab === "LEGAL" ? <LegalView decisions={evaluation.decisions.filter((decision) => procedureCategoryForDecision(decision) !== "NOT_REQUIRED" || decision.specialLawImpacts?.length)} onSelect={setSelectedId} /> : null}
             {activeTab === "GAPS" ? <GapsView decisions={evaluation.decisions} /> : null}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { catalog, type ScenarioAnswers } from "@/lib/data/catalog";
 import {
@@ -96,7 +96,7 @@ function answeredCount(values: unknown[]) {
 }
 
 function progressiveStatus(count: number) {
-  return count ? `${count}개 입력됨` : "필요할 때 펼치기";
+  return count ? `${count}개 입력됨` : "선택사항 · 미입력";
 }
 
 function Question({
@@ -114,6 +114,21 @@ function Question({
       {hint ? <p className="question-hint">{hint}</p> : null}
       {children}
     </fieldset>
+  );
+}
+
+function ReviewSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="wizard-review-section" aria-label={title}>
+      <header><strong>{title}</strong></header>
+      {children}
+    </section>
   );
 }
 
@@ -215,6 +230,7 @@ function NumberInput({
 
 export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
   const [assessmentDateError, setAssessmentDateError] = useState("");
+  const bodyRef = useRef<HTMLDivElement>(null);
   const assessmentDateIsValid = isValidAssessmentDate(answers.assessmentDate);
   const selectedIndustryProfile = getIndustryProfile(answers.industryCategory);
   const municipalities = listSupportedMunicipalities(answers.province);
@@ -240,28 +256,18 @@ export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
     answers.publicWaterOccupationRequired,
     answers.waterSourceProtectionZone,
   ]);
-  const environmentalDetailAnsweredCount = answeredCount([
-    answers.wasteFacility,
-    answers.environmentalAssessmentType,
-    answers.integratedEnvironmentalPermitTarget,
-    answers.supplementalPermitReviewedIds,
+  const gasSafetyAnsweredCount = answeredCount([
+    answers.specificHighPressureGasUse,
+    answers.lpgSpecificUseFacility,
+    answers.cityGasSpecificUseFacility,
+    answers.psmCovered,
+    answers.psmCoversSameHazardPreventionScope,
+    answers.fireSafetyManagerRequired,
+    answers.heatUseEquipment,
+    answers.hazardousMachineryInspectionRequired,
+    answers.safetyManagerRequired,
+    answers.healthManagerRequired,
   ]);
-  const infrastructureDetailAnsweredCount = answeredCount([
-    answers.fireFacilityWork,
-    answers.fireWorkSupervisionTarget,
-    answers.firstFireSelfInspectionTarget,
-    answers.privateElectricalFacilityWork,
-    answers.energyUsePlanRequired,
-    answers.gridImpactAssessmentRequired,
-    answers.groundwaterDevelopment,
-    answers.publicSewerConnection,
-    answers.privateSewageTreatmentFacility,
-  ]);
-  const constructionDetailAnsweredCount = answeredCount([
-    answers.safetyManagementPlanRequired,
-    answers.specificWorkReportRequired,
-  ]);
-
   function changeIndustry(industryCategory: string) {
     onChange("industryCategory", industryCategory);
     if (industryCategory !== AI_DATA_CENTER_INDUSTRY_ID) {
@@ -384,13 +390,17 @@ export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
     }
   }
 
+  function changeStep(step: number) {
+    if (bodyRef.current) bodyRef.current.scrollTop = 0;
+    onStepChange(step);
+  }
+
   return (
     <aside className="wizard-panel" aria-label="사업조건 입력">
       <div className="wizard-heading">
         <div>
           <span className="eyebrow">사업 정보 입력</span>
-          <h2>사업조건 설정</h2>
-          <p>핵심 질문부터 입력하고, 필요한 상세항목만 펼치세요.</p>
+          <h2>{steps[activeStep].title}</h2>
         </div>
         <span className="step-count">{activeStep + 1} / {steps.length}</span>
       </div>
@@ -402,16 +412,16 @@ export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
             key={step.title}
             className={index === activeStep ? "is-active" : ""}
             aria-current={index === activeStep ? "step" : undefined}
-            onClick={() => onStepChange(index)}
+            onClick={() => changeStep(index)}
           >
             <span>{index + 1}</span>
             <strong>{step.title}</strong>
-            <small>{step.hint}</small>
+            <small className="sr-only">{step.hint}</small>
           </button>
         ))}
       </nav>
 
-      <div className="wizard-body">
+      <div className="wizard-body" ref={bodyRef}>
         {activeStep === 0 ? (
           <>
             <Question label="투자 유형">
@@ -624,7 +634,7 @@ export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
                 <details className="wizard-optional-section special-law-candidates-details">
                   <summary>
                     <strong>특별법 후보 {automaticSpecialLawCandidates.length}건</strong>
-                    <span>{confirmedAutomaticSpecialLawCount ? `요건 확인 ${confirmedAutomaticSpecialLawCount}건` : "눌러서 확인"}</span>
+                    <span>요건 확인 {confirmedAutomaticSpecialLawCount}/{automaticSpecialLawCandidates.length}</span>
                   </summary>
                   <div className="special-law-candidate-list">
                   {automaticSpecialLawCandidates.map((law) => {
@@ -880,41 +890,6 @@ export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
                 ]}
               />
             </Question>
-            <details className="wizard-optional-section">
-              <summary>
-                <strong>건축 전문검토 항목</strong>
-                <span>해당 시 입력</span>
-              </summary>
-              <div className="wizard-optional-body">
-                <Question label="건축위원회 심의 대상 여부" hint="건축물 규모·용도와 관할 건축조례상 심의대상을 확인한 결과를 입력합니다.">
-                  <TriState
-                    value={answers.buildingCommitteeReviewRequired}
-                    yesLabel="대상"
-                    noLabel="비대상"
-                    onChange={(value) => onChange("buildingCommitteeReviewRequired", value)}
-                  />
-                </Question>
-                <Question label="경관심의 대상 여부" hint="경관법, 경관계획과 관할 경관조례상 개발사업·건축물 심의대상을 확인한 결과를 입력합니다.">
-                  <TriState
-                    value={answers.landscapeReviewRequired}
-                    yesLabel="대상"
-                    noLabel="비대상"
-                    onChange={(value) => onChange("landscapeReviewRequired", value)}
-                  />
-                </Question>
-                <Question
-                  label="기계설비법 착공 전 확인·사용 전 검사 대상 여부"
-                  hint="건축물 용도·연면적과 냉난방·환기·급배수 등 기계설비 공사 범위를 검토한 결과를 입력합니다."
-                >
-                  <TriState
-                    value={answers.mechanicalEquipmentActTarget}
-                    yesLabel="대상"
-                    noLabel="비대상"
-                    onChange={(value) => onChange("mechanicalEquipmentActTarget", value)}
-                  />
-                </Question>
-              </div>
-            </details>
             <Question label="사업 후 총 연면적" hint="사업 완료 후 건축물 전체 연면적을 입력합니다.">
               <NumberInput label="총 연면적" unit="㎡" value={answers.totalAreaM2} onChange={(value) => onChange("totalAreaM2", value)} />
               {answers.totalAreaM2 !== null ? (
@@ -939,6 +914,35 @@ export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
                 <TriState value={answers.forestRestorationObligation} yesLabel="복구의무 있음" noLabel="면제·제외 확인" onChange={(value) => onChange("forestRestorationObligation", value)} />
               </Question>
             ) : null}
+            <ReviewSection title="건축 전문검토">
+              <Question label="건축위원회 심의 대상 여부" hint="건축물 규모·용도와 관할 건축조례상 심의대상을 확인한 결과를 입력합니다.">
+                <TriState
+                  value={answers.buildingCommitteeReviewRequired}
+                  yesLabel="대상"
+                  noLabel="비대상"
+                  onChange={(value) => onChange("buildingCommitteeReviewRequired", value)}
+                />
+              </Question>
+              <Question label="경관심의 대상 여부" hint="경관법, 경관계획과 관할 경관조례상 개발사업·건축물 심의대상을 확인한 결과를 입력합니다.">
+                <TriState
+                  value={answers.landscapeReviewRequired}
+                  yesLabel="대상"
+                  noLabel="비대상"
+                  onChange={(value) => onChange("landscapeReviewRequired", value)}
+                />
+              </Question>
+              <Question
+                label="기계설비법 착공 전 확인·사용 전 검사 대상 여부"
+                hint="건축물 용도·연면적과 냉난방·환기·급배수 등 기계설비 공사 범위를 검토한 결과를 입력합니다."
+              >
+                <TriState
+                  value={answers.mechanicalEquipmentActTarget}
+                  yesLabel="대상"
+                  noLabel="비대상"
+                  onChange={(value) => onChange("mechanicalEquipmentActTarget", value)}
+                />
+              </Question>
+            </ReviewSection>
             <details className={`wizard-optional-section wizard-progressive-section${siteDetailAnsweredCount ? " has-values" : ""}`}>
               <summary>
                 <strong>부지·건축 추가 확인</strong>
@@ -1062,65 +1066,58 @@ export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
             <Question label="소음·진동배출시설 해당 여부" hint="기계·기구의 종류·출력과 입지를 관계 법령의 배출시설 분류표와 대조한 결과를 입력하세요.">
               <TriState value={answers.noiseVibrationFacility} onChange={(value) => onChange("noiseVibrationFacility", value)} />
             </Question>
-            <details className={`wizard-optional-section wizard-progressive-section${environmentalDetailAnsweredCount ? " has-values" : ""}`}>
+            <ReviewSection title="환경평가·통합허가">
+              <Question label="폐기물처리시설 설치 여부">
+                <TriState value={answers.wasteFacility} onChange={(value) => onChange("wasteFacility", value)} />
+              </Question>
+              <Question label="환경영향평가 검토 결과" hint="사업유형·용도지역·개발면적을 기준으로 본안/소규모 여부를 구분합니다.">
+                <select
+                  value={answers.environmentalAssessmentType ?? "UNKNOWN"}
+                  onChange={(event) => onChange("environmentalAssessmentType", event.target.value === "UNKNOWN" ? null : event.target.value as ScenarioAnswers["environmentalAssessmentType"])}
+                >
+                  <option value="NONE">비대상</option>
+                  <option value="ENVIRONMENTAL">환경영향평가 대상</option>
+                  <option value="SMALL">소규모 환경영향평가 대상</option>
+                  <option value="UNKNOWN">미확인</option>
+                </select>
+              </Question>
+              <Question label="통합환경허가 대상 여부" hint="대상 업종과 대기·수질 1·2종 등 규모를 검토한 결과를 입력합니다.">
+                <TriState value={answers.integratedEnvironmentalPermitTarget} yesLabel="대상" noLabel="비대상" onChange={(value) => onChange("integratedEnvironmentalPermitTarget", value)} />
+              </Question>
+            </ReviewSection>
+            <details className="wizard-optional-section supplemental-permit-review">
               <summary>
-                <strong>환경평가·기타 신고</strong>
-                <span>{progressiveStatus(environmentalDetailAnsweredCount)}</span>
+                <strong>공사·환경 법정 임계값 정밀검토</strong>
+                <span>{answers.supplementalPermitReviewedIds.length}/{supplementalPermitTargetIds.length} 검토 · {answers.supplementalPermitTargetIds.length}개 대상</span>
               </summary>
               <div className="wizard-optional-body">
-                <p className="progressive-section-intro">환경평가, 통합환경허가 또는 개별 법정 임계값을 검토한 경우에만 입력하세요.</p>
-                <Question label="폐기물처리시설 설치 여부">
-                  <TriState value={answers.wasteFacility} onChange={(value) => onChange("wasteFacility", value)} />
-                </Question>
-                <Question label="환경영향평가 검토 결과" hint="사업유형·용도지역·개발면적을 기준으로 본안/소규모 여부를 구분합니다.">
-                  <select
-                    value={answers.environmentalAssessmentType ?? "UNKNOWN"}
-                    onChange={(event) => onChange("environmentalAssessmentType", event.target.value === "UNKNOWN" ? null : event.target.value as ScenarioAnswers["environmentalAssessmentType"])}
-                  >
-                    <option value="NONE">비대상</option>
-                    <option value="ENVIRONMENTAL">환경영향평가 대상</option>
-                    <option value="SMALL">소규모 환경영향평가 대상</option>
-                    <option value="UNKNOWN">미확인</option>
-                  </select>
-                </Question>
-                <Question label="통합환경허가 대상 여부" hint="대상 업종과 대기·수질 1·2종 등 규모를 검토한 결과를 입력합니다.">
-                  <TriState value={answers.integratedEnvironmentalPermitTarget} yesLabel="대상" noLabel="비대상" onChange={(value) => onChange("integratedEnvironmentalPermitTarget", value)} />
-                </Question>
-                <details className="wizard-optional-section supplemental-permit-review">
-                  <summary>
-                    <strong>공사·환경 법정 임계값 정밀검토</strong>
-                    <span>{answers.supplementalPermitReviewedIds.length}/{supplementalPermitTargetIds.length} 검토 · {answers.supplementalPermitTargetIds.length}개 대상</span>
-                  </summary>
-                  <div className="wizard-optional-body">
-                    <p className="supplemental-permit-intro">단순 업종·신축·전력·용수만으로 확정할 수 없는 절차입니다. 법정 시설·수량·공사기준을 대조한 항목만 대상 또는 비대상으로 표시하고, 아직 보지 않은 항목은 미확인으로 남겨 주세요.</p>
-                    <div
-                      className="supplemental-permit-decision-list"
-                      role="group"
-                      aria-label="공사·환경 법정 임계값 검토 결과"
-                    >
-                      {supplementalPermitTargetIds.map((procedureId) => {
-                        const procedureName = procedureNameById.get(procedureId) ?? procedureId;
-                        return (
-                          <div className="supplemental-permit-decision-row" key={procedureId}>
-                            <span>
-                              <strong>{procedureName}</strong>
-                              <small>{supplementalPermitTargetDescriptions[procedureId]}</small>
-                            </span>
-                            <TriState
-                              value={supplementalPermitDecision(procedureId)}
-                              yesLabel="대상"
-                              noLabel="비대상"
-                              unknownLabel="미확인"
-                              ariaLabel={`${procedureName} 대상 여부`}
-                              onChange={(value) => setSupplementalPermitDecision(procedureId, value)}
-                            />
-                          </div>
-                        );
-                      })}
-                    </div>
-                    <small>검토서·산출표·관할기관 회신을 보관하고 사업조건이 바뀌면 다시 확인하세요.</small>
-                  </div>
-                </details>
+                <p className="supplemental-permit-intro">단순 업종·신축·전력·용수만으로 확정할 수 없는 절차입니다. 법정 시설·수량·공사기준을 대조한 항목만 대상 또는 비대상으로 표시하고, 아직 보지 않은 항목은 미확인으로 남겨 주세요.</p>
+                <div
+                  className="supplemental-permit-decision-list"
+                  role="group"
+                  aria-label="공사·환경 법정 임계값 검토 결과"
+                >
+                  {supplementalPermitTargetIds.map((procedureId) => {
+                    const procedureName = procedureNameById.get(procedureId) ?? procedureId;
+                    return (
+                      <div className="supplemental-permit-decision-row" key={procedureId}>
+                        <span>
+                          <strong>{procedureName}</strong>
+                          <small>{supplementalPermitTargetDescriptions[procedureId]}</small>
+                        </span>
+                        <TriState
+                          value={supplementalPermitDecision(procedureId)}
+                          yesLabel="대상"
+                          noLabel="비대상"
+                          unknownLabel="미확인"
+                          ariaLabel={`${procedureName} 대상 여부`}
+                          onChange={(value) => setSupplementalPermitDecision(procedureId, value)}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+                <small>검토서·산출표·관할기관 회신을 보관하고 사업조건이 바뀌면 다시 확인하세요.</small>
               </div>
             </details>
             <Question label="화학물질 취급 여부">
@@ -1185,10 +1182,10 @@ export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
                 <TriState value={answers.highPressureGasBusinessStartTarget} yesLabel="대상" noLabel="비대상" onChange={(value) => onChange("highPressureGasBusinessStartTarget", value)} />
               </Question>
             ) : null}
-            <details className="wizard-optional-section">
+            <details className={`wizard-optional-section wizard-progressive-section${gasSafetyAnsweredCount ? " has-values" : ""}`}>
               <summary>
-                <strong>가스·산업안전 추가 확인</strong>
-                <span>해당 시 입력</span>
+                <strong>가스·PSM·안전관리 전문검토</strong>
+                <span>{progressiveStatus(gasSafetyAnsweredCount)}</span>
               </summary>
               <div className="wizard-optional-body">
                 <Question label="특정고압가스 사용신고 대상 여부" hint="가스 종류와 저장·사용 규모를 검토한 결과를 입력합니다.">
@@ -1252,13 +1249,7 @@ export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
                 <NumberInput label="폐수 발생" unit="㎥/일" value={answers.wastewaterM3Day} onChange={(value) => onChange("wastewaterM3Day", value)} />
               </div>
             </Question>
-            <details className={`wizard-optional-section wizard-progressive-section${infrastructureDetailAnsweredCount ? " has-values" : ""}`}>
-              <summary>
-                <strong>설비·공급 인허가 상세 확인</strong>
-                <span>{progressiveStatus(infrastructureDetailAnsweredCount)}</span>
-              </summary>
-              <div className="wizard-optional-body">
-                <p className="progressive-section-intro">소방, 전기, 에너지, 지하수 또는 하수도 조건을 확인한 경우에만 입력하세요.</p>
+            <ReviewSection title="설비·공급 인허가">
                 <Question label="소방시설공사 대상 여부">
                   <TriState
                     value={answers.fireFacilityWork}
@@ -1299,8 +1290,7 @@ export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
                     <label><span>개인하수처리시설 설치</span><TriState value={answers.privateSewageTreatmentFacility} yesLabel="설치" noLabel="미설치" onChange={(value) => onChange("privateSewageTreatmentFacility", value)} /></label>
                   </div>
                 </Question>
-              </div>
-            </details>
+            </ReviewSection>
             <div className="inline-notice info">
               <strong>공급 일정 확인</strong>
               <span>전력·용수·폐수 인입은 공급기관의 용량 검토와 외부 공사 범위에 따라 달라집니다. 협의 결과가 나오면 공사 일정과 함께 갱신하세요.</span>
@@ -1344,11 +1334,7 @@ export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
                   />
                 </label>
               </div>
-              <details className="wizard-optional-section">
-                <summary>
-                  <strong>설비 설치·시운전 목표일</strong>
-                  <span>선택 입력</span>
-                </summary>
+              <ReviewSection title="설비 설치·시운전 목표일">
                 <div className="two-column-fields construction-date-fields milestone-date-fields">
                   <label>
                     <span>주요 설비 설치완료 예정일</span>
@@ -1360,7 +1346,7 @@ export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
                   </label>
                 </div>
                 <p className="question-hint">사용전검사·가동개시 절차의 목표일 관리에만 사용하며 총 소요기간에는 임의로 합산하지 않습니다.</p>
-              </details>
+              </ReviewSection>
               {answers.plannedConstructionStartDate && answers.plannedConstructionEndDate ? (
                 calendarDayDistance(
                   answers.plannedConstructionStartDate,
@@ -1382,27 +1368,21 @@ export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
               <strong>자동 일정 계산</strong>
               <span>법령·정부24에서 확인한 원 단위 처리기간을 사용합니다. 병행 가능한 절차는 겹쳐 배치하고, 착공이나 가동을 막는 경로만 총기간을 늘립니다.</span>
             </div>
-            <details className={`wizard-optional-section wizard-progressive-section${constructionDetailAnsweredCount ? " has-values" : ""}`}>
-              <summary>
-                <strong>건설공사 안전 신고</strong>
-                <span>{progressiveStatus(constructionDetailAnsweredCount)}</span>
-              </summary>
-              <div className="wizard-optional-body">
+            <ReviewSection title="건설공사 안전 신고">
                 <Question label="건설공사 사전계획·신고 대상 여부" hint="공사 종류·규모·공사금액을 검토한 결과를 입력합니다.">
                   <div className="stacked-fields compact-tristates">
                     <label><span>안전관리계획 수립·검토</span><TriState value={answers.safetyManagementPlanRequired} yesLabel="대상" noLabel="비대상" onChange={(value) => onChange("safetyManagementPlanRequired", value)} /></label>
                     <label><span>유해·위험 작업 신고</span><TriState value={answers.specificWorkReportRequired} yesLabel="대상" noLabel="비대상" onChange={(value) => onChange("specificWorkReportRequired", value)} /></label>
                   </div>
                 </Question>
-              </div>
-            </details>
+            </ReviewSection>
           </>
         ) : null}
       </div>
 
       <div className="wizard-footer">
-        <button type="button" disabled={activeStep === 0} onClick={() => onStepChange(Math.max(0, activeStep - 1))}>이전</button>
-        <button type="button" className="primary-button" disabled={activeStep === steps.length - 1} onClick={() => onStepChange(Math.min(steps.length - 1, activeStep + 1))}>다음</button>
+        <button type="button" disabled={activeStep === 0} onClick={() => changeStep(Math.max(0, activeStep - 1))}>이전</button>
+        <button type="button" className="primary-button" disabled={activeStep === steps.length - 1} onClick={() => changeStep(Math.min(steps.length - 1, activeStep + 1))}>다음</button>
       </div>
     </aside>
   );

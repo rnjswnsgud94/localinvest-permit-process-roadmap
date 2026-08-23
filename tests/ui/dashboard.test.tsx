@@ -3,6 +3,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest
 
 import { DashboardClient } from "@/app/components/dashboard/DashboardClient";
 import { InputCodeDialog } from "@/app/components/dashboard/InputCodeDialog";
+import { stageLabels } from "@/app/components/dashboard/constants";
 import { catalog } from "@/lib/data/catalog";
 import { supplementalPermitTargetIds } from "@/lib/data/supplemental-permit-targets";
 import { encodeInputCode, encodeShareState, INPUT_CODE_PREFIX, MAX_INPUT_CODE_LENGTH } from "@/lib/share-state";
@@ -366,7 +367,50 @@ describe("dashboard UI", () => {
     expect(document.querySelector(".duration-summary-result")).not.toBeNull();
   });
 
-  it("removes record-only inputs and reveals technical follow-ups only when relevant", () => {
+  it("uses a compact step header and resets the input scroll position on navigation", () => {
+    render(<DashboardClient />);
+
+    const wizard = screen.getByLabelText("사업조건 입력");
+    const body = wizard.querySelector<HTMLElement>(".wizard-body");
+    const stepNavigation = screen.getByRole("navigation", { name: "입력 단계" });
+    const firstStep = within(stepNavigation).getByRole("button", { name: /^1 사업 기본/ });
+    const secondStep = within(stepNavigation).getByRole("button", { name: /^2 시설 규모/ });
+    expect(body).not.toBeNull();
+    expect(firstStep).toHaveAttribute("aria-current", "step");
+    expect(wizard.querySelector(".wizard-heading h2")).toHaveTextContent("사업 기본");
+    expect(screen.queryByText("핵심 질문부터 입력하고, 필요한 상세항목만 펼치세요.")).not.toBeInTheDocument();
+    expect(screen.queryByText("눌러서 확인")).not.toBeInTheDocument();
+    expect(screen.queryByText("해당 시 입력")).not.toBeInTheDocument();
+
+    body!.scrollTop = 120;
+    fireEvent.click(secondStep);
+
+    expect(body).toHaveProperty("scrollTop", 0);
+    expect(secondStep).toHaveAttribute("aria-current", "step");
+    expect(wizard.querySelector(".wizard-heading h2")).toHaveTextContent("시설 규모");
+  });
+
+  it("sorts only the full-procedure table by roadmap stage or Korean name", () => {
+    render(<DashboardClient />);
+    fireEvent.click(screen.getByRole("tab", { name: "전체 절차" }));
+
+    const sort = screen.getByRole("combobox", { name: "전체 절차 정렬" });
+    const table = document.querySelector<HTMLTableElement>(".procedure-table");
+    const rowNames = () => [...table!.querySelectorAll<HTMLTableRowElement>("tbody tr")]
+      .map((row) => row.querySelector("td:nth-child(2) strong")!.textContent!);
+    const rowStages = () => [...table!.querySelectorAll<HTMLTableRowElement>("tbody tr")]
+      .map((row) => row.querySelector("td:nth-child(3)")!.textContent!);
+
+    expect(sort).toHaveValue("STAGE");
+    const orderedStageLabels = Object.values(stageLabels) as string[];
+    const stageIndexes = rowStages().map((stage) => orderedStageLabels.indexOf(stage));
+    expect(stageIndexes).toEqual([...stageIndexes].sort((left, right) => left - right));
+
+    fireEvent.change(sort, { target: { value: "NAME" } });
+    expect(rowNames()).toEqual([...rowNames()].sort((left, right) => left.localeCompare(right, "ko-KR")));
+  });
+
+  it("keeps core and common review inputs visible while revealing dependent follow-ups only when relevant", () => {
     render(<DashboardClient />);
 
     for (const label of [
@@ -385,7 +429,7 @@ describe("dashboard UI", () => {
     expect(screen.getByText("사업 후 총 연면적", { selector: "legend" })).toBeInTheDocument();
     expect(screen.queryByText("기존", { selector: "span" })).not.toBeInTheDocument();
     expect(screen.queryByText("증가분", { selector: "span" })).not.toBeInTheDocument();
-    expect(screen.getByText("건축 전문검토 항목")).toBeInTheDocument();
+    expect(screen.getByLabelText("건축 전문검토").tagName).toBe("SECTION");
     const siteDetails = screen.getByText("부지·건축 추가 확인").closest("details");
     expect(siteDetails).not.toHaveAttribute("open");
 
@@ -400,11 +444,10 @@ describe("dashboard UI", () => {
     const hazardousMaterials = screen.getByText("지정수량 이상 위험물 취급 여부", { selector: "legend" }).closest("fieldset");
     fireEvent.click(within(hazardousMaterials!).getByRole("button", { name: "있음" }));
     expect(screen.getByText("위험물 탱크 설치 여부", { selector: "legend" })).toBeInTheDocument();
-    expect(screen.getByText("가스·산업안전 추가 확인")).toBeInTheDocument();
+    const gasSafetyDetails = screen.getByText("가스·PSM·안전관리 전문검토").closest("details");
+    expect(gasSafetyDetails).not.toHaveAttribute("open");
 
-    const environmentalDetails = screen.getByText("환경평가·기타 신고").closest("details");
-    expect(environmentalDetails).not.toHaveAttribute("open");
-    fireEvent.click(screen.getByText("환경평가·기타 신고"));
+    expect(screen.getByLabelText("환경평가·통합허가").tagName).toBe("SECTION");
     fireEvent.click(screen.getByText("공사·환경 법정 임계값 정밀검토"));
     const reviewGroup = screen.getByRole("group", {
       name: "공사·환경 법정 임계값 검토 결과",
@@ -442,7 +485,6 @@ describe("dashboard UI", () => {
       }),
     ).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByText("환경평가·기타 신고"));
     fireEvent.click(screen.getByText("공사·환경 법정 임계값 정밀검토"));
     const reviewGroup = screen.getByRole("group", {
       name: "공사·환경 법정 임계값 검토 결과",
@@ -452,7 +494,7 @@ describe("dashboard UI", () => {
     });
     fireEvent.click(within(hazardPlan).getByRole("button", { name: "대상" }));
 
-    fireEvent.click(screen.getByText("가스·산업안전 추가 확인"));
+    fireEvent.click(screen.getByText("가스·PSM·안전관리 전문검토"));
     const psm = screen.getByText("PSM 대상 설비 여부", { selector: "legend" })
       .closest("fieldset");
     fireEvent.click(within(psm!).getByRole("button", { name: "대상" }));

@@ -2,6 +2,7 @@ import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { PermitRegistry } from "@/app/components/dashboard/PermitRegistry";
+import { compareProcedures } from "@/app/components/dashboard/constants";
 import { catalog } from "@/lib/data/catalog";
 
 function renderRegistry(assessmentDate?: string) {
@@ -30,6 +31,31 @@ describe("permit registry", () => {
     expect(screen.getAllByRole("button", { name: /상세 보기$/ })).toHaveLength(
       catalog.procedures.length,
     );
+  });
+
+  it("sorts the encyclopedia by name or roadmap stage without changing its entries", () => {
+    renderRegistry();
+    const resultNames = () => screen.getAllByRole("button", { name: /상세 보기$/ })
+      .map((button) => button.getAttribute("aria-label")!.replace(/ 상세 보기$/, ""));
+    const expectedNames = (mode: "NAME" | "STAGE") => [...catalog.procedures]
+      .sort((left, right) => compareProcedures(left, right, mode))
+      .map((procedure) => procedure.name);
+    const sort = screen.getByRole("combobox", { name: "전체 인허가 정렬" });
+
+    expect(sort).toHaveValue("NAME");
+    expect(resultNames()).toEqual(expectedNames("NAME"));
+    expect(screen.getByRole("status")).toHaveTextContent("가나다순");
+
+    fireEvent.change(sort, { target: { value: "STAGE" } });
+    expect(resultNames()).toEqual(expectedNames("STAGE"));
+    expect(screen.getByRole("status")).toHaveTextContent("일정 단계순");
+
+    fireEvent.change(screen.getByRole("searchbox", { name: "법령·기관·서류 통합검색" }), {
+      target: { value: "교통영향평가" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "필터 초기화" }));
+    expect(sort).toHaveValue("STAGE");
+    expect(resultNames()).toEqual(expectedNames("STAGE"));
   });
 
   it("searches aliases, law titles, authorities, submissions and outcomes", () => {

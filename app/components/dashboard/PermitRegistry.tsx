@@ -2,7 +2,13 @@
 
 import { useId, useMemo, useRef, useState } from "react";
 
-import { actionLabels } from "@/app/components/dashboard/constants";
+import {
+  actionLabels,
+  compareProcedures,
+  procedureSortLabels,
+  stageLabels,
+  type ProcedureSortMode,
+} from "@/app/components/dashboard/constants";
 import { catalog } from "@/lib/data/catalog";
 import type { LegalSource, Procedure } from "@/lib/domain/schemas";
 import {
@@ -111,6 +117,7 @@ export function PermitRegistry({
   const [domain, setDomain] = useState("ALL");
   const [verificationStatus, setVerificationStatus] = useState<VerificationStatus | "ALL">("ALL");
   const [durationStatus, setDurationStatus] = useState<DurationStatus | "ALL">("ALL");
+  const [sortMode, setSortMode] = useState<ProcedureSortMode>("NAME");
   const queryInputRef = useRef<HTMLInputElement>(null);
   const titleId = useId();
   const searchHelpId = useId();
@@ -172,8 +179,8 @@ export function PermitRegistry({
       ) return false;
       if (durationStatus !== "ALL" && entry.durationStatus !== durationStatus) return false;
       return terms.every((term) => entry.searchText.includes(term));
-    });
-  }, [domain, durationStatus, query, registryEntries, verificationStatus]);
+    }).sort((left, right) => compareProcedures(left.procedure, right.procedure, sortMode));
+  }, [domain, durationStatus, query, registryEntries, sortMode, verificationStatus]);
 
   const hasActiveFilters = Boolean(query) || domain !== "ALL" ||
     verificationStatus !== "ALL" || durationStatus !== "ALL";
@@ -276,15 +283,28 @@ export function PermitRegistry({
         </div>
       </div>
 
-      <p
-        id={resultSummaryId}
-        className="permit-registry-result-summary"
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-      >
-        전체 {registryEntries.length}개 중 {filteredEntries.length}개 절차
-      </p>
+      <div className="permit-registry-result-toolbar">
+        <p
+          id={resultSummaryId}
+          className="permit-registry-result-summary"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          전체 {registryEntries.length}개 중 {filteredEntries.length}개 절차 · {procedureSortLabels[sortMode]}
+        </p>
+        <label className="permit-registry-sort">
+          <span>정렬</span>
+          <select
+            aria-label="전체 인허가 정렬"
+            value={sortMode}
+            onChange={(event) => setSortMode(event.target.value as ProcedureSortMode)}
+          >
+            <option value="NAME">가나다순</option>
+            <option value="STAGE">일정 단계순</option>
+          </select>
+        </label>
+      </div>
 
       {filteredEntries.length ? (
         <ul className="permit-registry-results" aria-labelledby={resultSummaryId}>
@@ -297,7 +317,7 @@ export function PermitRegistry({
                 aria-label={`${entry.procedure.name} 상세 보기`}
               >
                 <span className="permit-registry-card-topline">
-                  <span>{entry.procedure.domain} · {actionLabels[entry.procedure.actionType]}</span>
+                  <span>{stageLabels[entry.procedure.stage]} · {entry.procedure.domain} · {actionLabels[entry.procedure.actionType]}</span>
                   <span>{entry.futureSources.length
                     ? "시행 예정 근거 · 현재 미적용"
                     : verificationLabels[entry.procedure.verificationStatus]}</span>
