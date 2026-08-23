@@ -6,6 +6,7 @@ import {
   procedureCategoryForDecision,
   procedureCategoryOrder,
   procedureCategorySummaries,
+  roadmapInclusionBreakdown,
   tabLabels,
   type DashboardTab,
   type ProcedureCategory,
@@ -321,6 +322,10 @@ export function DashboardClient() {
     ) as Record<ProcedureCategory, typeof evaluation.decisions>,
     [evaluation],
   );
+  const roadmapBreakdown = useMemo(
+    () => roadmapInclusionBreakdown(evaluation.decisions),
+    [evaluation.decisions],
+  );
   const filteredDecisions = evaluation.decisions.filter((decision) => {
     const category = procedureCategoryForDecision(decision);
     if (!showExcluded && category === "NOT_REQUIRED") return false;
@@ -578,7 +583,12 @@ export function DashboardClient() {
                   <b>{procedureCategorySummaries[category].label}</b>
                   <span className="summary-count"><strong>{decisionsByCategory[category].length}</strong><small>개</small></span>
                 </span>
-                <small id={`summary-${category}-description`} className="summary-card-description">{procedureCategorySummaries[category].description}</small>
+                <small id={`summary-${category}-description`} className="summary-card-description">
+                  {procedureCategorySummaries[category].description}
+                  {category === "REQUIRED"
+                    ? ` 구성: 확정 ${roadmapBreakdown.confirmed}개 · 적용기준 확인 전 포함 ${roadmapBreakdown.scopeCheck}개 · 의제 ${roadmapBreakdown.deemed}개.`
+                    : ""}
+                </small>
                 <span className="summary-card-link">목록 보기 <span aria-hidden="true">→</span></span>
               </button>
             ))}

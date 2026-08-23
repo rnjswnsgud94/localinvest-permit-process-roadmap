@@ -18,10 +18,10 @@ type DurationStatus =
   | "NEEDS_CONFIRMATION";
 
 const verificationLabels: Record<VerificationStatus, string> = {
-  AI_ASSISTED_DRAFT: "공식자료 대조 초안",
-  INTERNAL_REVIEWED: "내부 검토 완료",
+  AI_ASSISTED_DRAFT: "관계기관 확인 권장",
+  INTERNAL_REVIEWED: "공식자료 내부 대조",
   EXPERT_REVIEWED: "전문가 검토 완료",
-  TODO_LEGAL_REVIEW: "법령 세부검토 필요",
+  TODO_LEGAL_REVIEW: "관계기관 확인 필요",
 };
 
 const durationStatusLabels: Record<DurationStatus, string> = {

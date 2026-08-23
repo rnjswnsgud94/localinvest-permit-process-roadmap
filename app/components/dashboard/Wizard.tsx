@@ -928,7 +928,7 @@ export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
                 value={answers.landCategory ?? "UNKNOWN"}
                 onChange={(event) => onChange("landCategory", event.target.value === "UNKNOWN" ? null : event.target.value as ScenarioAnswers["landCategory"])}
               >
-                <option value="OTHER">일반 대지·공장용지 등</option>
+                <option value="OTHER">기타 토지(농지·산지 외 · 초지 별도 확인)</option>
                 <option value="FARMLAND">농지</option>
                 <option value="FOREST">산지</option>
                 <option value="UNKNOWN">미확인</option>

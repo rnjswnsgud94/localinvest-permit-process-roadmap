@@ -1,6 +1,7 @@
 import {
   inputLabel,
   procedureCategoryForDecision,
+  roadmapInclusionBreakdown,
   stageLabels,
   statusLabels,
   type ProcedureCategory,
@@ -12,7 +13,9 @@ import {
 } from "@/app/components/dashboard/ScenarioPicker";
 import { catalog, type ScenarioAnswers } from "@/lib/data/catalog";
 import { verifiedSequenceCitationIds } from "@/lib/data/edge-evidence";
+import { buildInputConsistencyWarnings } from "@/lib/data/input-consistency";
 import type { SpecialLawEffect } from "@/lib/data/special-laws";
+import { PRACTITIONER_REVIEW_NOTICE } from "@/lib/domain/legal-review";
 import { coreFlowEdges, describeFlowEdges } from "@/lib/engine/flow-edges";
 import type { evaluateProject } from "@/lib/engine/pipeline";
 import type { DurationScenario, ScheduleResult } from "@/lib/engine/schedule";
@@ -82,6 +85,54 @@ function projectDescriptor(answers: ScenarioAnswers) {
   return `${place} · ${industry} · ${location}`;
 }
 
+function filenameSegment(value: string, fallback: string, maximumCharacters: number) {
+  const normalized = value
+    .normalize("NFKC")
+    .replace(/[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E\u2066-\u2069]/g, "")
+    .replace(/[^\p{L}\p{N}]+/gu, "-")
+    .replace(/^-+|-+$/g, "")
+    .replace(/-{2,}/g, "-");
+  const limited = Array.from(normalized).slice(0, maximumCharacters).join("");
+  return limited || fallback;
+}
+
+function reportIdentity(answers: ScenarioAnswers) {
+  const displaySegment = (value: string, fallback: string) => {
+    const normalized = value
+      .normalize("NFKC")
+      .replace(/[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E\u2066-\u2069]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    return Array.from(normalized || fallback).slice(0, 40).join("");
+  };
+  const place = displaySegment(
+    [answers.province, answers.city].filter(Boolean).join(" "),
+    "지역 미입력",
+  );
+  const industry = displaySegment(
+    formatProjectInputValue("industryCategory", answers.industryCategory),
+    "업종 미입력",
+  );
+  const investment = displaySegment(
+    formatProjectInputValue("investmentType", answers.investmentType),
+    "투자유형 미입력",
+  );
+  const action = displaySegment(
+    formatProjectInputValue("buildingAction", answers.buildingAction),
+    "건축행위 미입력",
+  );
+  return {
+    title: `${place} · ${industry} · ${investment}·${action} 인허가 결과보고서`,
+    filenamePrefix: [place, industry, investment, action]
+      .map((value, index) => filenameSegment(
+        value,
+        ["지역미입력", "업종미입력", "투자유형미입력", "건축행위미입력"][index],
+        [18, 14, 10, 10][index],
+      ))
+      .join("_"),
+  };
+}
+
 export type PermitReportModel = {
   metadata: {
     title: string;
@@ -104,6 +155,11 @@ export type PermitReportModel = {
   };
   summary: {
     counts: Record<ProcedureCategory, number>;
+    roadmapBreakdown: {
+      confirmed: number;
+      scopeCheck: number;
+      deemed: number;
+    };
     duration: {
       label: "산정 불가" | "확인된 일정 하한" | "총 소요기간";
       value: string;
@@ -225,14 +281,21 @@ function formatSeoulGenerationTime(generatedAt: Date) {
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
+    second: "2-digit",
     hourCycle: "h23",
   }).formatToParts(generatedAt);
   const value = (type: Intl.DateTimeFormatPartTypes) =>
     parts.find((part) => part.type === type)?.value ?? "";
   const date = `${value("year")}-${value("month")}-${value("day")}`;
+  const filenameStamp = [
+    value("year"),
+    value("month"),
+    value("day"),
+  ].join("") + `-${value("hour")}${value("minute")}${value("second")}`;
   return {
     date,
-    label: `${date} ${value("hour")}:${value("minute")} KST`,
+    filenameStamp,
+    label: `${date} ${value("hour")}:${value("minute")}:${value("second")} KST`,
   };
 }
 
@@ -294,6 +357,12 @@ function buildMilestones(answers: ScenarioAnswers, schedule: ScheduleResult) {
     { label: "검토 기준일", value: answers.assessmentDate },
     { label: "계획 착공일", value: answers.plannedConstructionStartDate ?? "미입력" },
     { label: "계획 준공일", value: answers.plannedConstructionEndDate ?? "미입력" },
+    ...(answers.equipmentInstallationCompletionDate
+      ? [{ label: "설비완료(사용자 목표)", value: answers.equipmentInstallationCompletionDate }]
+      : []),
+    ...(answers.commissioningStartDate
+      ? [{ label: "시운전(사용자 목표)", value: answers.commissioningStartDate }]
+      : []),
     ...(timeline?.operationReadyDate
       ? [{ label: "가동 준비 완료", value: timeline.operationReadyDate }]
       : []),
@@ -527,15 +596,27 @@ export function buildPermitReportModel({
         stage: stageLabels[procedure.stage],
         category,
         categoryLabel: categoryLabels[category],
-        status: `${decision.isDeemed ? "의제 반영 · " : ""}${statusLabels[decision.status]}`,
+        status: decision.isDeemed
+          ? "별도 신청 제외 · 상위 절차에서 의제 처리"
+          : statusLabels[decision.status],
         reason: decision.reason,
         authority: procedure.receivingAuthority,
         decisionMaker: procedure.statutoryDecisionMaker,
-        officialDuration: formatResolvedOfficialDurationSummary(duration, planning),
-        schedule: timelineNode
-          ? `${timelineNode.startDate} ~ ${timelineNode.finishDate}`
+        officialDuration: decision.isDeemed
+          ? "별도 신청·처리기간 없음 · 상위 절차 일정에 포함"
+          : formatResolvedOfficialDurationSummary(duration, planning),
+        schedule: decision.isDeemed
+          ? "상위 절차 일정에 포함"
+          : timelineNode
+          ? timelineNode.processingDuration === null
+            ? timelineNode.overlapPolicy === "PRE_CONSTRUCTION"
+              ? `${answers.plannedConstructionStartDate ?? "착공일"} 전 완료 필요 · 개시일 역산 불가`
+              : `${timelineNode.startDate} 착수 기준 · 종료일 미산정`
+            : `${timelineNode.startDate} ~ ${timelineNode.finishDate}`
           : "일정 미반영",
-        scheduleNote: timelineNode
+        scheduleNote: decision.isDeemed
+          ? "의제서류 제출·관계기관 협의를 전제로 별도 처리일정을 계산하지 않음"
+          : timelineNode
           ? formatTimelineProcessingDuration(timelineNode)
           : category === "CONFIRM"
             ? "대상 여부 또는 처리기간을 확인한 뒤 일정에 반영"
@@ -551,8 +632,11 @@ export function buildPermitReportModel({
         specialLawEffects: stableUnique((decision.specialLawImpacts ?? []).map((impact) =>
           `${impact.effectLabel} · ${impact.statusLabel} · ${impact.description}${impact.statutoryCap ? ` · ${impact.statutoryCap}` : ""}`,
         )),
-        legalReviewNote: decision.needsLegalReview
-          ? `근거 추가 검토 필요 · ${decision.legalReviewReasons.join(" · ")}`
+        legalReviewNote:
+          category === "CONFIRM" &&
+          decision.needsLegalReview &&
+          decision.missingInputs.length === 0
+          ? PRACTITIONER_REVIEW_NOTICE
           : null,
         sourceSummaries,
         stageIndex: stageOrder.indexOf(procedure.stage),
@@ -663,8 +747,12 @@ export function buildPermitReportModel({
           officialDuration: procedure.officialDuration,
           wave: scheduleNodeByProcedureId.get(procedure.id)?.wave ?? null,
           isDeemed: Boolean(decisionByProcedureId.get(procedure.id)?.isDeemed),
-          timing: timelineNodeByProcedureId.has(procedure.id)
-            ? `${timelineNodeByProcedureId.get(procedure.id)?.startDate} ~ ${timelineNodeByProcedureId.get(procedure.id)?.finishDate}`
+          timing: decisionByProcedureId.get(procedure.id)?.isDeemed
+            ? "상위 절차 일정에 포함"
+            : timelineNodeByProcedureId.has(procedure.id)
+            ? timelineNodeByProcedureId.get(procedure.id)?.processingDuration === null
+              ? `${timelineNodeByProcedureId.get(procedure.id)?.startDate} 착수 기준 · 종료 미산정`
+              : `${timelineNodeByProcedureId.get(procedure.id)?.startDate} ~ ${timelineNodeByProcedureId.get(procedure.id)?.finishDate}`
             : procedure.officialDuration,
           timingSource: timelineNodeByProcedureId.get(procedure.id)?.durationSource ?? null,
         })),
@@ -747,6 +835,7 @@ export function buildPermitReportModel({
     .map((decision) => decision.procedure.name);
 
   const generatedTime = formatSeoulGenerationTime(generatedAt);
+  const identity = reportIdentity(answers);
   const specialLaws = evaluation.specialLawEvaluations.map((evaluation) => ({
     title: evaluation.shortLabel,
     effect: effectLabels[evaluation.effect],
@@ -758,9 +847,40 @@ export function buildPermitReportModel({
     officialUrl: evaluation.officialUrl,
   }));
 
+  const commissioningPrerequisiteIds = new Set([
+    "building-use-approval",
+    "electrical-pre-use-inspection",
+    "fire-facility-completion-inspection",
+    "hazardous-materials-facility-completion-inspection",
+    "high-pressure-gas-facility-inspection",
+    "integrated-environmental-operation-start-report",
+    "mechanical-equipment-pre-use-inspection",
+  ]);
+  const commissioningConflicts = answers.commissioningStartDate
+    ? evaluation.decisions.flatMap((decision) => {
+        if (
+          !commissioningPrerequisiteIds.has(decision.procedure.id) ||
+          procedureCategoryForDecision(decision) === "NOT_REQUIRED" ||
+          decision.isDeemed
+        ) return [];
+        const node = timelineNodeByProcedureId.get(decision.procedure.id);
+        if (!node) return [];
+        const comparisonDate = node.processingDuration === null
+          ? node.startDate
+          : node.finishDate;
+        if (comparisonDate <= answers.commissioningStartDate!) return [];
+        return [
+          `${decision.procedure.name}(${node.processingDuration === null ? `${node.startDate} 이후 종료 미산정` : `${node.finishDate} 완료`})`,
+        ];
+      })
+    : [];
+  const commissioningWarning = answers.commissioningStartDate && commissioningConflicts.length
+    ? `시운전 목표일 ${answers.commissioningStartDate}보다 늦게 계획되었거나 종료일이 미산정된 가동 전 확인절차가 있습니다: ${commissioningConflicts.join(" · ")}. 단계준공·부분사용 또는 설비별 검사범위를 별도로 인정받지 않았다면 시운전 일정을 조정하십시오.`
+    : null;
+
   return {
     metadata: {
-      title: "지방투자기업 인허가 검토보고서",
+      title: identity.title,
       generatedAt: generatedAt.toISOString(),
       generatedAtLabel: generatedTime.label,
       assessmentDate: answers.assessmentDate,
@@ -768,7 +888,7 @@ export function buildPermitReportModel({
       lastLegalReviewAt: catalog.coverage.lastLegalReviewAt,
       durationScenario: durationScenarioLabels[durationScenario],
       scheduleScope: `${includeConditional ? "대상 확인 절차 포함" : "대상 확인 절차 제외"} · ${includePractical ? "실무 선행관계 포함" : "법정 선행관계만 반영"}`,
-      filename: `지방투자기업-인허가-검토보고서-${generatedTime.date}.pdf`,
+      filename: `인허가-결과보고서_${identity.filenamePrefix}_${generatedTime.filenameStamp}.pdf`,
     },
     project: {
       descriptor: projectDescriptor(answers),
@@ -776,6 +896,7 @@ export function buildPermitReportModel({
     },
     summary: {
       counts,
+      roadmapBreakdown: roadmapInclusionBreakdown(evaluation.decisions),
       duration: buildDurationSummary(answers, schedule, durationScenario),
       milestones: buildMilestones(answers, schedule),
     },
@@ -787,6 +908,8 @@ export function buildPermitReportModel({
     excluded,
     legalSources,
     warnings: stableUnique([
+      ...buildInputConsistencyWarnings(answers),
+      commissioningWarning,
       ...schedule.warnings,
       ...(schedule.projectTimeline?.warnings ?? []),
       ...catalog.coverage.gaps,

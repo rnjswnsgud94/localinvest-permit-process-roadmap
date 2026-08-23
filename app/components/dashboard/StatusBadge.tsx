@@ -18,7 +18,6 @@ export function StatusBadge({
   provisionalEffect = null,
   missingInputs = [],
   conflictRuleIds = [],
-  needsLegalReview = false,
 }: {
   status: ApplicabilityStatus;
   compact?: boolean;
@@ -43,7 +42,7 @@ export function StatusBadge({
   const label = isDeemed
     ? "상위 절차에서 의제 처리"
     : inputMatchedInclusion
-      ? `로드맵 포함${needsLegalReview ? " · 근거 검토 중" : ""}`
+      ? "로드맵 포함"
       : provisionalExclusion
         ? "잠정 제외 · 근거 확인"
         : statusLabels[status];

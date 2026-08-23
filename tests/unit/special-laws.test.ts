@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { procedureCategoryForDecision } from "@/app/components/dashboard/constants";
 import { catalog, type ScenarioAnswers } from "@/lib/data/catalog";
 import { evaluateProject } from "@/lib/engine/pipeline";
 
@@ -419,7 +420,77 @@ describe("industry, industrial-complex, and regional special-law routing", () =>
         status: "UNCONFIRMED",
       }),
     ]));
+    expect(decision(evaluation, "advanced-strategic-industry-fast-track-request").status).not.toBe("DOES_NOT_APPLY");
+    expect(decision(evaluation, "semiconductor-cluster-fast-track-request").status).not.toBe("DOES_NOT_APPLY");
+    expect(decision(evaluation, "semiconductor-cluster-plan-application").status).not.toBe("DOES_NOT_APPLY");
     expect(decision(evaluation, "building-permit").specialLawImpacts ?? []).toEqual([]);
+  });
+
+  it.each([
+    {
+      label: "hidden qualification inputs are unanswered",
+      overrides: {},
+    },
+    {
+      label: "a previously imported scenario retains confirmed special-law inputs",
+      overrides: {
+        advancedStrategicIndustryFastTrackConfirmed: true,
+        advancedStrategicIndustryApplicantRoleConfirmed: true,
+        advancedStrategicIndustryDelayRiskConfirmed: true,
+        advancedStrategicIndustryCommitteeResolved: true,
+        advancedStrategicIndustryMinisterRequestDate: "2026-08-15",
+        advancedStrategicIndustryFastTrackPermitIds: ["building-permit"],
+        semiconductorClusterFastTrackConfirmed: true,
+        semiconductorClusterApplicantRoleConfirmed: true,
+        semiconductorClusterDelayRiskConfirmed: true,
+        semiconductorClusterCommitteeResolved: true,
+        semiconductorClusterMinisterRequestDate: "2026-08-15",
+        semiconductorClusterFastTrackPermitIds: ["building-permit"],
+        semiconductorClusterPlanDeemingConfirmed: true,
+        semiconductorClusterPlanDocumentsIncluded: true,
+        semiconductorClusterPlanConsultationCompleted: true,
+        semiconductorClusterPlanApprovalPublished: true,
+        semiconductorClusterPlanApprovalPublishedDate: "2026-08-20",
+        semiconductorClusterPlanApprovalNoticeReference: "산업통상부고시 제2026-100호",
+        semiconductorClusterPlanIncludedPermitIds: ["building-permit"],
+      } satisfies Partial<ScenarioAnswers>,
+    },
+  ])("excludes industry-specific special-law procedures for wood manufacturing when $label", ({ overrides }) => {
+    const evaluation = evaluateProject(
+      answers({
+        industryCategory: "WOOD_PAPER_PRINTING",
+        aiDataCenterActFacilityConfirmed: null,
+        industrialComplexPlanSpecialCaseConfirmed: false,
+        regionalSpecialZonePlanDeemingConfirmed: false,
+        ...overrides,
+      }),
+    );
+
+    const industrySpecificProcedureIds = [
+      "advanced-strategic-industry-fast-track-request",
+      "advanced-strategic-industry-fast-track-result-check",
+      "semiconductor-cluster-fast-track-request",
+      "semiconductor-cluster-fast-track-result-check",
+      "semiconductor-cluster-plan-application",
+      "semiconductor-cluster-plan-consultation",
+      "semiconductor-cluster-plan-approval",
+    ];
+    for (const procedureId of industrySpecificProcedureIds) {
+      const result = decision(evaluation, procedureId);
+      expect(result).toMatchObject({
+        status: "DOES_NOT_APPLY",
+        provisionalEffect: "EXCLUDE",
+        missingInputs: [],
+      });
+      expect(procedureCategoryForDecision(result)).toBe("NOT_REQUIRED");
+    }
+    expect(evaluation.specialLawEvaluations.map((item) => item.id)).not.toEqual(
+      expect.arrayContaining([
+        "ADVANCED_STRATEGIC_INDUSTRY_FAST_TRACK",
+        "SEMICONDUCTOR_CLUSTER_FAST_TRACK",
+        "SEMICONDUCTOR_CLUSTER_PLAN_DEEMING",
+      ]),
+    );
   });
 
   it("adds the semiconductor 60-day processing-completion review only after exact request facts are confirmed", () => {

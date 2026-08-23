@@ -71,7 +71,7 @@ describe("action plan", () => {
     expect(contractCard).not.toHaveTextContent("접수용 구비서류를 확정");
   });
 
-  it("keeps a fully matched draft include on the roadmap while exposing legal review", () => {
+  it("keeps a fully matched draft include on the roadmap without exposing internal review copy", () => {
     renderActionPlan();
 
     const buildingTitle = screen.getByText("건축허가·신고 경로 확인", {
@@ -79,9 +79,9 @@ describe("action plan", () => {
     });
     const buildingCard = buildingTitle.closest("article");
     expect(buildingCard).not.toBeNull();
-    expect(buildingCard).toHaveTextContent("로드맵 포함 · 근거 검토");
+    expect(buildingCard).toHaveTextContent("로드맵 포함");
+    expect(buildingCard).not.toHaveTextContent("근거 검토");
     expect(buildingCard).toHaveTextContent("적용근거와 실제 관할");
-    expect(buildingCard).not.toHaveTextContent("확인 필요");
   });
 
   it("resolves standalone local-government labels before removing the jurisdiction prefix", () => {

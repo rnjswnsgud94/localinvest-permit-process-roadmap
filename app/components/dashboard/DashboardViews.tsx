@@ -11,6 +11,7 @@ import {
   isVerifiedLegalSequence,
   verifiedSequenceCitationIds,
 } from "@/lib/data/edge-evidence";
+import { buildInputConsistencyWarnings } from "@/lib/data/input-consistency";
 import { planningDurationNotice } from "@/lib/data/planning-durations";
 import type { ProcedureDecision } from "@/lib/engine/rule-engine";
 import type { ScheduleResult } from "@/lib/engine/schedule";
@@ -345,7 +346,7 @@ export function ActionPlanView({
       String(index + 1),
       row.decision.procedure.name,
       row.inputMatchedInclusion
-        ? "로드맵 포함 · 근거 검토 중"
+        ? "로드맵 포함"
         : row.category === "REQUIRED"
           ? "확정 필수"
           : "추가 확인 필요",
@@ -361,7 +362,7 @@ export function ActionPlanView({
       row.unsupportedLegalPrerequisites.join(" · ") || "없음",
       row.targetDate,
       row.decision.procedure.submissions.join(" · "),
-      row.hasSubmissionCitation ? "법정 제출자료 인용 연결" : "초안 목록·원문 대조 필요",
+      row.hasSubmissionCitation ? "법정 제출자료 인용 연결" : "공식 제출자료 근거 미연결·관할 서식 확인 필요",
     ]);
     const csv = [header, ...body].map((row) => row.map(csvCell).join(",")).join("\r\n");
     const blob = new Blob(["\ufeff", csv], { type: "text/csv;charset=utf-8" });
@@ -376,7 +377,7 @@ export function ActionPlanView({
   return (
     <div className="action-plan-layout">
       <header className="action-plan-heading">
-        <div><span className="eyebrow">실행 체크리스트</span><h3>다음 행동과 담당·접수 순서</h3><p>법정 제출자료 인용이 없는 항목은 초안 목록으로 표시하며, 접수 전 공식 서식과 관할부서에 대조해야 합니다.</p></div>
+        <div><span className="eyebrow">실행 체크리스트</span><h3>다음 행동과 담당·접수 순서</h3><p>법정 제출자료 인용이 없는 항목은 접수 전 관계기관의 최신 서식과 구비서류를 확인해야 합니다.</p></div>
         <button type="button" className="secondary-button" onClick={downloadCsv}>CSV 내보내기</button>
       </header>
       <div className="action-plan-status" role="note">
@@ -397,7 +398,7 @@ export function ActionPlanView({
             <header>
               <span>{String(index + 1).padStart(2, "0")} · {stageLabels[row.decision.procedure.stage]}</span>
               <strong>{row.decision.procedure.name}</strong>
-              <em>{row.inputMatchedInclusion ? "로드맵 포함 · 근거 검토" : row.category === "REQUIRED" ? "확정 필수" : "추가 확인 필요"}</em>
+              <em>{row.inputMatchedInclusion ? "로드맵 포함" : row.category === "REQUIRED" ? "확정 필수" : "추가 확인 필요"}</em>
             </header>
             <dl>
               <div><dt>다음 행동</dt><dd>{row.nextAction}</dd></div>
@@ -410,7 +411,7 @@ export function ActionPlanView({
               <div><dt>실무 권장 선행</dt><dd>{row.recommendedPrerequisites.length ? row.recommendedPrerequisites.join(" · ") : "직접 실무 권장 선행 없음"}</dd></div>
               {row.unsupportedLegalPrerequisites.length ? <div><dt>법정 분류·관계근거 보강</dt><dd>{row.unsupportedLegalPrerequisites.join(" · ")}<small>선후행 역할의 현행 공식 조문이 확인되기 전에는 법적 강제순서로 단정하지 않습니다.</small></dd></div> : null}
               <div><dt>목표 착수일</dt><dd>{row.targetDate}{row.timeline?.processingDuration === null ? " · 총경과 산정 제외" : ""}</dd></div>
-              <div><dt>준비서류</dt><dd>{row.decision.procedure.submissions.join(" · ") || "수록 자료 없음"}<small>{row.hasSubmissionCitation ? "법정 제출자료 인용 연결" : "초안 목록 · 공식 서식/원문 대조 필요"}</small></dd></div>
+              <div><dt>준비서류</dt><dd>{row.decision.procedure.submissions.join(" · ") || "수록 자료 없음"}<small>{row.hasSubmissionCitation ? "법정 제출자료 인용 연결" : "관계기관 최신 서식·구비서류 확인 필요"}</small></dd></div>
             </dl>
             <button type="button" className="text-button" onClick={() => onSelect(row.decision.procedure.id)}>근거·기관·기간 상세 보기</button>
           </article>
@@ -468,6 +469,7 @@ export function ProcedureList({ decisions, schedule, onSelect }: {
 export function ScheduleView({ schedule, answers }: { schedule: ScheduleResult; answers: ScenarioAnswers }) {
   const names = new Map(catalog.procedures.map((item) => [item.id, item.name]));
   const timeline = schedule.projectTimeline;
+  const consistencyWarnings = buildInputConsistencyWarnings(answers);
   if (!timeline) {
     return (
       <div className="schedule-layout">
@@ -475,6 +477,9 @@ export function ScheduleView({ schedule, answers }: { schedule: ScheduleResult; 
           <strong>공사 시작일과 준공일을 입력해 주세요.</strong>
           <span>공사 일정이 있어야 공식 처리기간, 공사기간, 병행 가능한 절차를 한 일정으로 계산할 수 있습니다.</span>
         </div>
+        {consistencyWarnings.length ? (
+          <div className="warning-list">{consistencyWarnings.map((warning) => <p key={warning}>※ {warning}</p>)}</div>
+        ) : null}
         {schedule.completedCheckpoints.length ? (
           <section className="company-milestones" aria-label="확인된 완료 이정표">
             <header><strong>확인된 완료 이정표</strong><span>공사 일정과 별개로 이미 끝난 절차이며 남은 처리기간에 더하지 않습니다.</span></header>
@@ -504,6 +509,13 @@ export function ScheduleView({ schedule, answers }: { schedule: ScheduleResult; 
       procedure?.durationId ? durationById.get(procedure.durationId) : null,
       planningDurationByProcedure.get(procedureId),
     );
+  };
+  const scheduleTextForNode = (node: (typeof timeline.nodes)[number]) => {
+    if (node.completedCheckpoint) return formatCompletedCheckpoint(node.completedCheckpoint);
+    if (node.processingDuration === null) {
+      return `${officialSummaryForNode(node.procedureId)} · 착수 기준 ${node.startDate} · 종료일 미산정`;
+    }
+    return `${formatTimelineProcessingDuration(node)} · ${node.startDate} ~ ${node.finishDate}${node.overlapsConstruction ? " · 공사와 " + node.overlapWithConstructionDays + "일 병행" : ""}`;
   };
   const statutoryMilestoneOnlyNodes = unknownActiveNodes.filter((node) => {
     const procedure = procedureById.get(node.procedureId);
@@ -610,7 +622,7 @@ export function ScheduleView({ schedule, answers }: { schedule: ScheduleResult; 
             <div className="gantt-row" key={node.procedureId}>
               <div className="gantt-label">
                 <strong>{names.get(node.procedureId)}</strong>
-                <span>{node.completedCheckpoint ? formatCompletedCheckpoint(node.completedCheckpoint) : `${node.processingDuration === null ? officialSummaryForNode(node.procedureId) : formatTimelineProcessingDuration(node)} · ${node.startDate} ~ ${node.finishDate}${node.overlapsConstruction ? " · 공사와 " + node.overlapWithConstructionDays + "일 병행" : ""}`}</span>
+                <span>{scheduleTextForNode(node)}</span>
               </div>
               <div className="gantt-track"><span className={"gantt-bar " + (node.completedCheckpoint ? "is-completed " : "") + (node.extendsOperationReady ? "is-critical " : "") + (node.overlapsConstruction ? "is-overlap " : "") + (node.processingDuration === null ? "is-unknown" : "")} style={{ left: left + "%", width: Math.min(width, Math.max(1.2, 100 - left)) + "%" }} /></div>
             </div>
@@ -621,10 +633,10 @@ export function ScheduleView({ schedule, answers }: { schedule: ScheduleResult; 
         <section className="post-operation-list">
           <h3>가동 후 별도 관리</h3>
           <p>아래 절차는 가동 준비 완료일과 총 소요기간에 넣지 않았습니다.</p>
-          <ul>{postNodes.map((node) => <li key={node.procedureId}><strong>{names.get(node.procedureId)}</strong><span>{node.completedCheckpoint ? formatCompletedCheckpoint(node.completedCheckpoint) : `${node.processingDuration === null ? officialSummaryForNode(node.procedureId) : formatTimelineProcessingDuration(node)} · ${node.startDate}부터`}</span></li>)}</ul>
+          <ul>{postNodes.map((node) => <li key={node.procedureId}><strong>{names.get(node.procedureId)}</strong><span>{node.processingDuration === null ? `${officialSummaryForNode(node.procedureId)} · ${node.startDate}부터 · 종료일 미산정` : scheduleTextForNode(node)}</span></li>)}</ul>
         </section>
       ) : null}
-      <div className="warning-list">{timeline.warnings.map((warning) => <p key={warning}>※ {warning}</p>)}</div>
+      <div className="warning-list">{[...consistencyWarnings, ...timeline.warnings].map((warning) => <p key={warning}>※ {warning}</p>)}</div>
     </div>
   );
 }

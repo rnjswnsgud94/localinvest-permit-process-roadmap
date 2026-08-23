@@ -54,6 +54,7 @@ function allTargetsAnswers(): ScenarioAnswers {
     equipmentInstallationCompletionDate: "2029-01-01",
     commissioningStartDate: "2029-07-01",
     insideIndustrialComplex: true,
+    industryCategory: "SEMICONDUCTOR_ELECTRONICS",
     landCategory: "FARMLAND",
     environmentalAssessmentType: "ENVIRONMENTAL",
     disasterImpactAssessmentType: "DISASTER_IMPACT",
@@ -87,15 +88,19 @@ describe("permit PDF renderer", () => {
     [25, 36, 37, 100].forEach((requiredCount) => {
       const layout = calculateFlowOverviewCardLayout(requiredCount, 157);
 
-      expect(layout.cardCount).toBeLessThanOrEqual(24);
-      expect(layout.rowCount).toBeLessThanOrEqual(8);
+      expect(layout.cardCount).toBeLessThanOrEqual(18);
+      expect(layout.rowCount).toBeLessThanOrEqual(6);
       expect(layout.usedHeight).toBeLessThanOrEqual(157);
-      expect(layout.omittedCount).toBe(requiredCount - 23);
+      expect(layout.omittedCount).toBe(requiredCount - 17);
+      expect(layout.cardHeight).toBeGreaterThanOrEqual(23);
     });
 
-    const exactFit = calculateFlowOverviewCardLayout(24, 157);
+    const exactFit = calculateFlowOverviewCardLayout(18, 157);
     expect(exactFit.omittedCount).toBe(0);
-    expect(exactFit.cardCount).toBe(24);
+    expect(exactFit.cardCount).toBe(18);
+    expect(exactFit.columnCount).toBe(3);
+    expect(exactFit.rowCount).toBe(6);
+    expect(exactFit.cardHeight).toBeGreaterThanOrEqual(23);
     expect(exactFit.usedHeight).toBeLessThanOrEqual(157);
   });
 
@@ -112,7 +117,7 @@ describe("permit PDF renderer", () => {
       stage.items.filter((item) => item.category === "REQUIRED").length,
     );
 
-    expect(requiredCounts).toEqual([12, 14, 44, 4, 39, 5]);
+    expect(requiredCounts).toEqual([12, 15, 44, 4, 40, 5]);
     expect(model.flow.coreRelations.length).toBeGreaterThan(0);
     expect(model.flow.coreRelations.length).toBeLessThanOrEqual(10);
     expect(model.localOrdinances.categories.length).toBeGreaterThan(0);
@@ -157,7 +162,8 @@ describe("permit PDF renderer", () => {
     expect(bytes.byteLength).toBeGreaterThan(50_000);
 
     const document = await PDFDocument.load(bytes);
-    expect(document.getTitle()).toBe("지방투자기업 인허가 검토보고서");
+    expect(document.getTitle()).toBe(model.metadata.title);
+    expect(document.getTitle()).toContain("충청북도 청주시");
     expect(document.getSubject()).toContain("인허가 판정·일정·법령 근거");
     expect(document.getPageCount()).toBeGreaterThan(3);
     expect(

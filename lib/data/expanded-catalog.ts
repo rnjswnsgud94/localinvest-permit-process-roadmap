@@ -13,8 +13,9 @@ import {
 } from "@/lib/data/supplemental-permit-targets";
 
 const REVIEW_DATE = "2026-08-23";
-const VERSION = "2026.08.23.2";
+const VERSION = "2026.08.23.3";
 const internallyReviewedExpandedProcedureIds = new Set<string>([
+  "development-activity-permit",
   "integrated-environmental-permit",
   "integrated-environmental-operation-start-report",
   "air-total-management-business-permit",
@@ -426,6 +427,9 @@ export const expandedLegalSources: LegalSource[] = [
 }));
 
 const BUILDING_WORK: Condition = { in: { path: "building.action", values: ["NEW_BUILD", "EXTENSION", "MAJOR_REPAIR", "CHANGE_OF_USE"] } };
+const INDUSTRIAL_COMPLEX_FACTORY_BUILDING_WORK: Condition = {
+  in: { path: "building.action", values: ["NEW_BUILD", "EXTENSION"] },
+};
 const PRIVATE_ELECTRICAL_FACILITY_WORK: Condition = { eq: { path: "utilities.privateElectricalFacilityWork", value: true } };
 const SPECIFIC_HIGH_PRESSURE_GAS_USE: Condition = { eq: { path: "safety.specificHighPressureGasUse", value: true } };
 const CHEMICAL_MANUFACTURE_OR_IMPORT: Condition = { eq: { path: "environment.chemicalManufactureOrImport", value: true } };
@@ -475,11 +479,16 @@ type PermitSeed = {
 const permitSeeds: PermitSeed[] = [
   {
     id: "development-activity-permit", name: "개발행위허가", aliases: ["토지형질변경허가"],
-    description: "개별입지에서 건축물·공작물을 설치하거나 토지 형질을 변경하는 경우 용도지역, 기반시설, 환경·경관 기준을 종합 심사하는 절차입니다.", outcome: "개발행위허가서 또는 조건부허가",
+    description: "건축물·공작물을 설치하거나 토지 형질을 변경하는 경우 용도지역, 기반시설, 환경·경관 기준을 종합 심사하는 절차입니다. 산업단지 입주계약으로 공장설립승인이 의제되어도 공장건축의 개발행위허가는 자동 면제되지 않습니다.", outcome: "개발행위허가서 또는 건축허가에서의 의제 협의결과",
     stage: "PLAN_AND_OCCUPANCY", domain: "입지·토지", lane: "CITY_COUNTY_DISTRICT", applicant: "사업자 또는 토지사용권자", authority: "관할 시·군·구 개발행위허가 부서",
     consultations: ["도시계획·환경·도로·농지·산지 관계부서"], submissions: ["토지 권원자료", "배치도·공사계획도·설계도서", "환경·경관·위해 방지계획", "공공시설 귀속·부담 조서(해당 시)"], followUp: ["허가조건 이행", "준공검사 대상 여부 확인"],
     sourceId: "src-national-land-planning-act-20260603", article: "제56조", citationSummary: "건축물 건축, 공작물 설치, 토지 형질변경 등 대통령령상 개발행위는 원칙적으로 관할 허가권자의 허가가 필요하다.",
-    condition: { all: [{ eq: { path: "industrialComplex.inside", value: false } }, BUILDING_WORK] }, requiredInputs: ["site.developmentAreaM2"], explanation: "개별입지의 건축·개발행위이므로 개발행위허가 및 건축허가 의제협의 여부를 검토합니다.", reviewNote: "용도지역·개발면적·경사도·조례와 건축허가 의제서류를 확인해야 확정됩니다.", days: [15, 15, 30], statutoryPeriod: "정부24 전국 공통 안내 기준 총 15일; 보완·협의기간은 별도", durationEvidence: "OFFICIAL_SERVICE_STANDARD", variability: ["용도지역", "도시계획위원회 심의", "관계부서 협의"], deemedBy: ["building-permit", "factory-establishment-approval"],
+    condition: {
+      any: [
+        { all: [{ eq: { path: "industrialComplex.inside", value: false } }, BUILDING_WORK] },
+        { all: [{ eq: { path: "industrialComplex.inside", value: true } }, INDUSTRIAL_COMPLEX_FACTORY_BUILDING_WORK] },
+      ],
+    }, requiredInputs: ["industrialComplex.inside", "building.action", "site.developmentAreaM2"], explanation: "건축·개발행위가 있으므로 개발행위허가를 로드맵에 포함합니다. 산업단지 입주계약 완료만으로는 제외하지 않으며, 건축허가에서 의제하려면 관련 서류 제출과 관계부서 협의를 확인해야 합니다.", reviewNote: "대법원 2021두33883 판결에 따라 산업단지 입주계약의 공장설립승인 의제와 건축·개발행위허가는 구분합니다. 용도지역·개발면적·경사도·조례 및 건축허가 의제서류·협의결과를 확인해야 합니다.", verified: true, days: [15, 15, 30], statutoryPeriod: "정부24 전국 공통 안내 기준 총 15일; 보완·협의기간은 별도", durationEvidence: "OFFICIAL_SERVICE_STANDARD", variability: ["용도지역", "도시계획위원회 심의", "관계부서 협의"], deemedBy: ["building-permit"],
   },
   {
     id: "development-activity-completion-inspection", name: "개발행위 준공검사", aliases: ["토지형질변경 준공검사"],
@@ -487,7 +496,12 @@ const permitSeeds: PermitSeed[] = [
     stage: "PRE_OPERATION", actionType: "INSPECTION", domain: "입지·토지", lane: "CITY_COUNTY_DISTRICT", applicant: "개발행위허가를 받은 자", authority: "개발행위 허가권자",
     consultations: ["의제된 준공검사·준공인가 관계기관"], submissions: ["개발행위 준공검사신청서", "준공사진", "지적측량성과도(해당 시)", "의제 준공검사 협의서류"], followUp: ["검사필증 수령 후 허가 목적대로 사용", "허가조건과 공공시설 귀속사항 이행"],
     sourceId: "src-national-land-planning-act-20260603", article: "제62조", citationSummary: "공작물 설치, 토지 형질변경 또는 토석채취 개발행위를 완료한 자는 허가권자의 준공검사를 받아야 하며 협의한 관계 인허가의 준공검사도 의제될 수 있다.",
-    condition: { all: [{ eq: { path: "industrialComplex.inside", value: false } }, BUILDING_WORK] }, requiredInputs: ["industrialComplex.inside", "building.action"], explanation: "개별입지 개발행위를 완료한 뒤 건축물 사용·공장 가동 전에 준공검사를 받는 경로입니다.", reviewNote: "건축물 건축만으로 끝나는 경미한 경우 등 준공검사 대상 범위와 의제 준공검사를 허가서에서 확인해야 합니다.", verified: true, statutoryPeriod: "국토계획법령에는 전국 공통 처리기간이 없으며 관할 민원편람을 확인해야 함", durationEvidence: "OFFICIAL_AGENCY_MATERIAL", durationAssumptions: ["태안군 5일은 해당 관할의 공식 민원 기준으로 다른 지역에 일반화하지 않음"], variability: ["관할 민원처리기준", "현장검사", "허가조건 이행", "의제 준공검사 협의"],
+    condition: {
+      any: [
+        { all: [{ eq: { path: "industrialComplex.inside", value: false } }, BUILDING_WORK] },
+        { all: [{ eq: { path: "industrialComplex.inside", value: true } }, INDUSTRIAL_COMPLEX_FACTORY_BUILDING_WORK] },
+      ],
+    }, requiredInputs: ["industrialComplex.inside", "building.action"], explanation: "개발행위허가 대상 공사를 완료한 뒤 별도 준공검사가 필요한지 또는 건축물 사용승인으로 갈음되는지 확인하도록 보수적으로 포함합니다.", reviewNote: "산업단지 여부만으로 제외하지 않습니다. 국토계획법 제62조 단서의 건축물 사용승인 예외와 토지형질변경·공작물 등 별도 개발행위 범위를 실제 허가서·협의결과에서 확인해야 합니다.", verified: true, statutoryPeriod: "국토계획법령에는 전국 공통 처리기간이 없으며 관할 민원편람을 확인해야 함", durationEvidence: "OFFICIAL_AGENCY_MATERIAL", durationAssumptions: ["태안군 5일은 해당 관할의 공식 민원 기준으로 다른 지역에 일반화하지 않음"], variability: ["관할 민원처리기준", "현장검사", "허가조건 이행", "건축물 사용승인 예외", "의제 준공검사 협의"],
   },
   {
     id: "farmland-conversion-permit", name: "농지전용허가", description: "현황 또는 지목상 농지를 공장용지·도로 등으로 전용할 때 농업진흥지역, 면적, 시설 제한을 심사받는 절차입니다.", outcome: "농지전용허가 및 농지보전부담금 부과내역",

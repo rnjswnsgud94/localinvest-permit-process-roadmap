@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { procedureCategoryForDecision } from "@/app/components/dashboard/constants";
 import { catalog } from "@/lib/data/catalog";
+import { PRACTITIONER_REVIEW_NOTICE } from "@/lib/domain/legal-review";
 import {
   scenarioAnswersToProjectInput as convertScenarioAnswersToProjectInput,
 } from "@/lib/domain/project-input";
@@ -586,13 +587,15 @@ describe("deterministic four-state rules", () => {
     expect(draftInclude.status).toBe("POSSIBLY_APPLIES");
     expect(draftInclude.provisionalEffect).toBe("INCLUDE");
     expect(draftInclude.needsLegalReview).toBe(true);
-    expect(draftInclude.legalReviewReasons.join(" ")).toContain(baseRule.id);
-    expect(draftInclude.reason).toContain("세부 법률검토");
+    expect(draftInclude.legalReviewReasons).toEqual([PRACTITIONER_REVIEW_NOTICE]);
+    expect(draftInclude.matchedRuleIds).toContain(baseRule.id);
+    expect(draftInclude.reason).not.toContain("법률검토");
     expect(procedureCategoryForDecision(draftInclude)).toBe("REQUIRED");
     expect(draftExclude.status).toBe("POSSIBLY_APPLIES");
     expect(draftExclude.provisionalEffect).toBe("EXCLUDE");
     expect(draftExclude.needsLegalReview).toBe(true);
-    expect(draftExclude.legalReviewReasons.join(" ")).toContain("rule-test-draft-exclude");
+    expect(draftExclude.legalReviewReasons).toEqual([PRACTITIONER_REVIEW_NOTICE]);
+    expect(draftExclude.matchedRuleIds).toContain("rule-test-draft-exclude");
     expect(procedureCategoryForDecision(draftExclude)).toBe("CONFIRM");
     expect(reviewedInclude.status).toBe("APPLIES");
     expect(reviewedInclude.needsLegalReview).toBe(false);
@@ -612,7 +615,7 @@ describe("deterministic four-state rules", () => {
     expect(result.status).toBe("POSSIBLY_APPLIES");
     expect(result.provisionalEffect).toBe("INCLUDE");
     expect(result.needsLegalReview).toBe(true);
-    expect(result.legalReviewReasons.join(" ")).toContain("AI 보조 초안");
+    expect(result.legalReviewReasons).toEqual([PRACTITIONER_REVIEW_NOTICE]);
   });
 
   it("keeps an unknown draft condition in the additional-information bucket", () => {
@@ -628,7 +631,8 @@ describe("deterministic four-state rules", () => {
     expect(result.status).toBe("NEEDS_MORE_INFO");
     expect(result.missingInputs).toContain("environment.airEmissionFacility");
     expect(result.needsLegalReview).toBe(true);
-    expect(result.legalReviewReasons.join(" ")).toContain(rule.id);
+    expect(result.legalReviewReasons).toEqual([PRACTITIONER_REVIEW_NOTICE]);
+    expect(result.traces.map((trace) => trace.ruleId)).toContain(rule.id);
   });
 
   it("does not hold decisions in a missing-input state for removed free-text metadata", () => {
@@ -676,6 +680,7 @@ describe("deterministic four-state rules", () => {
     expect(building?.status).toBe("POSSIBLY_APPLIES");
     expect(building?.provisionalEffect).toBe("INCLUDE");
     expect(building?.needsLegalReview).toBe(true);
-    expect(building?.legalReviewReasons.join(" ")).toContain("rule-building-action");
+    expect(building?.legalReviewReasons).toEqual([PRACTITIONER_REVIEW_NOTICE]);
+    expect(building?.matchedRuleIds).toContain("rule-building-action");
   });
 });

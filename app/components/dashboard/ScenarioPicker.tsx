@@ -198,7 +198,7 @@ const valueLabels: Record<string, Record<string, string>> = {
     NONE: "건축 없음",
   },
   landCategory: {
-    OTHER: "일반 대지·공장용지 등",
+    OTHER: "기타 토지(농지·산지 외 · 초지 별도 확인)",
     FARMLAND: "농지",
     FOREST: "산지",
   },

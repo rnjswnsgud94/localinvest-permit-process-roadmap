@@ -50,6 +50,16 @@ describe("roadmap readiness scenarios", () => {
       isDeemed: true,
     });
     expect(decision(evaluation, "building-permit").isDeemed).toBe(false);
+    expect(decision(evaluation, "development-activity-permit")).toMatchObject({
+      status: "APPLIES",
+      provisionalEffect: "INCLUDE",
+      isDeemed: false,
+    });
+    expect(decision(evaluation, "development-activity-completion-inspection")).toMatchObject({
+      status: "POSSIBLY_APPLIES",
+      provisionalEffect: "INCLUDE",
+      isDeemed: false,
+    });
     expect(
       evaluation.schedules.TYPICAL.topologicalOrder.indexOf(
         "industrial-complex-occupancy-contract",

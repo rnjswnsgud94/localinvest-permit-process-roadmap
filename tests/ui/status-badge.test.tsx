@@ -22,7 +22,8 @@ describe("StatusBadge", () => {
       />,
     );
 
-    expect(screen.getByText("로드맵 포함 · 근거 검토 중")).toBeInTheDocument();
+    expect(screen.getByText("로드맵 포함")).toBeInTheDocument();
+    expect(screen.queryByText(/근거 검토/)).not.toBeInTheDocument();
     expect(screen.queryByText("대상 여부 확인 필요")).not.toBeInTheDocument();
 
     rerender(

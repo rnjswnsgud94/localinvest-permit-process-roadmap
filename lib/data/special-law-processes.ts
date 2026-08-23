@@ -23,6 +23,16 @@ const selectedLaw = (lawId: string, path: string): Condition => ({
   },
 });
 
+export const advancedStrategicIndustryCandidateIds = [
+  "SEMICONDUCTOR_ELECTRONICS",
+  "SECONDARY_BATTERY_CHEMICAL",
+  "PHARMACEUTICAL_BIO",
+] as const;
+
+export const semiconductorClusterCandidateIndustryIds = [
+  "SEMICONDUCTOR_ELECTRONICS",
+] as const;
+
 export type FastTrackLawId =
   | "ADVANCED_STRATEGIC_INDUSTRY_FAST_TRACK"
   | "SEMICONDUCTOR_CLUSTER_FAST_TRACK";
@@ -165,6 +175,7 @@ type FastTrackConfig = {
   durationCitationIds: string[];
   requestDurationDays: number;
   requestDurationCitationIds: string[];
+  industryScope: string[];
 };
 
 const fastTracks: FastTrackConfig[] = [
@@ -187,6 +198,7 @@ const fastTracks: FastTrackConfig[] = [
       "cit-civil-petitions-decree-20-stop-clock",
       "cit-administrative-procedure-decree-11-stop-clock",
     ],
+    industryScope: [...advancedStrategicIndustryCandidateIds],
   },
   {
     lawId: "SEMICONDUCTOR_CLUSTER_FAST_TRACK",
@@ -206,6 +218,7 @@ const fastTracks: FastTrackConfig[] = [
       "cit-civil-petitions-decree-20-stop-clock",
       "cit-administrative-procedure-decree-11-stop-clock",
     ],
+    industryScope: [...semiconductorClusterCandidateIndustryIds],
   },
 ];
 
@@ -219,6 +232,7 @@ type PlanConfig = {
   deemedProcedureIds: readonly string[];
   authority: string;
   decisionMaker: string;
+  industryScope?: string[];
 };
 
 const plans: PlanConfig[] = [
@@ -237,6 +251,7 @@ const plans: PlanConfig[] = [
     deemedProcedureIds: semiconductorClusterPlanDeemedProcedureIds,
     authority: "산업통상부 반도체클러스터 담당부서",
     decisionMaker: "산업통상부장관 및 관계 행정기관의 장",
+    industryScope: [...semiconductorClusterCandidateIndustryIds],
   },
   {
     lawId: "INDUSTRIAL_COMPLEX_PLAN_INTEGRATED_APPROVAL",
@@ -284,6 +299,7 @@ const includeRule = ({
   lawId,
   processLawId,
   parentLawId,
+  industryScope,
   citationIds,
   explanation,
 }: {
@@ -293,25 +309,35 @@ const includeRule = ({
   lawId: string;
   processLawId: FastTrackLawId | PlanDeemingLawId;
   parentLawId?: string;
+  industryScope?: string[];
   citationIds: string[];
   explanation: string;
 }): ApplicabilityRule => ({
   id,
-  version: "2026.08.21.1",
+  version: "2026.08.23.1",
   procedureId,
   effect: "INCLUDE",
+  ...(industryScope ? { industryScope } : {}),
   effectiveFrom,
   effectiveTo: null,
   jurisdiction: nationwide,
-  condition: parentLawId
-    ? {
-        all: [
-          selectedLaw(parentLawId, processTokenPath(processLawId)),
-          selectedLaw(lawId, processTokenPath(processLawId)),
-        ],
-      }
-    : selectedLaw(lawId, processTokenPath(processLawId)),
-  requiredInputs: [processTokenPath(processLawId)],
+  condition: {
+    all: [
+      ...(industryScope
+        ? [{ in: { path: "industry.category", values: industryScope } } as Condition]
+        : []),
+      ...(parentLawId
+        ? [
+            selectedLaw(parentLawId, processTokenPath(processLawId)),
+            selectedLaw(lawId, processTokenPath(processLawId)),
+          ]
+        : [selectedLaw(lawId, processTokenPath(processLawId))]),
+    ],
+  },
+  requiredInputs: [
+    ...(industryScope ? ["industry.category"] : []),
+    processTokenPath(processLawId),
+  ],
   missingPolicy: "INDETERMINATE",
   citationIds,
   explanationTemplate: explanation,
@@ -329,6 +355,7 @@ export const specialLawProcessRules: ApplicabilityRule[] = [
       effectiveFrom: config.effectiveFrom,
       lawId: config.lawId,
       processLawId: config.lawId,
+      industryScope: config.industryScope,
       citationIds: config.citationIds,
       explanation: `${config.scope} 사업의 관계 인허가 신속처리 요청 요건을 확인해 요청·대상목록 관리 절차를 포함합니다.`,
     }),
@@ -338,6 +365,7 @@ export const specialLawProcessRules: ApplicabilityRule[] = [
       effectiveFrom: config.effectiveFrom,
       lawId: config.lawId,
       processLawId: config.lawId,
+      industryScope: config.industryScope,
       citationIds: config.citationIds,
       explanation: `${config.scope} 신속처리 요청 후 개별 법정기한·60일 조건과 실제 처리결과를 확인하는 절차를 포함합니다.`,
     }),
@@ -349,6 +377,7 @@ export const specialLawProcessRules: ApplicabilityRule[] = [
       effectiveFrom: config.effectiveFrom,
       lawId: `${config.lawId}:PHASE:APPLICATION`,
       processLawId: config.lawId as PlanDeemingLawId,
+      industryScope: config.industryScope,
       citationIds: config.citationIds,
       explanation: `${config.planName}에 사업과 의제대상 서류를 포함해 승인 신청하는 절차를 포함합니다.`,
     }),
@@ -358,6 +387,7 @@ export const specialLawProcessRules: ApplicabilityRule[] = [
       effectiveFrom: config.effectiveFrom,
       lawId: `${config.lawId}:PHASE:CONSULTATION`,
       processLawId: config.lawId as PlanDeemingLawId,
+      industryScope: config.industryScope,
       citationIds: config.citationIds,
       explanation: `${config.planName}의 개별 인허가 의제를 위한 관계기관 협의 절차를 포함합니다.`,
     }),
@@ -367,19 +397,24 @@ export const specialLawProcessRules: ApplicabilityRule[] = [
       effectiveFrom: config.effectiveFrom,
       lawId: `${config.lawId}:PHASE:APPROVAL`,
       processLawId: config.lawId as PlanDeemingLawId,
+      industryScope: config.industryScope,
       citationIds: config.citationIds,
       explanation: `${config.planName} 승인과 협의 완료된 개별 인허가의 의제 결과 확인 절차를 포함합니다.`,
     }),
     ...config.deemedProcedureIds.map((procedureId): ApplicabilityRule => ({
       id: `rule-${config.prefix}-deems-${procedureId}`,
-      version: "2026.08.21.1",
+      version: "2026.08.23.1",
       procedureId,
       effect: "EXCLUDE",
+      ...(config.industryScope ? { industryScope: config.industryScope } : {}),
       effectiveFrom: config.effectiveFrom,
       effectiveTo: null,
       jurisdiction: nationwide,
       condition: {
         all: [
+          ...(config.industryScope
+            ? [{ in: { path: "industry.category", values: config.industryScope } } as Condition]
+            : []),
           selectedLaw(
             config.lawId,
             processTokenPath(config.lawId as PlanDeemingLawId),
@@ -391,6 +426,7 @@ export const specialLawProcessRules: ApplicabilityRule[] = [
         ],
       },
       requiredInputs: [
+        ...(config.industryScope ? ["industry.category"] : []),
         processTokenPath(config.lawId as PlanDeemingLawId),
       ],
       // A plan approval is deemed only after every approval/evidence fact is
@@ -418,6 +454,7 @@ export function buildFastTrackTargetRules(
       lawId: `${config.lawId}:${procedureId}`,
       processLawId: config.lawId,
       parentLawId: config.lawId,
+      industryScope: config.industryScope,
       citationIds: config.citationIds,
       explanation: `${config.scope} 신속처리 요청 공문의 대상목록에 ${procedureId} 절차가 포함된 것으로 확인했습니다.`,
     })),

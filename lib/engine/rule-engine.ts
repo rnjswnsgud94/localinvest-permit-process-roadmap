@@ -7,6 +7,7 @@ import type {
   RuleTrace,
 } from "@/lib/domain/schemas";
 import type { SpecialLawImpact } from "@/lib/data/special-laws";
+import { PRACTITIONER_REVIEW_NOTICE } from "@/lib/domain/legal-review";
 
 type TruthValue = "TRUE" | "FALSE" | "UNKNOWN";
 
@@ -276,32 +277,14 @@ function getLegalReviewDisclosure(
   procedure: Procedure,
   rules: ApplicabilityRule[],
 ) {
-  const draftRuleIds = stableUnique(
-    rules
-      .filter((rule) => rule.status === "DRAFT")
-      .map((rule) => rule.id),
-  );
-  const legalReviewReasons: string[] = [];
-
-  if (draftRuleIds.length) {
-    legalReviewReasons.push(
-      `판정규칙 법률 검토 필요: ${draftRuleIds.join(", ")}`,
-    );
-  }
-  if (procedure.verificationStatus === "AI_ASSISTED_DRAFT") {
-    legalReviewReasons.push(
-      "절차 설명·제출자료·관할 정보가 AI 보조 초안 상태입니다.",
-    );
-  }
-  if (procedure.verificationStatus === "TODO_LEGAL_REVIEW") {
-    legalReviewReasons.push(
-      "절차 설명·제출자료·관할 정보의 법률 검토가 필요합니다.",
-    );
-  }
+  const needsLegalReview =
+    rules.some((rule) => rule.status === "DRAFT") ||
+    procedure.verificationStatus === "AI_ASSISTED_DRAFT" ||
+    procedure.verificationStatus === "TODO_LEGAL_REVIEW";
 
   return {
-    needsLegalReview: legalReviewReasons.length > 0,
-    legalReviewReasons,
+    needsLegalReview,
+    legalReviewReasons: needsLegalReview ? [PRACTITIONER_REVIEW_NOTICE] : [],
   };
 }
 
@@ -344,7 +327,7 @@ export function resolveProcedure(
         ? "POSSIBLY_APPLIES"
         : "DOES_NOT_APPLY",
       reason: disclosure.needsLegalReview
-        ? `현재 업종(${String(industry.value)})은 이 업종 전용 절차의 적용범위 밖이지만 범위 규칙의 세부 법률검토 상태는 상세에서 확인해야 합니다.`
+        ? `현재 업종(${String(industry.value)})은 이 업종 전용 절차의 적용범위 밖으로 잠정 분류했습니다. 최종 적용범위는 관계기관 확인이 필요합니다.`
         : `현재 업종(${String(industry.value)})은 이 업종 전용 절차의 적용범위에 포함되지 않습니다.`,
       ...disclosure,
       missingInputs: [],
@@ -365,7 +348,7 @@ export function resolveProcedure(
     return {
       procedure,
       status: "POSSIBLY_APPLIES",
-      reason: "평가일과 관할범위에 유효한 판정규칙이 없어 전문검토가 필요합니다.",
+      reason: "평가일과 관할범위에 맞는 적용기준을 관계기관에 확인해야 합니다.",
       ...getLegalReviewDisclosure(procedure, []),
       missingInputs: [],
       traces: [],
@@ -417,9 +400,9 @@ export function resolveProcedure(
       status: exclusionRuleIsReviewed ? "DOES_NOT_APPLY" : "POSSIBLY_APPLIES",
       reason: exclusionRuleIsReviewed
         ? disclosure.needsLegalReview
-          ? `${winner.explanationTemplate} 제외 판정근거는 검토됐으며, 절차 설명·제출자료의 검토상태는 상세에서 별도로 확인해야 합니다.`
+          ? `${winner.explanationTemplate} 제외 판정근거는 확인됐으며, 실제 관할과 구비서류는 접수 전 관계기관에 확인해야 합니다.`
           : winner.explanationTemplate
-        : `${winner.explanationTemplate} 제외 근거의 세부 법률검토 상태는 상세에서 확인해야 합니다.`,
+        : `${winner.explanationTemplate} 잠정 제외로 표시하며 최종 적용 여부는 관계기관 확인이 필요합니다.`,
       ...disclosure,
       missingInputs: stableUnique(unknownTraces.flatMap((trace) => trace.missingInputs)),
       traces,
@@ -438,7 +421,7 @@ export function resolveProcedure(
       procedure,
       status: disclosure.needsLegalReview ? "POSSIBLY_APPLIES" : "APPLIES",
       reason: disclosure.needsLegalReview
-        ? `${winner.explanationTemplate} 계획경로에는 포함하되 근거의 세부 법률검토 상태는 상세에서 확인해야 합니다.`
+        ? `${winner.explanationTemplate} 관계기관 확인을 전제로 로드맵에 포함했습니다.`
         : winner.explanationTemplate,
       ...disclosure,
       missingInputs: stableUnique(unknownTraces.flatMap((trace) => trace.missingInputs)),

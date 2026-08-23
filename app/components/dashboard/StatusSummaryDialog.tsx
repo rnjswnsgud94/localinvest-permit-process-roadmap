@@ -111,9 +111,6 @@ export function StatusSummaryDialog({
                       {decision.missingInputs.length ? (
                         <small>추가 입력: {decision.missingInputs.map(inputLabel).join(", ")}</small>
                       ) : null}
-                      {decision.needsLegalReview ? (
-                        <small>근거 상태: 공식 원문 세부검토가 남아 있습니다.</small>
-                      ) : null}
                     </button>
                   </li>
                 ))}

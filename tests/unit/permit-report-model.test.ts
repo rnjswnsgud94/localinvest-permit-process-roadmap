@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { procedureCategoryForDecision } from "@/app/components/dashboard/constants";
+import {
+  inputLabel,
+  procedureCategoryForDecision,
+} from "@/app/components/dashboard/constants";
 import { buildPermitReportModel } from "@/app/components/dashboard/pdf/permit-report-model";
 import { formatProjectInputValue } from "@/app/components/dashboard/ScenarioPicker";
 import { catalog, type ScenarioAnswers } from "@/lib/data/catalog";
@@ -49,8 +52,10 @@ describe("permit PDF report model", () => {
     );
     expect(report.metadata).toMatchObject({
       generatedAt: "2026-08-23T03:04:05.000Z",
-      filename: "지방투자기업-인허가-검토보고서-2026-08-23.pdf",
+      title: "충청북도 청주시 · 기타·세부 업종 미정 · 신설·신축 인허가 결과보고서",
+      filename: "인허가-결과보고서_충청북도-청주시_기타-세부-업종-미정_신설_신축_20260823-120405.pdf",
     });
+    expect(new TextEncoder().encode(report.metadata.filename).byteLength).toBeLessThanOrEqual(220);
   });
 
   it("builds a complete stage flow and keeps excluded procedures names-only", () => {
@@ -98,6 +103,71 @@ describe("permit PDF report model", () => {
       expect.objectContaining({ label: "생산품·서비스", value: answers.products }),
       expect.objectContaining({ label: "핵심 공정·설비", value: answers.coreProcesses }),
     ]));
+  });
+
+  it("keeps project-specific titles and filenames safe and bounded", () => {
+    const baseAnswers = catalog.scenarios[0].answers;
+    const evaluation = evaluateProject(baseAnswers);
+    const answers: ScenarioAnswers = {
+      ...baseAnswers,
+      city: `청주/../테스트\u202E${"시".repeat(60)}`,
+    };
+    const report = buildPermitReportModel({
+      answers,
+      evaluation,
+      durationScenario: "TYPICAL",
+      generatedAt: new Date("2026-08-23T03:04:05.000Z"),
+    });
+
+    expect(report.metadata.title).not.toMatch(/[\u202A-\u202E\u2066-\u2069]/);
+    expect(report.metadata.filename).not.toMatch(/[\\/:*?"<>|\u202A-\u202E\u2066-\u2069]/);
+    expect(report.metadata.filename).not.toContain("..");
+    expect(report.metadata.filename).toMatch(/_20260823-120405\.pdf$/);
+    expect(new TextEncoder().encode(report.metadata.filename).byteLength).toBeLessThanOrEqual(220);
+  });
+
+  it("turns internal special-law process paths into practitioner labels", () => {
+    expect(inputLabel(
+      "confirmation.specialLawProcessTokens.INDUSTRIAL_COMPLEX_PLAN_INTEGRATED_APPROVAL",
+    )).toBe("산업단지계획 통합승인·의제 요건");
+    expect(inputLabel(
+      "confirmation.specialLawProcessTokens.SEMICONDUCTOR_CLUSTER_FAST_TRACK",
+    )).toBe("반도체클러스터 신속처리 요건");
+  });
+
+  it("moves industry-specific special-law procedures into the excluded table for a wood project", () => {
+    const answers: ScenarioAnswers = {
+      ...catalog.scenarios[0].answers,
+      industryCategory: "WOOD_PAPER_PRINTING",
+      advancedStrategicIndustryFastTrackConfirmed: null,
+      semiconductorClusterFastTrackConfirmed: null,
+      semiconductorClusterPlanDeemingConfirmed: null,
+      industrialComplexPlanSpecialCaseConfirmed: false,
+      regionalSpecialZonePlanDeemingConfirmed: false,
+    };
+    const { report } = reportFor(answers);
+    const industrySpecificProcedureIds = [
+      "advanced-strategic-industry-fast-track-request",
+      "advanced-strategic-industry-fast-track-result-check",
+      "semiconductor-cluster-fast-track-request",
+      "semiconductor-cluster-fast-track-result-check",
+      "semiconductor-cluster-plan-application",
+      "semiconductor-cluster-plan-consultation",
+      "semiconductor-cluster-plan-approval",
+    ];
+    const excludedNames = industrySpecificProcedureIds.map((procedureId) => {
+      const procedure = catalog.procedures.find((item) => item.id === procedureId);
+      expect(procedure, procedureId).toBeDefined();
+      return procedure!.name;
+    });
+
+    expect(report.procedures.map((procedure) => procedure.id)).not.toEqual(
+      expect.arrayContaining(industrySpecificProcedureIds),
+    );
+    expect(report.gaps.flatMap((gap) => gap.affectedProcedures)).not.toEqual(
+      expect.arrayContaining(excludedNames),
+    );
+    expect(report.excluded).toEqual(expect.arrayContaining(excludedNames));
   });
 
   it("never labels a missing or partial schedule as a total duration", () => {
@@ -179,5 +249,6 @@ describe("permit PDF report model", () => {
     expect(report.legalSources.every((source) => /^https:\/\//.test(source.officialUrl))).toBe(true);
     expect(serialized).not.toContain("LAW_API_OC");
     expect(serialized).not.toMatch(/\"(?:mst|lawId|apiRetrievedAt)\"/);
+    expect(serialized).not.toMatch(/rule-|판정규칙 법률 검토 필요|AI 보조 초안|근거 추가 검토 필요/);
   });
 });

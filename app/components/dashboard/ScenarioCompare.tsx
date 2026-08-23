@@ -68,7 +68,7 @@ function comparisonStatusLabel(decision: ProcedureDecision) {
   if (decision.isDeemed) return "의제 처리";
   if (decision.status === "APPLIES") return "확정 필수 절차";
   if (isInputMatchedRoadmapInclusion(decision)) {
-    return `로드맵 포함${decision.needsLegalReview ? " · 근거 검토" : ""}`;
+    return "로드맵 포함";
   }
   return statusLabels[decision.status];
 }

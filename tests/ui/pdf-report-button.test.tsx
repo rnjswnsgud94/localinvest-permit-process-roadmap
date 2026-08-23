@@ -69,7 +69,9 @@ describe("PDF report download", () => {
     await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("다운로드했습니다"));
 
     const clickedAnchor = (HTMLAnchorElement.prototype.click as ReturnType<typeof vi.fn>).mock.instances[0] as HTMLAnchorElement;
-    expect(clickedAnchor.download).toMatch(/^지방투자기업-인허가-검토보고서-\d{4}-\d{2}-\d{2}\.pdf$/);
+    expect(clickedAnchor.download).toMatch(
+      /^인허가-결과보고서_충청북도-청주시_.+_신설_신축_\d{8}-\d{6}\.pdf$/,
+    );
     expect(clickedAnchor.href).toBe("blob:permit-report");
     expect(URL.createObjectURL).toHaveBeenCalledWith(expect.any(Blob));
   });

@@ -11,6 +11,7 @@ import {
   verifiedSequenceCitationIds,
 } from "@/lib/data/edge-evidence";
 import type { ProcedureDecision } from "@/lib/engine/rule-engine";
+import { PRACTITIONER_REVIEW_NOTICE } from "@/lib/domain/legal-review";
 import type { ScheduleResult } from "@/lib/engine/schedule";
 import {
   formatCompletedCheckpoint,
@@ -112,10 +113,10 @@ function authorityNeedsConfirmation(authority: string) {
 }
 
 const verificationLabels: Record<string, string> = {
-  AI_ASSISTED_DRAFT: "공식자료 대조 초안",
-  INTERNAL_REVIEWED: "내부 검토 완료",
+  AI_ASSISTED_DRAFT: "관계기관 확인 권장",
+  INTERNAL_REVIEWED: "공식자료 내부 대조",
   EXPERT_REVIEWED: "전문가 검토 완료",
-  TODO_LEGAL_REVIEW: "법령 세부검토 필요",
+  TODO_LEGAL_REVIEW: "관계기관 확인 필요",
 };
 
 const evidenceLabels: Record<string, string> = {
@@ -305,7 +306,15 @@ export function ProcedureDrawer({
           <div><dt>신청·수행 주체</dt><dd>{procedure.applicant}</dd></div>
           <div><dt>협의 주체</dt><dd>{procedure.consultationAuthorities.length ? procedure.consultationAuthorities.join(", ") : "별도 협의 주체 없음"}</dd></div>
           <div><dt>결과물</dt><dd>{procedure.outcome}</dd></div>
-          <div><dt>총 일정상 위치</dt><dd>{completedCheckpoint ? formatCompletedCheckpoint(completedCheckpoint) : timelineNode ? `${timelineNode.startDate} ~ ${timelineNode.finishDate} · ${timelineNode.processingDuration === null ? formatResolvedOfficialDurationSummary(duration, planningDuration) : formatTimelineProcessingDuration(timelineNode)}${timelineNode.overlapsConstruction ? ` · 공사와 ${timelineNode.overlapWithConstructionDays}일 병행` : timelineNode.excludedFromOperationReady ? " · 가동 후 별도" : ""}` : "공사 일정 입력 필요"}</dd></div>
+          <div><dt>총 일정상 위치</dt><dd>{completedCheckpoint
+            ? formatCompletedCheckpoint(completedCheckpoint)
+            : decision.isDeemed
+              ? "상위 절차 일정에 포함 · 의제서류 제출과 관계기관 협의 필요"
+              : timelineNode
+                ? timelineNode.processingDuration === null
+                  ? `${timelineNode.startDate} 착수 기준 · 종료일 미산정 · ${formatResolvedOfficialDurationSummary(duration, planningDuration)}`
+                  : `${timelineNode.startDate} ~ ${timelineNode.finishDate} · ${formatTimelineProcessingDuration(timelineNode)}${timelineNode.overlapsConstruction ? ` · 공사와 ${timelineNode.overlapWithConstructionDays}일 병행` : timelineNode.excludedFromOperationReady ? " · 가동 후 별도" : ""}`
+                : "공사 일정 입력 필요"}</dd></div>
         </dl>
         <section className="drawer-section"><h3>절차 설명</h3><p>{procedure.description}</p></section>
         <section className="drawer-section"><h3>주요 제출자료</h3><ul>{procedure.submissions.map((item) => <li key={item}>{item}</li>)}</ul></section>
@@ -422,7 +431,7 @@ export function ProcedureDrawer({
         </section>
         <section className="review-note">
           <strong>자료 확인 상태 · {verificationLabels[procedure.verificationStatus] ?? procedure.verificationStatus}</strong><p>{procedure.reviewNote}</p>
-          {decision.needsLegalReview ? <p><strong>추가 법률검토:</strong> {decision.legalReviewReasons.join(" · ")}</p> : null}
+          {decision.needsLegalReview ? <p><strong>실무 확인:</strong> {PRACTITIONER_REVIEW_NOTICE}</p> : null}
           <small>검토일 {procedure.reviewedAt} · 데이터 {decision.dataVersion}</small>
         </section>
       </div>

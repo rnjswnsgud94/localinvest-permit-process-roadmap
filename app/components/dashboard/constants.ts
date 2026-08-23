@@ -33,7 +33,7 @@ export const procedureCategoryOrder: ProcedureCategory[] = ["REQUIRED", "CONFIRM
 export const procedureCategorySummaries: Record<ProcedureCategory, { label: string; description: string; empty: string }> = {
   REQUIRED: {
     label: "로드맵 포함 절차",
-    description: "입력값과 판정규칙이 일치해 일정에 반영한 절차입니다. ‘근거 검토 중’ 표시는 신청 전 공식 원문·관할기관 확인이 필요합니다.",
+    description: "확정 절차뿐 아니라 적용기준 확인 전 보수적으로 포함한 절차와 상위 절차에서 의제 처리할 항목도 함께 집계합니다.",
     empty: "현재 입력값으로 로드맵에 포함된 절차가 없습니다.",
   },
   CONFIRM: {
@@ -85,6 +85,20 @@ export function procedureCategoryForDecision(
   if (isInputMatchedRoadmapInclusion(decision)) return "REQUIRED";
   if (decision.status === "DOES_NOT_APPLY") return "NOT_REQUIRED";
   return "CONFIRM";
+}
+
+export function roadmapInclusionBreakdown(
+  decisions: readonly ProcedureClassificationDecision[],
+) {
+  return decisions.reduce(
+    (counts, decision) => {
+      if (decision.isDeemed) counts.deemed += 1;
+      else if (decision.status === "APPLIES") counts.confirmed += 1;
+      else if (isInputMatchedRoadmapInclusion(decision)) counts.scopeCheck += 1;
+      return counts;
+    },
+    { confirmed: 0, scopeCheck: 0, deemed: 0 },
+  );
 }
 
 export const actionLabels = {
@@ -313,6 +327,18 @@ export function inputLabel(path: string) {
   if (path.startsWith(supplementalPrefix)) {
     const id = path.slice(supplementalPrefix.length);
     return `공사·환경 정밀검토 · ${supplementalPermitTargetNames[id as keyof typeof supplementalPermitTargetNames] ?? id}`;
+  }
+  const specialLawPrefix = "confirmation.specialLawProcessTokens.";
+  if (path.startsWith(specialLawPrefix)) {
+    const id = path.slice(specialLawPrefix.length);
+    const labels: Record<string, string> = {
+      ADVANCED_STRATEGIC_INDUSTRY_FAST_TRACK: "국가첨단전략산업 신속처리 요건",
+      SEMICONDUCTOR_CLUSTER_FAST_TRACK: "반도체클러스터 신속처리 요건",
+      SEMICONDUCTOR_CLUSTER_PLAN_DEEMING: "반도체클러스터 조성계획 승인·의제 요건",
+      INDUSTRIAL_COMPLEX_PLAN_INTEGRATED_APPROVAL: "산업단지계획 통합승인·의제 요건",
+      REGIONAL_SPECIAL_ZONE_PLAN_DEEMING: "지역특화발전특구계획 승인·의제 요건",
+    };
+    return labels[id] ?? "특별법 절차요건";
   }
   return inputLabels[path] ?? path;
 }

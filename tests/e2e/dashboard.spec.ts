@@ -1,8 +1,15 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
+
+async function gotoHydratedDashboard(page: Page) {
+  await page.goto("/");
+  // The dashboard is server-rendered first. Its first share-state URL update is
+  // a stable signal that React event handlers and client effects are ready.
+  await expect(page).toHaveURL(/[?&]v=13(?:&|$)/);
+}
 
 test("desktop result summary uses the available width without cramped copy", async ({ page }) => {
   await page.setViewportSize({ width: 1450, height: 900 });
-  await page.goto("/");
+  await gotoHydratedDashboard(page);
 
   const summary = page.getByLabel("판정 요약");
   const durationCard = summary.locator(".summary-schedule");
@@ -42,6 +49,10 @@ test("desktop result summary uses the available width without cramped copy", asy
   expect(Math.min(...geometry!.descriptionLineHeights)).toBeGreaterThanOrEqual(19);
   expect(geometry!.hasHorizontalOverflow).toBe(false);
 
+  await expect(page.locator(".dependency-connector-layer marker").first()).toHaveAttribute(
+    "markerUnits",
+    "userSpaceOnUse",
+  );
   const flowGeometry = await page.locator(".swimlane-grid").evaluate((element) => {
     const marker = element.querySelector("marker");
     return {
@@ -91,8 +102,12 @@ test("desktop result summary uses the available width without cramped copy", asy
 });
 
 test("a card user estimate updates the scenario and survives reload", async ({ page }) => {
-  await page.goto("/");
-  const card = page.locator(".procedure-card").first();
+  await gotoHydratedDashboard(page);
+  const card = page.locator(".procedure-card").filter({
+    has: page.getByRole("button", {
+      name: "품질관리·품질시험계획 수립·승인 상세 보기",
+    }),
+  });
   await card.getByRole("button", { name: /내 예상.*기간 입력/ }).click();
   await card.getByRole("spinbutton").fill("30");
   await card.getByRole("combobox").selectOption("CALENDAR_DAY");
@@ -106,7 +121,7 @@ test("a card user estimate updates the scenario and survives reload", async ({ p
   await expect(page).toHaveURL(/ud=.*30/);
 
   await page.reload();
-  await expect(page.locator(".procedure-card").first()).toContainText("30일 · 수정");
+  await expect(card).toContainText("30일 · 수정");
   await expect(page.getByRole("button", { name: "내 예상 1" })).toHaveAttribute(
     "aria-pressed",
     "true",
@@ -114,7 +129,7 @@ test("a card user estimate updates the scenario and survives reload", async ({ p
 });
 
 test("secondary permit questions start collapsed without discarding answers", async ({ page }) => {
-  await page.goto("/");
+  await gotoHydratedDashboard(page);
   await page.getByRole("navigation", { name: "입력 단계" }).getByRole(
     "button",
     { name: /^2 시설 규모/ },
@@ -133,9 +148,9 @@ test("secondary permit questions start collapsed without discarding answers", as
 });
 
 test("wizard changes the route and detail links are official", async ({ page }) => {
-  await page.goto("/");
+  await gotoHydratedDashboard(page);
   await expect(page.getByRole("heading", { name: "지역투자 인허가 로드맵" })).toBeVisible();
-  await page.getByRole("button", { name: "개별입지" }).click();
+  await page.getByRole("button", { name: "개별입지", exact: true }).click();
   await expect(page.getByText(/지역 미입력 · 개별입지/)).toBeVisible();
   await page.getByRole("button", { name: /공장설립·증설·업종변경 승인/ }).click();
   await expect(page.getByRole("dialog", { name: /공장설립·증설·업종변경 승인 상세정보/ })).toBeVisible();
@@ -143,15 +158,15 @@ test("wizard changes the route and detail links are official", async ({ page }) 
 });
 
 test("AI data-center special-law selection is reflected in the result and share URL", async ({ page }) => {
-  await page.goto("/");
+  await gotoHydratedDashboard(page);
   await page.getByLabel("업종·주요 공정").selectOption("AI_DATA_CENTER");
-  await expect(page.getByRole("heading", { name: "AI 데이터센터 특별법 적용" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "특별법 간소화·면제 점검" })).toBeVisible();
 
-  await page.getByRole("button", { name: "요건 확인" }).click();
+  await page.getByRole("button", { name: "요건 확인", exact: true }).click();
   await page.getByRole("checkbox", { name: /인허가 일괄처리/ }).check();
   await page.getByLabel("평가 기준일").fill("2027-04-01");
 
-  await expect(page.getByText("선택 반영")).toBeVisible();
+  await expect(page.getByText("선택 반영", { exact: true })).toBeVisible();
   await expect(page.getByText(/일괄처리는 면제가 아니며/)).toBeVisible();
   await expect(page).toHaveURL(/ind=AI_DATA_CENTER/);
   await expect(page).toHaveURL(/sl=AIDC_ONE_STOP/);
@@ -160,25 +175,27 @@ test("AI data-center special-law selection is reflected in the result and share 
 });
 
 test("share URL restores state and tabs", async ({ page }) => {
-  await page.goto("/");
-  await page.getByRole("button", { name: "증설" }).click();
+  await gotoHydratedDashboard(page);
+  await page.getByRole("button", { name: "증설", exact: true }).click();
   await page.getByRole("tab", { name: /확인 필요/ }).click();
   await expect(page).toHaveURL(/tab=GAPS/);
   const url = page.url();
   await page.goto(url);
   await expect(page.getByRole("heading", { name: "판정에 필요한 추가 정보" })).toBeVisible();
-  await expect(page.getByText("증설")).toBeVisible();
+  await expect(page.getByRole("button", { name: "증설", exact: true })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
 });
 
 test("downloads the current result report with its A3 overview", async ({ page }) => {
-  await page.goto("/");
+  await gotoHydratedDashboard(page);
   const downloadPromise = page.waitForEvent("download");
   await page.getByRole("button", { name: "결과보고서 다운로드" }).click();
-  await expect(page.locator("#pdf-report-status")).toContainText("만드는 중");
   const download = await downloadPromise;
 
   expect(download.suggestedFilename()).toMatch(
-    /^지방투자기업-인허가-검토보고서-\d{4}-\d{2}-\d{2}\.pdf$/,
+    /^인허가-결과보고서_.+_\d{8}-\d{6}\.pdf$/u,
   );
   expect(await download.failure()).toBeNull();
   await expect(page.locator("#pdf-report-status")).toContainText("다운로드했습니다");

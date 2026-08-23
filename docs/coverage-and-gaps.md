@@ -1,6 +1,6 @@
 # Coverage and gaps
 
-Catalog version: `2026.08.23-permits.12-2026-field-gaps`
+Catalog version: `2026.08.23-permits.14-special-law-industry-scope`
 Legal, duration and ELIS public-page review: `2026-08-23`
 Snapshot mode: `SNAPSHOT_ONLY`
 

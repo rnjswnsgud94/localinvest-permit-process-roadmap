@@ -32,7 +32,7 @@ export const REPORT_OUTLINE = [
   "부록 C. 이용상 주의",
 ] as const;
 
-const FLOW_OVERVIEW_MAX_CARDS = 24;
+const FLOW_OVERVIEW_MAX_CARDS = 18;
 
 export function calculateFlowOverviewCardLayout(
   requiredCount: number,
@@ -233,14 +233,20 @@ class PermitPdfWriter {
       height: 12,
       color: palette.blue,
     });
-    this.page.drawText("지방투자기업 인허가 검토보고서", {
+    const sectionWidth = this.fonts.regular.widthOfTextAtSize(sectionLabel, 8.2);
+    const headerTitle = singleLineText(
+      this.model.metadata.title,
+      this.fonts.bold,
+      8.5,
+      Math.max(120, pageWidth - MARGIN_X * 2 - sectionWidth - 22),
+    );
+    this.page.drawText(headerTitle, {
       x: MARGIN_X,
       y: pageHeight - 33,
       font: this.fonts.bold,
       size: 8.5,
       color: palette.blue,
     });
-    const sectionWidth = this.fonts.regular.widthOfTextAtSize(sectionLabel, 8.2);
     this.page.drawText(sectionLabel, {
       x: pageWidth - MARGIN_X - sectionWidth,
       y: pageHeight - 33,
@@ -258,8 +264,8 @@ class PermitPdfWriter {
 
   paragraph(text: string, options: TextOptions = {}) {
     const font = options.font ?? this.fonts.regular;
-    const size = options.size ?? 9.2;
-    const lineHeight = options.lineHeight ?? size * 1.52;
+    const size = options.size ?? 9;
+    const lineHeight = options.lineHeight ?? 13.2;
     const color = options.color ?? palette.body;
     const width = options.width ?? CONTENT_WIDTH;
     const indent = options.indent ?? 0;
@@ -317,7 +323,7 @@ class PermitPdfWriter {
   }
 
   stageHeading(title: string) {
-    this.ensureSpace(190, REPORT_OUTLINE[4]);
+    this.ensureSpace(120, REPORT_OUTLINE[4]);
     this.paragraph(title, {
       font: this.fonts.bold,
       size: 11,
@@ -434,12 +440,18 @@ class PermitPdfWriter {
     this.y -= 103;
 
     const counts = [
-      ["로드맵 포함", this.model.summary.counts.REQUIRED, palette.blue, palette.blueSoft],
-      ["추가 확인", this.model.summary.counts.CONFIRM, palette.amber, palette.amberSoft],
-      ["확인된 제외", this.model.summary.counts.NOT_REQUIRED, palette.teal, palette.tealSoft],
+      [
+        "로드맵 포함",
+        this.model.summary.counts.REQUIRED,
+        palette.blue,
+        palette.blueSoft,
+        `확정 ${this.model.summary.roadmapBreakdown.confirmed} · 확인 전 포함 ${this.model.summary.roadmapBreakdown.scopeCheck} · 의제 ${this.model.summary.roadmapBreakdown.deemed}`,
+      ],
+      ["추가 확인", this.model.summary.counts.CONFIRM, palette.amber, palette.amberSoft, null],
+      ["확인된 제외", this.model.summary.counts.NOT_REQUIRED, palette.teal, palette.tealSoft, null],
     ] as const;
     const countWidth = (CONTENT_WIDTH - 16) / 3;
-    counts.forEach(([label, value, color, background], index) => {
+    counts.forEach(([label, value, color, background, detail], index) => {
       const x = MARGIN_X + index * (countWidth + 8);
       this.page.drawRectangle({
         x,
@@ -462,6 +474,15 @@ class PermitPdfWriter {
         size: 8.4,
         color: palette.ink,
       });
+      if (detail) {
+        this.page.drawText(detail, {
+          x: x + 12,
+          y: this.y - 42,
+          font: this.fonts.regular,
+          size: 6.6,
+          color: palette.body,
+        });
+      }
     });
     this.y -= 72;
 
@@ -827,11 +848,11 @@ class PermitPdfWriter {
               ? "공식기간 기반"
               : "공식 처리기간";
           const timing = `${source} · ${item.timing}`;
-          page.drawText(singleLineText(timing, this.fonts.regular, 5.5, cardWidth - 14), {
+          page.drawText(singleLineText(timing, this.fonts.regular, 6.2, cardWidth - 14), {
             x: cardX + 7,
             y: topY - cardHeight + 6,
             font: this.fonts.regular,
-            size: 5.5,
+            size: 6.2,
             color: palette.muted,
           });
         }
@@ -916,7 +937,7 @@ class PermitPdfWriter {
       const column = Math.floor(index / 5);
       const row = index % 5;
       const x = margin + 12 + column * (relationColumnWidth + relationColumnGap);
-      const y = relationTop - 31 - row * 9.2;
+      const y = relationTop - 31 - row * 10.4;
       const badge = relation.bottleneck
         ? "병목"
         : relation.evidence.startsWith("법")
@@ -940,58 +961,62 @@ class PermitPdfWriter {
         singleLineText(
           `${relation.from} → ${relation.to} · ${relation.relation}`,
           this.fonts.regular,
-          6.3,
+          7,
           relationColumnWidth - 34,
         ),
         {
           x: x + 29,
           y,
           font: this.fonts.regular,
-          size: 6.3,
+          size: 7,
           color: palette.body,
         },
       );
     });
 
     const note = "읽는 방향: 위 행 01→02→03, 아래 행 04→05→06(오른쪽→왼쪽). 큰 화살표는 보고서 탐색 방향이고, 핵심 관계 표의 화살표가 실제 법정·실무 선후행입니다. ‘병목’은 현재 일정의 착수를 구속하는 후보이며 실제 보완·협의기간에 따라 달라질 수 있습니다. W는 선행관계를 반영한 진행군입니다. ‘외 N건’과 전체 판정 근거는 5장 세부절차를 확인하십시오.";
-    limitedLines(note, this.fonts.regular, 6.4, contentWidth, 3)
+    limitedLines(note, this.fonts.regular, 6.8, contentWidth, 3)
       .forEach((line, index) => page.drawText(line, {
         x: margin,
-        y: 70 - index * 9,
+        y: 70 - index * 9.6,
         font: this.fonts.regular,
-        size: 6.4,
+        size: 6.8,
         color: palette.muted,
       }));
     this.y = PAGE_BOTTOM;
   }
 
   milestoneTable() {
-    this.ensureSpace(40);
-    const columns = this.model.summary.milestones.length;
+    const columns = Math.min(4, Math.max(1, this.model.summary.milestones.length));
+    const rows = Math.ceil(this.model.summary.milestones.length / columns);
     const width = CONTENT_WIDTH / columns;
-    const height = 47;
+    const cellHeight = 50;
+    const height = rows * cellHeight;
+    this.ensureSpace(height + 8);
     this.model.summary.milestones.forEach((milestone, index) => {
-      const x = MARGIN_X + index * width;
+      const row = Math.floor(index / columns);
+      const column = index % columns;
+      const x = MARGIN_X + column * width;
+      const top = this.y - row * cellHeight;
       this.page.drawRectangle({
         x,
-        y: this.y - height,
+        y: top - cellHeight,
         width,
-        height,
+        height: cellHeight,
         color: index % 2 ? palette.white : palette.panel,
         borderColor: palette.line,
         borderWidth: 0.4,
       });
-      this.page.drawText(milestone.label, {
+      this.page.drawText(singleLineText(milestone.label, this.fonts.regular, 7, width - 14), {
         x: x + 7,
-        y: this.y - 15,
+        y: top - 15,
         font: this.fonts.regular,
         size: 7,
         color: palette.muted,
       });
-      const lines = wrapText(milestone.value, this.fonts.bold, 8.5, width - 14);
-      this.page.drawText(lines[0] ?? "", {
+      this.page.drawText(singleLineText(milestone.value, this.fonts.bold, 8.5, width - 14), {
         x: x + 7,
-        y: this.y - 34,
+        y: top - 35,
         font: this.fonts.bold,
         size: 8.5,
         color: palette.ink,
@@ -1011,9 +1036,9 @@ class PermitPdfWriter {
     });
     this.y -= 24;
     items.forEach((item, index) => {
-      const labelLines = wrapText(item.label, this.fonts.bold, 7.6, 142);
-      const valueLines = wrapText(truncate(item.value, 600), this.fonts.regular, 8.2, CONTENT_WIDTH - 172);
-      const rowHeight = Math.max(27, Math.max(labelLines.length, valueLines.length) * 12 + 10);
+      const labelLines = wrapText(item.label, this.fonts.bold, 7.5, 142);
+      const valueLines = wrapText(truncate(item.value, 600), this.fonts.regular, 8.3, CONTENT_WIDTH - 172);
+      const rowHeight = Math.max(27, Math.max(labelLines.length * 11.5, valueLines.length * 12.2) + 10);
       this.ensureSpace(rowHeight, REPORT_OUTLINE[5]);
       if (index % 2 === 0) {
         this.page.drawRectangle({
@@ -1027,18 +1052,18 @@ class PermitPdfWriter {
       labelLines.forEach((line, lineIndex) => {
         this.page.drawText(line, {
           x: MARGIN_X + 8,
-          y: this.y - 10 - lineIndex * 12,
+          y: this.y - 10 - lineIndex * 11.5,
           font: this.fonts.bold,
-          size: 7.6,
+          size: 7.5,
           color: palette.muted,
         });
       });
       valueLines.forEach((line, lineIndex) => {
         this.page.drawText(line, {
           x: MARGIN_X + 166,
-          y: this.y - 10 - lineIndex * 12,
+          y: this.y - 10 - lineIndex * 12.2,
           font: item.unknown ? this.fonts.bold : this.fonts.regular,
-          size: 8.2,
+          size: 8.3,
           color: item.unknown ? palette.amber : palette.ink,
         });
       });
@@ -1063,18 +1088,26 @@ class PermitPdfWriter {
     link?: { label: string; url: string };
   }) {
     const innerWidth = CONTENT_WIDTH - 32;
+    const valueOffset = 88;
+    const rowFontSize = 8.3;
+    const rowLineHeight = 12.2;
     const titleWidth = badge ? innerWidth - 125 : innerWidth;
     const titleLines = wrapText(truncate(title, 180), this.fonts.bold, 11, titleWidth);
     const preparedRows = rows
       .filter((row) => cleanText(row.value))
       .map((row) => ({
         ...row,
-        lines: wrapText(truncate(row.value), this.fonts.regular, 8, innerWidth - 84),
+        lines: wrapText(
+          truncate(row.value),
+          this.fonts.regular,
+          rowFontSize,
+          innerWidth - valueOffset,
+        ),
       }));
     const height = Math.max(
       58,
       21 + titleLines.length * 15 + preparedRows.reduce(
-        (sum, row) => sum + Math.max(18, row.lines.length * 11.5 + 5),
+        (sum, row) => sum + Math.max(20, row.lines.length * rowLineHeight + 6),
         0,
       ) + (link ? 24 : 8),
     );
@@ -1128,29 +1161,37 @@ class PermitPdfWriter {
       });
     }
     cursor -= 5;
-    preparedRows.forEach((row) => {
+    preparedRows.forEach((row, rowIndex) => {
       const toneColor = row.tone === "warning"
         ? palette.amber
         : row.tone === "accent"
           ? palette.blue
           : palette.muted;
+      if (rowIndex > 0) {
+        this.page.drawLine({
+          start: { x: MARGIN_X + 16, y: cursor + 5 },
+          end: { x: MARGIN_X + CONTENT_WIDTH - 16, y: cursor + 5 },
+          thickness: 0.35,
+          color: palette.line,
+        });
+      }
       this.page.drawText(row.label, {
         x: MARGIN_X + 16,
         y: cursor,
         font: this.fonts.bold,
-        size: 7.2,
+        size: 7.5,
         color: toneColor,
       });
       row.lines.forEach((line, index) => {
         this.page.drawText(line, {
-          x: MARGIN_X + 98,
-          y: cursor - index * 11.5,
-          font: row.tone === "warning" ? this.fonts.bold : this.fonts.regular,
-          size: 8,
+          x: MARGIN_X + 16 + valueOffset,
+          y: cursor - index * rowLineHeight,
+          font: this.fonts.regular,
+          size: rowFontSize,
           color: row.tone === "warning" ? palette.amber : palette.body,
         });
       });
-      cursor -= Math.max(18, row.lines.length * 11.5 + 5);
+      cursor -= Math.max(20, row.lines.length * rowLineHeight + 6);
     });
     if (link) {
       const label = cleanText(link.label);
@@ -1190,7 +1231,9 @@ class PermitPdfWriter {
       return;
     }
     warnings.forEach((warning, index) => {
-      this.ensureSpace(34, REPORT_OUTLINE[1]);
+      const lines = wrapText(truncate(warning), this.fonts.regular, 8.2, CONTENT_WIDTH - 32);
+      const rowHeight = Math.max(28, lines.length * 12 + 8);
+      this.ensureSpace(rowHeight, REPORT_OUTLINE[1]);
       this.page.drawText(String(index + 1).padStart(2, "0"), {
         x: MARGIN_X,
         y: this.y - 10,
@@ -1198,7 +1241,6 @@ class PermitPdfWriter {
         size: 8,
         color: palette.amber,
       });
-      const lines = wrapText(truncate(warning), this.fonts.regular, 8.2, CONTENT_WIDTH - 32);
       lines.forEach((line, lineIndex) => {
         this.page.drawText(line, {
           x: MARGIN_X + 30,
@@ -1208,7 +1250,7 @@ class PermitPdfWriter {
           color: palette.body,
         });
       });
-      this.y -= Math.max(28, lines.length * 12 + 8);
+      this.y -= rowHeight;
     });
   }
 
@@ -1248,7 +1290,7 @@ class PermitPdfWriter {
       const detailLines = wrapText(truncate(row.detail, 420), this.fonts.regular, 7.4, detailWidth);
       const rowHeight = Math.max(
         26,
-        Math.max(primaryLines.length, secondaryLines.length, detailLines.length) * 10.8 + 10,
+        Math.max(primaryLines.length, secondaryLines.length, detailLines.length) * 11.2 + 10,
       );
       if (this.ensureSpace(rowHeight, sectionLabel)) drawHeader();
       if (index % 2 === 0) {
@@ -1262,21 +1304,21 @@ class PermitPdfWriter {
       }
       primaryLines.forEach((line, lineIndex) => this.page.drawText(line, {
         x: MARGIN_X + 7,
-        y: this.y - 10 - lineIndex * 10.8,
+        y: this.y - 10 - lineIndex * 11.2,
         font: this.fonts.bold,
         size: 7.7,
         color: palette.ink,
       }));
       secondaryLines.forEach((line, lineIndex) => this.page.drawText(line, {
         x: MARGIN_X + primaryWidth,
-        y: this.y - 10 - lineIndex * 10.8,
+        y: this.y - 10 - lineIndex * 11.2,
         font: this.fonts.regular,
         size: 7.2,
         color: palette.teal,
       }));
       detailLines.forEach((line, lineIndex) => this.page.drawText(line, {
         x: MARGIN_X + primaryWidth + secondaryWidth,
-        y: this.y - 10 - lineIndex * 10.8,
+        y: this.y - 10 - lineIndex * 11.2,
         font: this.fonts.regular,
         size: 7.4,
         color: palette.body,
@@ -1375,7 +1417,7 @@ class PermitPdfWriter {
         jurisdictionWidth - 10,
         2,
       );
-      const rowHeight = Math.max(24, Math.max(nameLines.length, jurisdictionLines.length) * 9.5 + 7);
+      const rowHeight = Math.max(24, Math.max(nameLines.length, jurisdictionLines.length) * 10.2 + 7);
       if (this.ensureSpace(rowHeight + 18, REPORT_OUTLINE[6])) drawHeading(true);
       if (index % 2 === 0) {
         this.page.drawRectangle({
@@ -1388,14 +1430,14 @@ class PermitPdfWriter {
       }
       nameLines.forEach((line, lineIndex) => this.page.drawText(line, {
         x: MARGIN_X + 6,
-        y: this.y - 10 - lineIndex * 9.5,
+        y: this.y - 10 - lineIndex * 10.2,
         font: this.fonts.bold,
         size: 7.2,
         color: row.fallback ? palette.amber : palette.ink,
       }));
       jurisdictionLines.forEach((line, lineIndex) => this.page.drawText(line, {
         x: MARGIN_X + nameWidth,
-        y: this.y - 10 - lineIndex * 9.5,
+        y: this.y - 10 - lineIndex * 10.2,
         font: this.fonts.regular,
         size: 6.8,
         color: row.fallback ? palette.amber : palette.teal,
@@ -1672,7 +1714,7 @@ export async function renderPermitReportPdf(
 
   writer.section(
     REPORT_OUTLINE[4],
-    "로드맵 포함 절차와 추가 확인 절차를 단계·선행관계 순으로 정리했습니다. 법정·공식 기간과 프로젝트 일정 반영값은 별도 행으로 표시합니다.",
+    "로드맵 포함 절차와 추가 확인 절차를 단계·선행관계 순으로 정리했습니다. 법정·공식 기간과 프로젝트 일정 반영값은 별도 행으로 표시하며, 정확한 적용대상·관할·구비서류는 접수 전 관계기관에 확인해야 합니다.",
   );
   let currentStage = "";
   model.procedures.forEach((procedure) => {
@@ -1701,7 +1743,7 @@ export async function renderPermitReportPdf(
           ? [{ label: "특례 영향", value: procedure.specialLawEffects.join(" / "), tone: "accent" as const }]
           : []),
         ...(procedure.legalReviewNote
-          ? [{ label: "근거 상태", value: procedure.legalReviewNote, tone: "warning" as const }]
+          ? [{ label: "실무 확인", value: procedure.legalReviewNote, tone: "warning" as const }]
           : []),
         { label: "주요 근거", value: procedure.sourceSummaries.join(" · ") || "상세 근거 추가 확인" },
       ],

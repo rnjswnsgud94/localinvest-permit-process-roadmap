@@ -930,7 +930,7 @@ function buildProjectTimeline({
     warnings.push("대상 확인 절차 일정 포함을 끄면서 " + omittedConditionalProcedureIds.length + "개 미확정 절차를 제외했습니다.");
   }
   if (provisionalExcludedProcedureIds.length) {
-    warnings.push("초안 제외규칙과 일치한 " + provisionalExcludedProcedureIds.length + "개 대체·비적용 경로는 일정에 넣지 않았습니다.");
+    warnings.push("잠정 제외로 분류한 " + provisionalExcludedProcedureIds.length + "개 대체·비적용 경로는 일정에 넣지 않았습니다.");
   }
   if (ids.some((id) => unitByProcedure.get(id) === "BUSINESS_DAY")) {
     warnings.push(

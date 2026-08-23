@@ -8,10 +8,12 @@ import type {
   ProcedureEdge,
 } from "@/lib/domain/schemas";
 import {
+  advancedStrategicIndustryCandidateIds,
   filterPlanDeemedProcedureIds,
   industrialComplexPlanDeemedProcedureIds,
   isFastTrackTargetProcedure,
   regionalSpecialZoneDeemedProcedureIds,
+  semiconductorClusterCandidateIndustryIds,
   semiconductorClusterPlanDeemedProcedureIds,
 } from "@/lib/data/special-law-processes";
 
@@ -366,11 +368,12 @@ type SpecialLawScenario = {
   regionalSpecialZonePlanIncludedPermitIds: readonly string[];
 };
 
-const advancedStrategicIndustryCandidateIds = new Set([
-  "SEMICONDUCTOR_ELECTRONICS",
-  "SECONDARY_BATTERY_CHEMICAL",
-  "PHARMACEUTICAL_BIO",
-]);
+const advancedStrategicIndustryCandidateIdSet: ReadonlySet<string> = new Set(
+  advancedStrategicIndustryCandidateIds,
+);
+const semiconductorClusterCandidateIndustryIdSet: ReadonlySet<string> = new Set(
+  semiconductorClusterCandidateIndustryIds,
+);
 
 export function getAiDataCenterSpecialLawDefinitions() {
   return specialLawDefinitions.filter(
@@ -387,13 +390,13 @@ export function getAutomaticSpecialLawDefinitions(
   return specialLawDefinitions.filter((definition) => {
     if (definition.selectionMode !== "AUTOMATIC_CONFIRMATION") return false;
     if (definition.id === "ADVANCED_STRATEGIC_INDUSTRY_FAST_TRACK") {
-      return advancedStrategicIndustryCandidateIds.has(answers.industryCategory);
+      return advancedStrategicIndustryCandidateIdSet.has(answers.industryCategory);
     }
     if (definition.id === "SEMICONDUCTOR_CLUSTER_FAST_TRACK") {
-      return answers.industryCategory === "SEMICONDUCTOR_ELECTRONICS";
+      return semiconductorClusterCandidateIndustryIdSet.has(answers.industryCategory);
     }
     if (definition.id === "SEMICONDUCTOR_CLUSTER_PLAN_DEEMING") {
-      return answers.industryCategory === "SEMICONDUCTOR_ELECTRONICS";
+      return semiconductorClusterCandidateIndustryIdSet.has(answers.industryCategory);
     }
     if (definition.id === "INDUSTRIAL_COMPLEX_PLAN_INTEGRATED_APPROVAL") {
       // 산업단지계획은 기존 산단 입주기업뿐 아니라 신규 지정·계획변경
