@@ -239,7 +239,7 @@ const valueLabels: Record<string, Record<string, string>> = {
   },
 };
 
-function getInputValue(answers: ScenarioAnswers, key: string) {
+export function getProjectInputValue(answers: ScenarioAnswers, key: string) {
   if (
     key === "city" &&
     !answers.city &&
@@ -365,7 +365,7 @@ export function isProjectInputFieldVisible(
   if (key === "forestRestorationObligation") return answers.landCategory === "FOREST";
   if (key === "asbestosPresent") return answers.demolitionRequired === true;
   if (["equipmentInstallationCompletionDate", "commissioningStartDate"].includes(key)) {
-    return Boolean(getInputValue(answers, key));
+    return Boolean(getProjectInputValue(answers, key));
   }
   if (["buildingCommitteeReviewRequired", "mechanicalEquipmentActTarget", "landscapeReviewRequired"].includes(key)) {
     return answers.buildingAction !== "NONE";
@@ -462,7 +462,7 @@ export function ProjectInputSummary({ answers }: { answers: ScenarioAnswers }) {
             <h3 id={`project-input-section-${section.id}`}>{section.title}</h3>
             <dl>
               {section.fields.map((field) => {
-                const value = getInputValue(answers, field.key);
+                const value = getProjectInputValue(answers, field.key);
                 const state =
                   value === undefined
                     ? "absent"

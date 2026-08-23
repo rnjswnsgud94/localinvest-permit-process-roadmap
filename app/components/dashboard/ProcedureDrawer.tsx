@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect, useRef, type KeyboardEvent } from "react";
+
 import { actionLabels, inputLabel, laneLabels, stageLabels } from "@/app/components/dashboard/constants";
 import { LawApiVerifier } from "@/app/components/dashboard/LawApiVerifier";
 import { StatusBadge } from "@/app/components/dashboard/StatusBadge";
@@ -166,6 +170,53 @@ export function ProcedureDrawer({ decision, schedule, onClose }: {
   schedule: ScheduleResult;
   onClose: () => void;
 }) {
+  const drawerRef = useRef<HTMLElement>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const returnFocusRef = useRef<HTMLElement | null>(null);
+  const procedureId = decision?.procedure.id ?? null;
+
+  useEffect(() => {
+    if (!procedureId) return;
+    returnFocusRef.current = document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null;
+    headingRef.current?.focus();
+    return () => {
+      const returnTarget = returnFocusRef.current;
+      if (returnTarget?.isConnected) returnTarget.focus();
+      returnFocusRef.current = null;
+    };
+  }, [procedureId]);
+
+  function handleDrawerKeyDown(event: KeyboardEvent<HTMLElement>) {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      onClose();
+      return;
+    }
+    if (event.key !== "Tab") return;
+    const focusable = [...(drawerRef.current?.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    ) ?? [])].filter((element) => !element.hasAttribute("hidden"));
+    if (!focusable.length) {
+      event.preventDefault();
+      headingRef.current?.focus();
+      return;
+    }
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (
+      event.shiftKey &&
+      (document.activeElement === first || document.activeElement === headingRef.current)
+    ) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
+
   if (!decision) return null;
   const procedure = decision.procedure;
   const timelineNode = schedule.projectTimeline?.nodes.find((item) => item.procedureId === procedure.id);
@@ -203,7 +254,14 @@ export function ProcedureDrawer({ decision, schedule, onClose }: {
   });
 
   return (
-    <aside className="procedure-drawer" aria-label={`${procedure.name} 상세정보`}>
+    <aside
+      ref={drawerRef}
+      className="procedure-drawer"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={`${procedure.id}-drawer-title`}
+      onKeyDown={handleDrawerKeyDown}
+    >
       <div className="drawer-header">
         <div>
           <StatusBadge
@@ -215,7 +273,7 @@ export function ProcedureDrawer({ decision, schedule, onClose }: {
             needsLegalReview={decision.needsLegalReview}
           />
           <p className="drawer-kicker">{procedure.domain} · {actionLabels[procedure.actionType]}</p>
-          <h2>{procedure.name}</h2>
+          <h2 id={`${procedure.id}-drawer-title`} ref={headingRef} tabIndex={-1}>{procedure.name} 상세정보</h2>
         </div>
         <button type="button" className="icon-button" onClick={onClose} aria-label="상세정보 닫기">×</button>
       </div>

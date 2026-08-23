@@ -107,7 +107,7 @@ test("wizard changes the route and detail links are official", async ({ page }) 
   await page.getByRole("button", { name: "개별입지" }).click();
   await expect(page.getByText(/지역 미입력 · 개별입지/)).toBeVisible();
   await page.getByRole("button", { name: /공장설립·증설·업종변경 승인/ }).click();
-  await expect(page.getByRole("complementary", { name: /공장설립·증설·업종변경 승인 상세정보/ })).toBeVisible();
+  await expect(page.getByRole("dialog", { name: /공장설립·증설·업종변경 승인 상세정보/ })).toBeVisible();
   await expect(page.getByRole("link", { name: /원문 열기/ }).first()).toHaveAttribute("href", /^https:\/\//);
 });
 
@@ -137,4 +137,18 @@ test("share URL restores state and tabs", async ({ page }) => {
   await page.goto(url);
   await expect(page.getByRole("heading", { name: "판정에 필요한 추가 정보" })).toBeVisible();
   await expect(page.getByText("증설")).toBeVisible();
+});
+
+test("downloads the current result report with its A3 overview", async ({ page }) => {
+  await page.goto("/");
+  const downloadPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: "결과보고서 다운로드" }).click();
+  await expect(page.locator("#pdf-report-status")).toContainText("만드는 중");
+  const download = await downloadPromise;
+
+  expect(download.suggestedFilename()).toMatch(
+    /^지방투자기업-인허가-검토보고서-\d{4}-\d{2}-\d{2}\.pdf$/,
+  );
+  expect(await download.failure()).toBeNull();
+  await expect(page.locator("#pdf-report-status")).toContainText("다운로드했습니다");
 });

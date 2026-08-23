@@ -14,9 +14,14 @@ import { DashboardTabIcon } from "@/app/components/dashboard/DashboardTabIcon";
 import { ActionPlanView, GapsView, LegalView, ProcedureList, ScheduleView } from "@/app/components/dashboard/DashboardViews";
 import { InputCodeDialog } from "@/app/components/dashboard/InputCodeDialog";
 import { LocalJurisdictionLinks, LocalOrdinancePanel } from "@/app/components/dashboard/LocalOrdinancePanel";
+import { PermitRegistry } from "@/app/components/dashboard/PermitRegistry";
+import { PdfReportButton } from "@/app/components/dashboard/PdfReportButton";
 import { ProcedureDrawer } from "@/app/components/dashboard/ProcedureDrawer";
+import { ScenarioCompare } from "@/app/components/dashboard/ScenarioCompare";
 import { StatusSummaryDialog } from "@/app/components/dashboard/StatusSummaryDialog";
 import { TotalDurationDialog } from "@/app/components/dashboard/TotalDurationDialog";
+import { VerificationLedger } from "@/app/components/dashboard/VerificationLedger";
+import { WorkspaceToolDialog } from "@/app/components/dashboard/WorkspaceToolDialog";
 import { ProjectInputSummary } from "@/app/components/dashboard/ScenarioPicker";
 import { SpecialLawSummary } from "@/app/components/dashboard/SpecialLawSummary";
 import { Swimlane } from "@/app/components/dashboard/Swimlane";
@@ -165,6 +170,14 @@ const summaryClass: Record<ProcedureCategory, string> = {
   NOT_REQUIRED: "does_not_apply",
 };
 
+type WorkspaceTool = "REGISTRY" | "VERIFICATION" | "COMPARE";
+
+const workspaceToolTriggerIds: Record<WorkspaceTool, string> = {
+  REGISTRY: "permit-registry-trigger",
+  VERIFICATION: "verification-ledger-trigger",
+  COMPARE: "scenario-compare-trigger",
+};
+
 function OrdinanceDisclosure({ answers }: { answers: ScenarioAnswers }) {
   const [isOpen, setIsOpen] = useState(Boolean(answers.province));
   return (
@@ -196,6 +209,8 @@ export function DashboardClient() {
   const [shareMessage, setShareMessage] = useState("");
   const [inputCode, setInputCode] = useState<string | null>(null);
   const [inputCodeError, setInputCodeError] = useState("");
+  const [activeWorkspaceTool, setActiveWorkspaceTool] = useState<WorkspaceTool | null>(null);
+  const [drawerReturnTool, setDrawerReturnTool] = useState<WorkspaceTool | null>(null);
 
   useEffect(() => {
     const initialSearch = window.location.search;
@@ -433,6 +448,8 @@ export function DashboardClient() {
     setIncludePractical(true);
     setInputCode(null);
     setInputCodeError("");
+    setActiveWorkspaceTool(null);
+    setDrawerReturnTool(null);
   }
 
   function closeStatusDialog() {
@@ -448,6 +465,26 @@ export function DashboardClient() {
     window.setTimeout(() => {
       document.getElementById("duration-summary-trigger")?.focus();
     }, 0);
+  }
+
+  function closeWorkspaceTool() {
+    const previous = activeWorkspaceTool;
+    setActiveWorkspaceTool(null);
+    window.setTimeout(() => {
+      if (previous) document.getElementById(workspaceToolTriggerIds[previous])?.focus();
+    }, 0);
+  }
+
+  function selectProcedureFromWorkspaceTool(procedureId: string) {
+    setDrawerReturnTool(activeWorkspaceTool);
+    setActiveWorkspaceTool(null);
+    setSelectedId(procedureId);
+  }
+
+  function closeProcedureDrawer() {
+    setSelectedId(null);
+    if (drawerReturnTool) setActiveWorkspaceTool(drawerReturnTool);
+    setDrawerReturnTool(null);
   }
 
   return (
@@ -478,7 +515,17 @@ export function DashboardClient() {
           <div className="workspace-toolbar">
             <div className="workspace-title"><h2 id="dashboard-title">사업 검토 결과</h2><p>사업 조건에 맞는 절차, 적용 특례와 예상 일정을 확인합니다.</p></div>
             <div className="scenario-caption"><strong><LocalJurisdictionLinks answers={answers} /> · {answers.insideIndustrialComplex === null ? "입지 미확인" : answers.insideIndustrialComplex ? "산업단지" : "개별입지"}</strong><span>{answers.totalAreaM2 === null ? "면적 미확인" : `${answers.totalAreaM2.toLocaleString("ko-KR")}㎡`} · 검토 기준일 {answers.assessmentDate}</span><em>지역명은 전체 목록, 아래 지역기준 카드는 관련 조례 상세 원문으로 연결됩니다.</em></div>
-            <div className="utility-actions"><button type="button" onClick={resetDashboard}>초기화</button><button type="button" onClick={() => window.print()}>인쇄</button></div>
+            <div className="utility-actions">
+              <PdfReportButton
+                answers={answers}
+                evaluation={evaluation}
+                durationScenario={durationScenario}
+                includeConditional={includeConditional}
+                includePractical={includePractical}
+              />
+              <button type="button" onClick={resetDashboard}>초기화</button>
+              <button type="button" onClick={() => window.print()}>화면 인쇄</button>
+            </div>
           </div>
           <div className="summary-strip" aria-label="판정 요약">
             <div className="summary-card summary-schedule">
@@ -544,6 +591,52 @@ export function DashboardClient() {
             answers={answers}
           />
 
+          <section className="practitioner-tools" aria-labelledby="practitioner-tools-title">
+            <header>
+              <span>PRACTITIONER TOOLS</span>
+              <h3 id="practitioner-tools-title">기업 인허가 실무 도구</h3>
+              <p>현재 프로젝트 결과와 별개로 전체 제도를 탐색하고, 근거 공백과 조건 차이를 비교합니다.</p>
+            </header>
+            <div className="practitioner-tool-actions">
+              <button
+                id={workspaceToolTriggerIds.REGISTRY}
+                type="button"
+                aria-haspopup="dialog"
+                aria-controls="permit-registry-dialog"
+                aria-expanded={activeWorkspaceTool === "REGISTRY"}
+                onClick={() => setActiveWorkspaceTool("REGISTRY")}
+              >
+                <i aria-hidden="true">백</i>
+                <span><strong>전체 인허가 백과</strong><small>{catalog.procedures.length}개 절차·법령·기관·서류 검색</small></span>
+                <em aria-hidden="true">→</em>
+              </button>
+              <button
+                id={workspaceToolTriggerIds.VERIFICATION}
+                type="button"
+                aria-haspopup="dialog"
+                aria-controls="verification-ledger-dialog"
+                aria-expanded={activeWorkspaceTool === "VERIFICATION"}
+                onClick={() => setActiveWorkspaceTool("VERIFICATION")}
+              >
+                <i aria-hidden="true">검</i>
+                <span><strong>근거 검증 대장</strong><small>적용·기관·기간·서류·관계·지역 확인</small></span>
+                <em aria-hidden="true">→</em>
+              </button>
+              <button
+                id={workspaceToolTriggerIds.COMPARE}
+                type="button"
+                aria-haspopup="dialog"
+                aria-controls="scenario-compare-dialog"
+                aria-expanded={activeWorkspaceTool === "COMPARE"}
+                onClick={() => setActiveWorkspaceTool("COMPARE")}
+              >
+                <i aria-hidden="true">비</i>
+                <span><strong>사업조건 비교</strong><small>현재 입력과 기준 사례 최대 3개 비교</small></span>
+                <em aria-hidden="true">→</em>
+              </button>
+            </div>
+          </section>
+
           <div className="tab-row">
             <nav className="dashboard-tabs" aria-label="결과 보기" role="tablist">
               {(Object.keys(tabLabels) as DashboardTab[]).map((tab) => <button id={`tab-${tab}`} aria-controls="dashboard-result-panel" key={tab} type="button" className={activeTab === tab ? "is-active" : ""} aria-selected={activeTab === tab} role="tab" onClick={() => setActiveTab(tab)}><DashboardTabIcon tab={tab} />{tabLabels[tab]}</button>)}
@@ -583,7 +676,50 @@ export function DashboardClient() {
       ) : null}
       {isDurationDialogOpen ? <TotalDurationDialog schedule={schedule} onClose={closeDurationDialog} /> : null}
       {inputCode !== null ? <InputCodeDialog initialCode={inputCode} initialError={inputCodeError} includedUserDurationCount={userDurationOverrideCount} onClose={closeInputCodeDialog} onImport={importInputCode} /> : null}
-      <ProcedureDrawer decision={selectedDecision} schedule={schedule} onClose={() => setSelectedId(null)} />
+      {activeWorkspaceTool === "REGISTRY" ? (
+        <WorkspaceToolDialog
+          id="permit-registry-dialog"
+          eyebrow="PERMIT REGISTRY"
+          title="전체 인허가 백과"
+          description="프로젝트 판정 여부와 관계없이 전체 인허가를 법령·기관·제출서류·결과물·기간 상태로 검색합니다. 항목을 열면 현재 사업조건에 대한 한 장 상세를 확인할 수 있습니다."
+          onClose={closeWorkspaceTool}
+        >
+          <PermitRegistry
+            assessmentDate={answers.assessmentDate}
+            onSelectProcedure={selectProcedureFromWorkspaceTool}
+          />
+        </WorkspaceToolDialog>
+      ) : null}
+      {activeWorkspaceTool === "VERIFICATION" ? (
+        <WorkspaceToolDialog
+          id="verification-ledger-dialog"
+          eyebrow="EVIDENCE LEDGER"
+          title="인허가 근거 검증 대장"
+          description="조문 존재 확인과 실제 적용 타당성을 구분하고, 기간·기관·제출서류·의제·지역기준 중 추가 확인이 필요한 항목을 숨기지 않습니다."
+          onClose={closeWorkspaceTool}
+        >
+          <VerificationLedger
+            assessmentDate={answers.assessmentDate}
+            onSelectProcedure={selectProcedureFromWorkspaceTool}
+          />
+        </WorkspaceToolDialog>
+      ) : null}
+      {activeWorkspaceTool === "COMPARE" ? (
+        <WorkspaceToolDialog
+          id="scenario-compare-dialog"
+          eyebrow="SCENARIO DIFF"
+          title="사업조건 비교"
+          description="현재 입력과 검토용 기준 사례를 나란히 놓고 필요·확인·제외 절차, 의제 효과와 공식기간 공백을 비교합니다."
+          onClose={closeWorkspaceTool}
+        >
+          <ScenarioCompare
+            answers={answers}
+            includeConditional={includeConditional}
+            includePractical={includePractical}
+          />
+        </WorkspaceToolDialog>
+      ) : null}
+      <ProcedureDrawer decision={selectedDecision} schedule={schedule} onClose={closeProcedureDrawer} />
       {shareMessage ? <div className="toast" role="status">{shareMessage}</div> : null}
     </main>
   );

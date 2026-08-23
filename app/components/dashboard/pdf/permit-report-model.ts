@@ -1,0 +1,565 @@
+import {
+  inputLabel,
+  procedureCategoryForDecision,
+  stageLabels,
+  statusLabels,
+  type ProcedureCategory,
+} from "@/app/components/dashboard/constants";
+import {
+  formatProjectInputValue,
+  getProjectInputValue,
+  getVisibleProjectInputSections,
+} from "@/app/components/dashboard/ScenarioPicker";
+import { catalog, type ScenarioAnswers } from "@/lib/data/catalog";
+import type { SpecialLawEffect } from "@/lib/data/special-laws";
+import type { evaluateProject } from "@/lib/engine/pipeline";
+import type { DurationScenario, ScheduleResult } from "@/lib/engine/schedule";
+import {
+  formatCalendarPeriod,
+  formatResolvedOfficialDurationSummary,
+  formatTimelineProcessingDuration,
+} from "@/lib/format-duration";
+
+type ProjectEvaluation = ReturnType<typeof evaluateProject>;
+
+const durationScenarioLabels: Record<DurationScenario, string> = {
+  MIN: "최소기간",
+  TYPICAL: "공식 기준",
+  USER: "사용자 예상",
+};
+
+const categoryLabels: Record<ProcedureCategory, string> = {
+  REQUIRED: "로드맵 포함",
+  CONFIRM: "추가 확인",
+  NOT_REQUIRED: "확인된 제외",
+};
+
+const effectLabels: Record<SpecialLawEffect, string> = {
+  ONE_STOP: "일괄처리",
+  EXEMPTION: "면제",
+  DEEMED_REPORT: "신고 의제",
+  STANDARD_RELAXATION: "규모 산정 특례",
+  LOCATION_SPECIAL_CASE: "입지 특례",
+  FAST_TRACK: "신속처리",
+  INTEGRATED_APPROVAL: "통합승인·의제",
+  PLAN_DEEMING: "계획승인 의제",
+};
+
+const stageOrder = Object.keys(stageLabels) as Array<keyof typeof stageLabels>;
+
+function stableUnique(values: Array<string | null | undefined>) {
+  return [...new Set(values.filter((value): value is string => Boolean(value?.trim())))];
+}
+
+function citationLocator(citation: (typeof catalog.citations)[number]) {
+  return [citation.article, citation.paragraph, citation.subparagraph, citation.item]
+    .filter(Boolean)
+    .join(" ") || "관련 조문";
+}
+
+function projectDescriptor(answers: ScenarioAnswers) {
+  const place = [answers.province, answers.city].filter(Boolean).join(" ") || "지역 미입력";
+  const industry = formatProjectInputValue("industryCategory", answers.industryCategory);
+  const location = answers.insideIndustrialComplex === null
+    ? "입지 미확인"
+    : answers.insideIndustrialComplex
+      ? "산업단지"
+      : "개별입지";
+  return `${place} · ${industry} · ${location}`;
+}
+
+export type PermitReportModel = {
+  metadata: {
+    title: string;
+    generatedAt: string;
+    generatedAtLabel: string;
+    assessmentDate: string;
+    catalogVersion: string;
+    lastLegalReviewAt: string;
+    durationScenario: string;
+    scheduleScope: string;
+    filename: string;
+  };
+  project: {
+    descriptor: string;
+    sections: Array<{
+      id: string;
+      title: string;
+      items: Array<{ label: string; value: string; unknown: boolean }>;
+    }>;
+  };
+  summary: {
+    counts: Record<ProcedureCategory, number>;
+    duration: {
+      label: "산정 불가" | "확인된 일정 하한" | "총 소요기간";
+      value: string;
+      detail: string;
+      isTotal: boolean;
+    };
+    milestones: Array<{ label: string; value: string }>;
+  };
+  flow: {
+    stages: Array<{
+      id: keyof typeof stageLabels;
+      title: string;
+      items: Array<{
+        id: string;
+        name: string;
+        category: Exclude<ProcedureCategory, "NOT_REQUIRED">;
+        categoryLabel: string;
+        officialDuration: string;
+        wave: number | null;
+        isDeemed: boolean;
+        timing: string;
+        timingSource: "OFFICIAL" | "USER_EXPECTED" | null;
+      }>;
+    }>;
+  };
+  specialLaws: Array<{
+    title: string;
+    effect: string;
+    status: string;
+    isActive: boolean;
+    note: string;
+    law: string;
+    article: string;
+    officialUrl: string;
+  }>;
+  procedures: Array<{
+    id: string;
+    name: string;
+    stage: string;
+    category: Exclude<ProcedureCategory, "NOT_REQUIRED">;
+    categoryLabel: string;
+    status: string;
+    reason: string;
+    authority: string;
+    decisionMaker: string;
+    officialDuration: string;
+    schedule: string;
+    scheduleNote: string;
+    outcome: string;
+    submissions: string;
+    followUp: string;
+    missingInputs: string[];
+    specialLawEffects: string[];
+    legalReviewNote: string | null;
+    sourceSummaries: string[];
+  }>;
+  gaps: Array<{
+    input: string;
+    affectedProcedures: string[];
+  }>;
+  excluded: string[];
+  legalSources: Array<{
+    title: string;
+    authority: string;
+    locator: string;
+    summary: string;
+    effectiveDate: string | null;
+    effectiveStatus: string;
+    officialUrl: string;
+  }>;
+  warnings: string[];
+  disclaimer: string;
+};
+
+function formatSeoulGenerationTime(generatedAt: Date) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(generatedAt);
+  const value = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((part) => part.type === type)?.value ?? "";
+  const date = `${value("year")}-${value("month")}-${value("day")}`;
+  return {
+    date,
+    label: `${date} ${value("hour")}:${value("minute")} KST`,
+  };
+}
+
+function buildDurationSummary(
+  answers: ScenarioAnswers,
+  schedule: ScheduleResult,
+  durationScenario: DurationScenario,
+): PermitReportModel["summary"]["duration"] {
+  const timeline = schedule.projectTimeline;
+  if (!timeline) {
+    return {
+      label: "산정 불가",
+      value: "산정 불가",
+      detail: "착공 예정일과 준공 예정일을 입력해야 공사 일정과 인허가 일정을 결합할 수 있습니다.",
+      isTotal: false,
+    };
+  }
+
+  if (timeline.durationStatus === "MINIMUM_ONLY") {
+    const operationUnknown = timeline.unknownPlanningDurationProcedureIds.filter(
+      (id) => !timeline.postOperationProcedureIds.includes(id),
+    );
+    const omitted = timeline.omittedConditionalProcedureIds.filter(
+      (id) => !timeline.postOperationProcedureIds.includes(id),
+    );
+    const incomplete = timeline.incompleteDurationComponentProcedureIds.filter(
+      (id) => !timeline.postOperationProcedureIds.includes(id),
+    );
+    const gaps = [
+      operationUnknown.length ? `처리기간 미확인 ${operationUnknown.length}건` : null,
+      omitted.length ? `대상확인 절차 일정 제외 ${omitted.length}건` : null,
+      incomplete.length ? `기간 구성 미확인 ${incomplete.length}건` : null,
+    ];
+    return {
+      label: "확인된 일정 하한",
+      value: formatCalendarPeriod(
+        timeline.projectStartDate,
+        timeline.minimumKnownCompletionDate,
+      ),
+      detail: `총 소요기간 아님 · ${stableUnique(gaps).join(" · ") || "일정 구성요소 추가 확인 필요"}`,
+      isTotal: false,
+    };
+  }
+
+  const completionDate = timeline.operationReadyDate ?? timeline.minimumKnownCompletionDate;
+  return {
+    label: "총 소요기간",
+    value: formatCalendarPeriod(timeline.projectStartDate, completionDate),
+    detail: durationScenario === "USER"
+      ? `사용자 예상 ${timeline.userDurationOverrideProcedureIds.length}건 반영 · 공식값과 구분 표기`
+      : `${durationScenarioLabels[durationScenario]} 처리경로 · 실제 평균을 뜻하지 않음`,
+    isTotal: true,
+  };
+}
+
+function buildMilestones(answers: ScenarioAnswers, schedule: ScheduleResult) {
+  const timeline = schedule.projectTimeline;
+  return [
+    { label: "검토 기준일", value: answers.assessmentDate },
+    { label: "계획 착공일", value: answers.plannedConstructionStartDate ?? "미입력" },
+    { label: "계획 준공일", value: answers.plannedConstructionEndDate ?? "미입력" },
+    ...(timeline?.operationReadyDate
+      ? [{ label: "가동 준비 완료", value: timeline.operationReadyDate }]
+      : []),
+    ...(timeline?.postOperationCompletionDate
+      ? [{ label: "가동 후 절차 완료", value: timeline.postOperationCompletionDate }]
+      : []),
+  ];
+}
+
+export function buildPermitReportModel({
+  answers,
+  evaluation,
+  durationScenario,
+  includeConditional = true,
+  includePractical = true,
+  generatedAt = new Date(),
+}: {
+  answers: ScenarioAnswers;
+  evaluation: ProjectEvaluation;
+  durationScenario: DurationScenario;
+  includeConditional?: boolean;
+  includePractical?: boolean;
+  generatedAt?: Date;
+}): PermitReportModel {
+  const schedule = evaluation.schedules[durationScenario];
+  const planningByProcedureId = new Map(
+    schedule.planningDurations.map((duration) => [duration.procedureId, duration]),
+  );
+  const timelineNodeByProcedureId = new Map(
+    (schedule.projectTimeline?.nodes ?? []).map((node) => [node.procedureId, node]),
+  );
+  const scheduleNodeByProcedureId = new Map(
+    schedule.nodes.map((node) => [node.procedureId, node]),
+  );
+  const decisionByProcedureId = new Map(
+    evaluation.decisions.map((decision) => [decision.procedure.id, decision]),
+  );
+  const topologicalOrder = new Map(
+    schedule.topologicalOrder.map((procedureId, index) => [procedureId, index]),
+  );
+
+  const projectSections: PermitReportModel["project"]["sections"] = getVisibleProjectInputSections(answers).map((section) => ({
+    id: section.id,
+    title: section.title,
+    items: section.fields.map((field) => {
+      const value = getProjectInputValue(answers, field.key);
+      return {
+        label: inputLabel(field.key),
+        value: formatProjectInputValue(field.key, value, field.unit),
+        unknown: value === undefined || value === null || value === "UNKNOWN" || value === "",
+      };
+    }),
+  }));
+  const detailedInputFields = [
+    { key: "siteAddress" },
+    { key: "siteZoning" },
+    { key: "siteRestrictedFactors" },
+    { key: "industrialComplexName" },
+    { key: "industrialComplexIdentifier" },
+    { key: "industrialComplexManagingAuthority" },
+    { key: "ksicCode" },
+    { key: "products" },
+    { key: "coreProcesses" },
+    { key: "existingApprovalIds" },
+    { key: "existingAreaM2", unit: "㎡" },
+    { key: "increaseAreaM2", unit: "㎡" },
+  ].flatMap((field) => {
+    const value = getProjectInputValue(answers, field.key);
+    if (value === undefined || value === null || value === "" || value === "UNKNOWN") return [];
+    return [{
+      label: inputLabel(field.key),
+      value: formatProjectInputValue(field.key, value, field.unit),
+      unknown: false,
+    }];
+  });
+  if (detailedInputFields.length) {
+    projectSections.splice(1, 0, {
+      id: "project-details",
+      title: "사업 식별·상세",
+      items: detailedInputFields,
+    });
+  }
+
+  const counts = evaluation.decisions.reduce<PermitReportModel["summary"]["counts"]>(
+    (result, decision) => {
+      result[procedureCategoryForDecision(decision)] += 1;
+      return result;
+    },
+    { REQUIRED: 0, CONFIRM: 0, NOT_REQUIRED: 0 },
+  );
+
+  const procedures = evaluation.decisions
+    .filter((decision) => procedureCategoryForDecision(decision) !== "NOT_REQUIRED")
+    .map((decision) => {
+      const procedure = decision.procedure;
+      const category = procedureCategoryForDecision(decision) as Exclude<
+        ProcedureCategory,
+        "NOT_REQUIRED"
+      >;
+      const duration = procedure.durationId
+        ? catalog.durations.find((item) => item.id === procedure.durationId)
+        : undefined;
+      const planning = planningByProcedureId.get(procedure.id);
+      const timelineNode = timelineNodeByProcedureId.get(procedure.id);
+      const sourceSummaries = stableUnique(procedure.citationIds.map((citationId) => {
+        const citation = catalog.citations.find((item) => item.id === citationId);
+        if (!citation) return null;
+        const source = catalog.legalSources.find((item) => item.id === citation.sourceId);
+        return `${source?.title ?? "공식 근거"} ${citationLocator(citation)}`;
+      }));
+
+      return {
+        id: procedure.id,
+        name: procedure.name,
+        stage: stageLabels[procedure.stage],
+        category,
+        categoryLabel: categoryLabels[category],
+        status: `${decision.isDeemed ? "의제 반영 · " : ""}${statusLabels[decision.status]}`,
+        reason: decision.reason,
+        authority: procedure.receivingAuthority,
+        decisionMaker: procedure.statutoryDecisionMaker,
+        officialDuration: formatResolvedOfficialDurationSummary(duration, planning),
+        schedule: timelineNode
+          ? `${timelineNode.startDate} ~ ${timelineNode.finishDate}`
+          : "일정 미반영",
+        scheduleNote: timelineNode
+          ? formatTimelineProcessingDuration(timelineNode)
+          : category === "CONFIRM"
+            ? "대상 여부 또는 처리기간을 확인한 뒤 일정에 반영"
+            : "공사일 또는 공식 처리기간 추가 확인 필요",
+        outcome: procedure.outcome,
+        submissions: procedure.submissions.length
+          ? procedure.submissions.join(" · ")
+          : "절차 상세와 관할기관 안내 확인",
+        followUp: procedure.followUpObligations.length
+          ? procedure.followUpObligations.join(" · ")
+          : "별도 후속의무 수록 없음",
+        missingInputs: stableUnique(decision.missingInputs.map(inputLabel)),
+        specialLawEffects: stableUnique((decision.specialLawImpacts ?? []).map((impact) =>
+          `${impact.effectLabel} · ${impact.statusLabel} · ${impact.description}${impact.statutoryCap ? ` · ${impact.statutoryCap}` : ""}`,
+        )),
+        legalReviewNote: decision.needsLegalReview
+          ? `근거 추가 검토 필요 · ${decision.legalReviewReasons.join(" · ")}`
+          : null,
+        sourceSummaries,
+        stageIndex: stageOrder.indexOf(procedure.stage),
+        orderIndex: topologicalOrder.get(procedure.id) ?? Number.MAX_SAFE_INTEGER,
+      };
+    })
+    .sort((left, right) =>
+      left.stageIndex - right.stageIndex ||
+      left.orderIndex - right.orderIndex ||
+      left.name.localeCompare(right.name, "ko"),
+    )
+    .map(({ stageIndex, orderIndex, ...procedure }) => {
+      void stageIndex;
+      void orderIndex;
+      return procedure;
+    });
+
+  const gapMap = new Map<string, string[]>();
+  for (const decision of evaluation.decisions) {
+    if (procedureCategoryForDecision(decision) === "NOT_REQUIRED") continue;
+    for (const missingInput of decision.missingInputs) {
+      const label = inputLabel(missingInput);
+      gapMap.set(label, [...(gapMap.get(label) ?? []), decision.procedure.name]);
+    }
+  }
+  const gaps = [...gapMap.entries()]
+    .map(([input, affectedProcedures]) => ({
+      input,
+      affectedProcedures: stableUnique(affectedProcedures),
+    }))
+    .sort((left, right) =>
+      right.affectedProcedures.length - left.affectedProcedures.length ||
+      left.input.localeCompare(right.input, "ko"),
+    );
+
+  const flow: PermitReportModel["flow"] = {
+    stages: stageOrder.map((stageId) => ({
+      id: stageId,
+      title: stageLabels[stageId],
+      items: procedures
+        .filter((procedure) => procedure.stage === stageLabels[stageId])
+        .map((procedure) => ({
+          id: procedure.id,
+          name: procedure.name,
+          category: procedure.category,
+          categoryLabel: procedure.categoryLabel,
+          officialDuration: procedure.officialDuration,
+          wave: scheduleNodeByProcedureId.get(procedure.id)?.wave ?? null,
+          isDeemed: Boolean(decisionByProcedureId.get(procedure.id)?.isDeemed),
+          timing: timelineNodeByProcedureId.has(procedure.id)
+            ? `${timelineNodeByProcedureId.get(procedure.id)?.startDate} ~ ${timelineNodeByProcedureId.get(procedure.id)?.finishDate}`
+            : procedure.officialDuration,
+          timingSource: timelineNodeByProcedureId.get(procedure.id)?.durationSource ?? null,
+        })),
+    })),
+  };
+
+  const selectedSpecialLawCitationIds = stableUnique([
+    ...evaluation.decisions.flatMap((decision) =>
+      (decision.specialLawImpacts ?? []).flatMap((impact) => impact.citationIds),
+    ),
+    ...evaluation.specialLawEvaluations.flatMap((specialLaw) => {
+      const sourceIds = new Set(catalog.legalSources
+        .filter((source) => source.officialUrl === specialLaw.officialUrl)
+        .map((source) => source.id));
+      return catalog.citations
+        .filter((citation) =>
+          sourceIds.has(citation.sourceId) && citation.article === specialLaw.article,
+        )
+        .map((citation) => citation.id);
+    }),
+  ]);
+  const includedCitationIds = stableUnique([
+    ...evaluation.decisions
+      .filter((decision) => procedureCategoryForDecision(decision) !== "NOT_REQUIRED")
+      .flatMap((decision) => {
+      const duration = decision.procedure.durationId
+        ? catalog.durations.find((item) => item.id === decision.procedure.durationId)
+        : undefined;
+      return [
+        ...decision.procedure.citationIds,
+        ...(duration?.citationIds ?? []),
+        ...(duration?.referencePeriods ?? []).flatMap((period) => period.citationIds),
+      ];
+      }),
+    ...selectedSpecialLawCitationIds,
+  ]);
+  const legalSourceCitations = includedCitationIds.flatMap((citationId) => {
+    const citation = catalog.citations.find((item) => item.id === citationId);
+    if (!citation) return [];
+    const source = catalog.legalSources.find((item) => item.id === citation.sourceId);
+    if (!source) return [];
+    const future = Boolean(source.effectiveDate && source.effectiveDate > answers.assessmentDate);
+    return [{
+      title: source.title,
+      authority: source.issuingAuthority,
+      locator: citationLocator(citation),
+      summary: citation.summary,
+      effectiveDate: source.effectiveDate,
+      effectiveStatus: future
+        ? `${source.effectiveDate} 시행 예정 · 기준일 현재 미적용`
+        : source.status === "AUTHORITATIVE"
+          ? "공식 근거"
+          : "원문 재확인 필요",
+      officialUrl: source.officialUrl,
+    }];
+  });
+  const legalSourceGroups = new Map<string, typeof legalSourceCitations>();
+  for (const source of legalSourceCitations) {
+    const key = `${source.title}\u0000${source.officialUrl}`;
+    legalSourceGroups.set(key, [...(legalSourceGroups.get(key) ?? []), source]);
+  }
+  const legalSources = [...legalSourceGroups.values()]
+    .map((sources) => ({
+      ...sources[0],
+      locator: stableUnique(sources.map((source) => source.locator)).join(" · "),
+      summary: stableUnique(sources.map((source) => source.summary)).join(" / "),
+    }))
+    .sort((left, right) =>
+      left.title.localeCompare(right.title, "ko") ||
+      left.locator.localeCompare(right.locator, "ko"),
+    );
+
+  const excluded = evaluation.decisions
+    .filter((decision) => procedureCategoryForDecision(decision) === "NOT_REQUIRED")
+    .sort((left, right) =>
+      stageOrder.indexOf(left.procedure.stage) - stageOrder.indexOf(right.procedure.stage) ||
+      left.procedure.name.localeCompare(right.procedure.name, "ko"),
+    )
+    .map((decision) => decision.procedure.name);
+
+  const generatedTime = formatSeoulGenerationTime(generatedAt);
+  const specialLaws = evaluation.specialLawEvaluations.map((evaluation) => ({
+    title: evaluation.shortLabel,
+    effect: effectLabels[evaluation.effect],
+    status: evaluation.statusLabel,
+    isActive: evaluation.status === "ACTIVE",
+    note: `${evaluation.statusNote} · ${evaluation.conditionNote}`,
+    law: evaluation.lawName ?? "특별법",
+    article: evaluation.article,
+    officialUrl: evaluation.officialUrl,
+  }));
+
+  return {
+    metadata: {
+      title: "지방투자기업 인허가 검토보고서",
+      generatedAt: generatedAt.toISOString(),
+      generatedAtLabel: generatedTime.label,
+      assessmentDate: answers.assessmentDate,
+      catalogVersion: catalog.coverage.catalogVersion,
+      lastLegalReviewAt: catalog.coverage.lastLegalReviewAt,
+      durationScenario: durationScenarioLabels[durationScenario],
+      scheduleScope: `${includeConditional ? "대상 확인 절차 포함" : "대상 확인 절차 제외"} · ${includePractical ? "실무 선행관계 포함" : "법정 선행관계만 반영"}`,
+      filename: `지방투자기업-인허가-검토보고서-${generatedTime.date}.pdf`,
+    },
+    project: {
+      descriptor: projectDescriptor(answers),
+      sections: projectSections,
+    },
+    summary: {
+      counts,
+      duration: buildDurationSummary(answers, schedule, durationScenario),
+      milestones: buildMilestones(answers, schedule),
+    },
+    flow,
+    specialLaws,
+    procedures,
+    gaps,
+    excluded,
+    legalSources,
+    warnings: stableUnique([
+      ...schedule.warnings,
+      ...(schedule.projectTimeline?.warnings ?? []),
+      ...catalog.coverage.gaps,
+      ...catalog.coverage.futureLawWarnings,
+    ]),
+    disclaimer: `${catalog.coverage.disclaimer} 이 보고서는 입력값을 기준으로 한 사전 검토자료이며, 인허가 처분·법률자문 또는 관할기관의 공식 답변을 대체하지 않습니다. 법정기간의 정지·보완·협의·주민의견 수렴과 지역별 기준은 실제 일정에 별도로 반영해야 합니다. 사용자 입력 고시번호·공문번호의 원본·발행기관·의제목록 진위는 사이트가 보증하지 않습니다.`,
+  };
+}

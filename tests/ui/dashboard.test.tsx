@@ -72,6 +72,8 @@ describe("dashboard UI", () => {
     expect(screen.getByLabelText("시·도")).toHaveValue("");
     expect(screen.queryByText("청주시")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /사업 일정 산정 불가 계산 경로 열기/ })).toHaveTextContent("산정 불가");
+    expect(screen.getByRole("button", { name: "결과보고서 다운로드" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "화면 인쇄" })).toBeInTheDocument();
   });
 
   it("copies a portable input code and safely restores another project's inputs", async () => {
@@ -745,7 +747,7 @@ describe("dashboard UI", () => {
     render(<DashboardClient />);
     const card = screen.getByRole("button", { name: /건축허가·신고 경로 확인/ });
     fireEvent.click(card);
-    const drawer = screen.getByRole("complementary", { name: /건축허가·신고 경로 확인 상세정보/ });
+    const drawer = screen.getByRole("dialog", { name: /건축허가·신고 경로 확인 상세정보/ });
     expect(drawer).toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: /원문 열기/ })[0]).toHaveAttribute("href", expect.stringMatching(/^https:\/\//));
     expect(drawer).toHaveTextContent("업무일");
@@ -1132,5 +1134,39 @@ describe("dashboard UI", () => {
     expect(screen.getByText(/공사 시작일과 준공일을 입력/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("tab", { name: /확인 필요/ }));
     expect(screen.getByRole("heading", { name: "현재 데이터에 포함되지 않은 항목" })).toBeInTheDocument();
+  });
+
+  it("opens the permit registry, verification ledger, and scenario comparison tools", async () => {
+    render(<DashboardClient />);
+
+    const registryTrigger = screen.getByRole("button", { name: /전체 인허가 백과/ });
+    const verificationTrigger = screen.getByRole("button", { name: /근거 검증 대장/ });
+    const compareTrigger = screen.getByRole("button", { name: /사업조건 비교/ });
+    expect(registryTrigger).toHaveAttribute("aria-haspopup", "dialog");
+    expect(verificationTrigger).toHaveAttribute("aria-haspopup", "dialog");
+    expect(compareTrigger).toHaveAttribute("aria-haspopup", "dialog");
+
+    fireEvent.click(registryTrigger);
+    const registryDialog = await screen.findByRole("dialog", { name: "전체 인허가 백과" });
+    expect(within(registryDialog).getByRole("status")).toHaveTextContent("전체 124개 중 124개 절차");
+    fireEvent.click(within(registryDialog).getAllByRole("button", { name: /상세 보기/ })[0]);
+    const detailDialog = await screen.findByRole("dialog", { name: /상세정보/ });
+    expect(within(detailDialog).getByRole("heading", { level: 2 })).toHaveFocus();
+    fireEvent.click(within(detailDialog).getByRole("button", { name: "상세정보 닫기" }));
+    const restoredRegistryDialog = await screen.findByRole("dialog", { name: "전체 인허가 백과" });
+    expect(within(restoredRegistryDialog).getByRole("heading", { name: "전체 인허가 백과" })).toHaveFocus();
+    fireEvent.click(within(restoredRegistryDialog).getByRole("button", { name: "전체 인허가 백과 닫기" }));
+    await waitFor(() => expect(registryTrigger).toHaveFocus());
+
+    fireEvent.click(verificationTrigger);
+    const verificationDialog = await screen.findByRole("dialog", { name: "인허가 근거 검증 대장" });
+    expect(within(verificationDialog).getByLabelText("검증 대장 현황")).toHaveTextContent("검증 차원744건");
+    fireEvent.click(within(verificationDialog).getByRole("button", { name: "인허가 근거 검증 대장 닫기" }));
+    await waitFor(() => expect(verificationTrigger).toHaveFocus());
+
+    fireEvent.click(compareTrigger);
+    const compareDialog = await screen.findByRole("dialog", { name: "사업조건 비교" });
+    expect(within(compareDialog).getByRole("group", { name: "비교할 기준 시나리오 선택" })).toBeInTheDocument();
+    expect(within(compareDialog).getByRole("status")).toHaveTextContent("최대 2개");
   });
 });
