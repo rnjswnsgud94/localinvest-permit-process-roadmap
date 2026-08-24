@@ -1,3 +1,6 @@
+import { readFile } from "node:fs/promises";
+
+import { readWorkbookBuffer } from "@alosha/xlsx";
 import { expect, test, type Page } from "@playwright/test";
 
 async function gotoHydratedDashboard(page: Page) {
@@ -365,7 +368,7 @@ test("secondary permit questions start collapsed without discarding answers", as
   await expect(page).toHaveURL(/road=1/);
 });
 
-test("wizard changes the route and detail links are official", async ({ page }) => {
+test("wizard separates official detail sources from external references", async ({ page }) => {
   await gotoHydratedDashboard(page);
   await expect(page.getByRole("heading", { name: "지역투자 인허가 로드맵" })).toBeVisible();
   await page.getByRole("button", { name: "개별입지", exact: true }).click();
@@ -373,6 +376,15 @@ test("wizard changes the route and detail links are official", async ({ page }) 
   await page.getByRole("button", { name: /공장설립·증설·업종변경 승인/ }).click();
   await expect(page.getByRole("dialog", { name: /공장설립·증설·업종변경 승인 상세정보/ })).toBeVisible();
   await expect(page.getByRole("link", { name: /원문 열기/ }).first()).toHaveAttribute("href", /^https:\/\//);
+  const korea100Link = page.getByRole("link", {
+    name: /공장설립승인 \| 대한민국 제도 지도/,
+  });
+  await expect(korea100Link).toHaveAttribute(
+    "href",
+    "https://hosungseo.github.io/korea100/model/factory-establishment/",
+  );
+  await expect(korea100Link).toHaveAttribute("target", "_blank");
+  await expect(korea100Link).toHaveAttribute("rel", "noopener noreferrer");
 });
 
 test("capital-region location survives sharing and exposes the extra factory review", async ({ page }) => {
@@ -440,4 +452,36 @@ test("downloads the current result report with its A3 overview", async ({ page }
   );
   expect(await download.failure()).toBeNull();
   await expect(page.locator("#pdf-report-status")).toContainText("다운로드했습니다");
+});
+
+test("downloads a usable XLSX practical workbook", async ({ page }) => {
+  test.setTimeout(60_000);
+  await gotoHydratedDashboard(page);
+  const downloadPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: "스프레드시트 다운로드" }).click();
+  const download = await downloadPromise;
+
+  expect(download.suggestedFilename()).toMatch(
+    /^인허가-실무관리표_.+_\d{8}-\d{6}\.xlsx$/u,
+  );
+  expect(await download.failure()).toBeNull();
+  const downloadPath = await download.path();
+  expect(downloadPath).not.toBeNull();
+  const file = await readFile(downloadPath!);
+  const buffer = file.buffer.slice(file.byteOffset, file.byteOffset + file.byteLength);
+  const workbook = readWorkbookBuffer(new Uint8Array(buffer));
+  expect(workbook.worksheets.map((sheet) => sheet.name)).toEqual([
+    "실무 관리표",
+    "요약",
+    "사업조건",
+    "선후행 관계",
+    "특례·지역조례",
+    "공식 근거",
+    "확인·제외",
+  ]);
+  expect(workbook.getWorksheet("실무 관리표")!.getCell("B5").value).toBe("미착수");
+  expect(workbook.getWorksheet("공식 근거")!.getCell("H5").value).toMatchObject({
+    hyperlink: expect.stringMatching(/^https:\/\//),
+  });
+  await expect(page.locator("#spreadsheet-report-status")).toContainText("다운로드했습니다");
 });

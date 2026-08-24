@@ -68,6 +68,10 @@ describe("dashboard UI", () => {
     expect(
       within(feedbackNotice).getByRole("link", { name: /이메일 보내기/ }).getAttribute("href"),
     ).toMatch(/^mailto:[^@\s]+@korea\.kr$/);
+    const footer = document.querySelector(".dashboard-footer");
+    expect(footer).not.toBeNull();
+    expect(footer).toContainElement(feedbackNotice);
+    expect(within(footer as HTMLElement).getByText(/이 화면은 공식 자료를 바탕으로 만든 사전 검토자료입니다/)).toBeInTheDocument();
     expect(screen.getByText("사업 조건에 맞는 절차, 적용 특례와 예상 일정을 확인합니다.")).toBeInTheDocument();
     expect(document.querySelector(".scope-card")).toBeNull();
     expect(screen.getByRole("heading", { name: "현재 사업조건" })).toBeInTheDocument();
@@ -79,6 +83,7 @@ describe("dashboard UI", () => {
       name: /확인된 제외 절차 \d+개 목록 열기/,
     })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "결과보고서 다운로드" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "스프레드시트 다운로드" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "화면 인쇄" })).toBeInTheDocument();
   });
 
@@ -835,6 +840,16 @@ describe("dashboard UI", () => {
     const drawer = screen.getByRole("dialog", { name: /건축허가·신고 경로 확인 상세정보/ });
     expect(drawer).toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: /원문 열기/ })[0]).toHaveAttribute("href", expect.stringMatching(/^https:\/\//));
+    const korea100Link = within(drawer).getByRole("link", {
+      name: /건축허가 \| 대한민국 제도 지도/,
+    });
+    expect(korea100Link).toHaveAttribute(
+      "href",
+      "https://hosungseo.github.io/korea100/model/building-permit/",
+    );
+    expect(korea100Link).toHaveAttribute("target", "_blank");
+    expect(korea100Link).toHaveAttribute("rel", "noopener noreferrer");
+    expect(drawer).toHaveTextContent("공식 법령 근거와 별도의 참고자료입니다.");
     expect(drawer).toHaveTextContent("업무일");
     expect(drawer).toHaveTextContent("법정·공식 기간과 실무 참고값");
     expect(drawer).toHaveTextContent("전국 공신력 있는 평균·중앙값 자료가 없어");

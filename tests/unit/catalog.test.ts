@@ -18,6 +18,47 @@ describe("catalog integrity", () => {
     }
   });
 
+  it("keeps curated Korea100 references canonical and separate from official sources", () => {
+    const procedureIds = new Set(catalog.procedures.map((item) => item.id));
+    const mappedProcedureIds = catalog.korea100References.map((item) => item.procedureId);
+    const unmatchedProcedureIds = catalog.korea100UnmatchedProcedures.map(
+      (item) => item.procedureId,
+    );
+
+    expect(catalog.korea100References.length).toBeGreaterThanOrEqual(100);
+    expect(new Set(mappedProcedureIds).size).toBe(mappedProcedureIds.length);
+    expect(new Set(unmatchedProcedureIds).size).toBe(unmatchedProcedureIds.length);
+    expect(catalog.korea100References.length + catalog.korea100UnmatchedProcedures.length)
+      .toBe(catalog.procedures.length);
+    expect(new Set([...mappedProcedureIds, ...unmatchedProcedureIds]).size)
+      .toBe(catalog.procedures.length);
+    for (const reference of catalog.korea100References) {
+      expect(procedureIds.has(reference.procedureId), reference.procedureId).toBe(true);
+      expect(reference.url, reference.procedureId).toBe(
+        `https://hosungseo.github.io/korea100/model/${reference.modelSlug}/`,
+      );
+      expect(reference.url, reference.procedureId).not.toMatch(/[?#]/);
+    }
+
+    expect(
+      catalog.korea100References.find(
+        (item) => item.procedureId === "environmental-impact-assessment",
+      ),
+    ).toMatchObject({
+      modelName: "환경영향평가",
+      matchType: "EXACT",
+      url: "https://hosungseo.github.io/korea100/model/environmental-impact-assessment/",
+    });
+    expect(
+      catalog.korea100References.find(
+        (item) => item.procedureId === "construction-start-report",
+      ),
+    ).toMatchObject({ modelSlug: "building-permit", matchType: "INCLUDED" });
+    expect(catalog.legalSources.some((source) =>
+      source.officialUrl.includes("hosungseo.github.io/korea100"),
+    )).toBe(false);
+  });
+
   it("covers nationwide factory-investment domains including capital-region review", () => {
     const ids = new Set(catalog.procedures.map((item) => item.id));
     for (const id of [

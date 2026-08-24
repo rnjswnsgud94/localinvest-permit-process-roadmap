@@ -238,6 +238,9 @@ export function ProcedureDrawer({
     ) ??
     null;
   const duration = catalog.durations.find((item) => item.id === procedure.durationId);
+  const korea100Reference = catalog.korea100References.find(
+    (item) => item.procedureId === procedure.id,
+  );
   const planningDuration = schedule.planningDurations.find(
     (item) => item.procedureId === procedure.id,
   );
@@ -317,6 +320,35 @@ export function ProcedureDrawer({
                 : "공사 일정 입력 필요"}</dd></div>
         </dl>
         <section className="drawer-section"><h3>절차 설명</h3><p>{procedure.description}</p></section>
+        {korea100Reference ? (
+          <section
+            className="drawer-section korea100-reference-section"
+            aria-labelledby={`${procedure.id}-korea100-title`}
+          >
+            <div className="korea100-reference-heading">
+              <h3 id={`${procedure.id}-korea100-title`}>관련 제도 지도</h3>
+              <span>외부 참고자료</span>
+            </div>
+            <a
+              className="korea100-reference-card"
+              href={korea100Reference.url}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <span>
+                <strong>{korea100Reference.modelName} | 대한민국 제도 지도</strong>
+                <small>{korea100Reference.matchType === "EXACT"
+                  ? "동일 제도 안내"
+                  : "현재 절차를 포함하는 통합 안내"}</small>
+              </span>
+              <b aria-hidden="true">↗</b>
+              <span className="sr-only">(새 창)</span>
+            </a>
+            <p>
+              공식 법령 근거와 별도의 참고자료입니다. 링크 확인 {catalog.korea100ReferenceMeta.checkedAt}
+            </p>
+          </section>
+        ) : null}
         <section className="drawer-section"><h3>주요 제출자료</h3><ul>{procedure.submissions.map((item) => <li key={item}>{item}</li>)}</ul></section>
         <section className="drawer-section">
           <h3>선후행·병행 관계</h3>

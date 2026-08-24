@@ -19,6 +19,7 @@ import { InputCodeDialog } from "@/app/components/dashboard/InputCodeDialog";
 import { LocalJurisdictionLinks, LocalOrdinancePanel } from "@/app/components/dashboard/LocalOrdinancePanel";
 import { PermitRegistry } from "@/app/components/dashboard/PermitRegistry";
 import { PdfReportButton } from "@/app/components/dashboard/PdfReportButton";
+import { SpreadsheetReportButton } from "@/app/components/dashboard/SpreadsheetReportButton";
 import { ProcedureDrawer } from "@/app/components/dashboard/ProcedureDrawer";
 import { ScenarioCompare } from "@/app/components/dashboard/ScenarioCompare";
 import { StatusSummaryDialog } from "@/app/components/dashboard/StatusSummaryDialog";
@@ -520,14 +521,6 @@ export function DashboardClient() {
         </div>
       </header>
 
-      <aside className="ai-feedback-notice" role="note" aria-labelledby="ai-feedback-notice-title">
-        <span className="ai-feedback-notice-mark" aria-hidden="true">AI</span>
-        <div>
-          <strong id="ai-feedback-notice-title">AI 활용 안내</strong>
-          <p>AI를 활용한 인허가 로드맵 툴입니다. 오류 등 피드백 시 산업부 권준형 사무관(<a href="mailto:jnhnkn15@korea.kr" aria-label="권준형 사무관에게 이메일 보내기">jnhnkn15@korea.kr</a>)으로 연락 주세요.</p>
-        </div>
-      </aside>
-
       <div id="main-dashboard" className="dashboard-grid">
         <Wizard answers={answers} activeStep={activeStep} onStepChange={setActiveStep} onChange={changeAnswer} />
         <section className="workspace" aria-label="판정 결과">
@@ -536,6 +529,13 @@ export function DashboardClient() {
             <div className="scenario-caption"><strong><LocalJurisdictionLinks answers={answers} /> · {answers.insideIndustrialComplex === null ? "입지 미확인" : answers.insideIndustrialComplex ? "산업단지" : "개별입지"}</strong><span>{answers.totalAreaM2 === null ? "면적 미확인" : `${answers.totalAreaM2.toLocaleString("ko-KR")}㎡`} · 검토 기준일 {answers.assessmentDate}</span><em>지역명은 전체 목록, 아래 지역기준 카드는 관련 조례 상세 원문으로 연결됩니다.</em></div>
             <div className="utility-actions">
               <PdfReportButton
+                answers={answers}
+                evaluation={evaluation}
+                durationScenario={durationScenario}
+                includeConditional={includeConditional}
+                includePractical={includePractical}
+              />
+              <SpreadsheetReportButton
                 answers={answers}
                 evaluation={evaluation}
                 durationScenario={durationScenario}
@@ -702,7 +702,16 @@ export function DashboardClient() {
         </section>
       </div>
 
-      <footer className="dashboard-footer"><p>{catalog.coverage.disclaimer}</p><span>데이터 버전 {catalog.coverage.catalogVersion} · 출처 {catalog.coverage.sourceAttribution}</span></footer>
+      <footer className="dashboard-footer">
+        <div className="dashboard-footer-copy">
+          <div className="dashboard-footer-ai" role="note" aria-labelledby="ai-feedback-notice-title">
+            <strong id="ai-feedback-notice-title">AI 활용 안내</strong>
+            <p>AI를 활용한 인허가 로드맵 툴입니다. 오류 등 피드백 시 산업부 권준형 사무관(<a href="mailto:jnhnkn15@korea.kr" aria-label="권준형 사무관에게 이메일 보내기">jnhnkn15@korea.kr</a>)으로 연락 주세요.</p>
+          </div>
+          <p className="dashboard-footer-disclaimer">{catalog.coverage.disclaimer}</p>
+        </div>
+        <span className="dashboard-footer-meta">데이터 버전 {catalog.coverage.catalogVersion} · 출처 {catalog.coverage.sourceAttribution}</span>
+      </footer>
       {selectedSummaryCategory ? (
         <StatusSummaryDialog
           category={selectedSummaryCategory}

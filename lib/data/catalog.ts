@@ -5,6 +5,7 @@ import coverageJson from "@/data/catalog/coverage.json";
 import durationsJson from "@/data/catalog/durations.json";
 import edgesJson from "@/data/catalog/edges.json";
 import legalSourcesJson from "@/data/catalog/legal-sources.json";
+import korea100ReferencesJson from "@/data/catalog/korea100-references.json";
 import proceduresJson from "@/data/catalog/procedures.json";
 import rulesJson from "@/data/catalog/rules.json";
 import scenariosJson from "@/data/scenarios/golden.json";
@@ -64,6 +65,23 @@ const coverageSchema = z.object({
   gaps: z.array(z.string()),
   futureLawWarnings: z.array(z.string()),
   disclaimer: z.string(),
+});
+
+const korea100ReferenceCatalogSchema = z.object({
+  sourceName: z.literal("한 장으로 끝내는 대한민국 제도 지도"),
+  sourceUrl: z.literal("https://hosungseo.github.io/korea100/"),
+  repositoryUrl: z.literal("https://github.com/hosungseo/korea100"),
+  checkedAt: isoDateSchema,
+  references: z.array(z.object({
+    procedureId: z.string().min(1),
+    modelSlug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+    modelName: z.string().trim().min(1),
+    matchType: z.enum(["EXACT", "INCLUDED"]),
+  })),
+  unmatched: z.array(z.object({
+    procedureId: z.string().min(1),
+    reason: z.literal("NO_EQUIVALENT_MODEL"),
+  })),
 });
 
 export const scenarioAnswerSchema = z.object({
@@ -394,6 +412,12 @@ const durations = z.array(durationEstimateSchema).parse(
 );
 const coverage = coverageSchema.parse(coverageJson);
 const scenarios = z.array(scenarioSchema).parse(scenariosJson);
+const korea100ReferenceCatalog = korea100ReferenceCatalogSchema.parse(korea100ReferencesJson);
+const korea100References = korea100ReferenceCatalog.references.map((reference) => ({
+  ...reference,
+  url: `${korea100ReferenceCatalog.sourceUrl}model/${reference.modelSlug}/`,
+}));
+const korea100UnmatchedProcedures = korea100ReferenceCatalog.unmatched;
 
 function assertUnique(label: string, ids: string[]) {
   const duplicates = ids.filter((id, index) => ids.indexOf(id) !== index);
@@ -409,12 +433,39 @@ function assertCatalogReferences() {
   assertUnique("source", legalSources.map((item) => item.id));
   assertUnique("citation", citations.map((item) => item.id));
   assertUnique("duration", durations.map((item) => item.id));
+  assertUnique("korea100 reference", korea100References.map((item) => item.procedureId));
+  assertUnique("korea100 unmatched", korea100UnmatchedProcedures.map((item) => item.procedureId));
 
   const procedureIds = new Set(procedures.map((item) => item.id));
   const ruleIds = new Set(rules.map((item) => item.id));
   const sourceIds = new Set(legalSources.map((item) => item.id));
   const citationIds = new Set(citations.map((item) => item.id));
   const durationIds = new Set(durations.map((item) => item.id));
+
+  for (const reference of korea100References) {
+    if (!procedureIds.has(reference.procedureId)) {
+      throw new Error(`korea100 reference: procedure ${reference.procedureId} 없음`);
+    }
+  }
+  const referencedProcedureIds = new Set(korea100References.map((item) => item.procedureId));
+  for (const unmatched of korea100UnmatchedProcedures) {
+    if (!procedureIds.has(unmatched.procedureId)) {
+      throw new Error(`korea100 unmatched: procedure ${unmatched.procedureId} 없음`);
+    }
+    if (referencedProcedureIds.has(unmatched.procedureId)) {
+      throw new Error(`korea100 procedure ${unmatched.procedureId}: reference와 unmatched 중복`);
+    }
+  }
+  const korea100AccountedProcedureIds = new Set([
+    ...referencedProcedureIds,
+    ...korea100UnmatchedProcedures.map((item) => item.procedureId),
+  ]);
+  const uncoveredProcedureIds = [...procedureIds].filter(
+    (procedureId) => !korea100AccountedProcedureIds.has(procedureId),
+  );
+  if (uncoveredProcedureIds.length) {
+    throw new Error(`korea100 매핑 검토 누락: ${uncoveredProcedureIds.join(", ")}`);
+  }
 
   for (const citation of citations) {
     if (!sourceIds.has(citation.sourceId)) {
@@ -496,6 +547,14 @@ export const catalog = {
   durations,
   coverage,
   scenarios,
+  korea100References,
+  korea100UnmatchedProcedures,
+  korea100ReferenceMeta: {
+    sourceName: korea100ReferenceCatalog.sourceName,
+    sourceUrl: korea100ReferenceCatalog.sourceUrl,
+    repositoryUrl: korea100ReferenceCatalog.repositoryUrl,
+    checkedAt: korea100ReferenceCatalog.checkedAt,
+  },
 } as const;
 
 export type ScenarioAnswers = z.infer<typeof scenarioAnswerSchema>;
