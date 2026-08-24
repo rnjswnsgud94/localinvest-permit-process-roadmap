@@ -253,6 +253,7 @@ test("desktop wizard keeps its navigation visible and scrolls independently", as
     return {
       panelHeight: panel.height,
       panelBottom: panel.bottom,
+      panelBottomGap: window.innerHeight - panel.bottom,
       footerBottom: footer.getBoundingClientRect().bottom,
       viewportHeight: window.innerHeight,
       bodyClientHeight: bodyElement.clientHeight,
@@ -265,6 +266,8 @@ test("desktop wizard keeps its navigation visible and scrolls independently", as
 
   expect(geometry).not.toBeNull();
   expect(geometry!.panelBottom).toBeLessThanOrEqual(geometry!.viewportHeight + 1);
+  expect(geometry!.panelBottomGap).toBeGreaterThanOrEqual(-1);
+  expect(geometry!.panelBottomGap).toBeLessThanOrEqual(24);
   expect(geometry!.footerBottom).toBeLessThanOrEqual(geometry!.viewportHeight + 1);
   expect(geometry!.bodyClientHeight / geometry!.panelHeight).toBeGreaterThan(0.55);
   expect(geometry!.bodyScrollHeight).toBeGreaterThan(geometry!.bodyClientHeight);

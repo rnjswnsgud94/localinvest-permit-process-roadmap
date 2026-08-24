@@ -9,19 +9,19 @@ import {
 import type { PermitReportModel } from "@/app/components/dashboard/pdf/permit-report-model";
 
 const palette = {
-  navy: "173A5E",
-  navyDark: "102D4C",
-  teal: "16877F",
-  tealSoft: "E8F4F2",
-  blueSoft: "EAF1F7",
-  amber: "C88620",
-  amberSoft: "FFF3D9",
-  redSoft: "FBEAEC",
-  ink: "243447",
-  muted: "66788A",
-  line: "CCD8E3",
-  paper: "FFFFFF",
-  slateSoft: "F5F7F9",
+  navy: "FF173A5E",
+  navyDark: "FF102D4C",
+  teal: "FF16877F",
+  tealSoft: "FFE8F4F2",
+  blueSoft: "FFEAF1F7",
+  amber: "FFC88620",
+  amberSoft: "FFFFF3D9",
+  redSoft: "FFFBEAEC",
+  ink: "FF243447",
+  muted: "FF66788A",
+  line: "FFCCD8E3",
+  paper: "FFFFFFFF",
+  slateSoft: "FFF5F7F9",
 } as const;
 
 const thinBorder = {
@@ -42,8 +42,14 @@ const trackingStatusOptions = [
   "해당 없음",
 ];
 
+// @alosha/xlsx exposes the ExcelJS-style value "middle" in its TypeScript
+// surface, but serializes it verbatim. SpreadsheetML requires "center" for
+// vertical centering; using the schema value prevents Excel from repairing the
+// generated styles.xml when the workbook opens.
+const ooxmlVerticalCenter = "center" as "middle";
+
 function dateCellValue(value: string | null) {
-  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return value ?? "";
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return value ?? null;
   const [year, month, day] = value.split("-").map(Number);
   return new Date(Date.UTC(year, month - 1, day));
 }
@@ -71,7 +77,7 @@ function addSheetHeading(
   titleCell.value = title;
   titleCell.font = { name: "맑은 고딕", size: 16, bold: true, color: { argb: palette.paper } };
   titleCell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: palette.navyDark } };
-  titleCell.alignment = { vertical: "middle", horizontal: "left" };
+  titleCell.alignment = { vertical: ooxmlVerticalCenter, horizontal: "left" };
   sheet.getRow(1).height = 32;
 
   sheet.mergeCells(2, 1, 2, lastColumn);
@@ -79,7 +85,7 @@ function addSheetHeading(
   subtitleCell.value = subtitle;
   subtitleCell.font = { name: "맑은 고딕", size: 9, color: { argb: palette.muted } };
   subtitleCell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: palette.slateSoft } };
-  subtitleCell.alignment = { vertical: "middle", wrapText: true };
+  subtitleCell.alignment = { vertical: ooxmlVerticalCenter, wrapText: true };
   sheet.getRow(2).height = 28;
 }
 
@@ -88,7 +94,7 @@ function styleHeaderRow(row: Row) {
   row.eachCell((cell) => {
     cell.font = { name: "맑은 고딕", size: 9, bold: true, color: { argb: palette.paper } };
     cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: palette.navy } };
-    cell.alignment = { vertical: "middle", horizontal: "center", wrapText: true };
+    cell.alignment = { vertical: ooxmlVerticalCenter, horizontal: "center", wrapText: true };
     cell.border = thinBorder;
   });
 }
@@ -101,13 +107,13 @@ function styleDataRows(sheet: Worksheet, headerRowNumber: number, lastColumn: nu
       const cell = row.getCell(column);
       const hyperlink = typeof cell.value === "object" && cell.value !== null && "hyperlink" in cell.value;
       cell.font = hyperlink
-        ? { name: "맑은 고딕", size: 9, color: { argb: "0B6A66" }, underline: true }
+        ? { name: "맑은 고딕", size: 9, color: { argb: "FF0B6A66" }, underline: true }
         : { name: "맑은 고딕", size: 9, color: { argb: palette.ink } };
       cell.alignment = { vertical: "top", wrapText: true };
       cell.border = thinBorder;
       if (cell.value instanceof Date) cell.numFmt = "yyyy-mm-dd";
       if (rowNumber % 2 === 0) {
-        cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "F8FAFC" } };
+        cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFF8FAFC" } };
       }
     }
   }
@@ -152,7 +158,7 @@ function setLink(cell: Cell, text: string, url: string) {
   cell.font = {
     name: "맑은 고딕",
     size: 9,
-    color: { argb: "0B6A66" },
+    color: { argb: "FF0B6A66" },
     underline: true,
   };
   cell.alignment = { vertical: "top", wrapText: true };
@@ -178,9 +184,9 @@ function addPracticalSheet(workbook: Workbook, report: PermitReportModel) {
     sheet.addRow([
       index + 1,
       "미착수",
-      "",
-      "",
-      "",
+      null,
+      null,
+      null,
       procedure.stage,
       procedure.categoryLabel,
       procedure.name,
@@ -248,7 +254,7 @@ function addSummarySheet(workbook: Workbook, report: PermitReportModel) {
     for (let column = 1; column <= 8; column += 1) {
       const cell = row.getCell(column);
       cell.border = thinBorder;
-      cell.alignment = { vertical: "middle", wrapText: true };
+      cell.alignment = { vertical: ooxmlVerticalCenter, wrapText: true };
       if (cell.value instanceof Date) cell.numFmt = "yyyy-mm-dd";
       cell.font = { name: "맑은 고딕", size: 9, bold: column % 2 === 1, color: { argb: column % 2 === 1 ? palette.navy : palette.ink } };
       if (column % 2 === 1) cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: palette.blueSoft } };
@@ -261,7 +267,7 @@ function addSummarySheet(workbook: Workbook, report: PermitReportModel) {
   const summaryRows = [
     ["로드맵 포함", report.summary.counts.REQUIRED, "확정 적용", report.summary.roadmapBreakdown.confirmed, report.summary.duration.label, report.summary.duration.value, report.metadata.durationScenario, report.summary.duration.isTotal ? "총 소요기간" : "총 소요기간 아님"],
     ["추가 확인", report.summary.counts.CONFIRM, "기준 확인 전 포함", report.summary.roadmapBreakdown.scopeCheck, "일정 설명", report.summary.duration.detail, report.metadata.scheduleScope, "실제 일정은 보완·협의·대기기간 확인 필요"],
-    ["확인된 제외", report.summary.counts.NOT_REQUIRED, "의제 처리", report.summary.roadmapBreakdown.deemed, "지역 조례 확인일", report.localOrdinances.checkedAt, "공식 근거", `${report.legalSources.length}건`, "원문과 관할기관 최신 안내 재확인"],
+    ["확인된 제외", report.summary.counts.NOT_REQUIRED, "의제 처리", report.summary.roadmapBreakdown.deemed, "지역 조례 확인일", report.localOrdinances.checkedAt, "공식 근거", `${report.legalSources.length}건 · 원문과 관할기관 최신 안내 재확인`],
   ];
   summaryRows.forEach((values) => sheet.addRow(values));
   styleDataRows(sheet, 6, 8);
@@ -277,7 +283,7 @@ function addSummarySheet(workbook: Workbook, report: PermitReportModel) {
     row.getCell(1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: palette.blueSoft } };
     [1, 2].forEach((column) => {
       row.getCell(column).border = thinBorder;
-      row.getCell(column).alignment = { vertical: "middle", wrapText: true };
+      row.getCell(column).alignment = { vertical: ooxmlVerticalCenter, wrapText: true };
       if (row.getCell(column).value instanceof Date) row.getCell(column).numFmt = "yyyy-mm-dd";
     });
   }
@@ -287,7 +293,7 @@ function addSummarySheet(workbook: Workbook, report: PermitReportModel) {
   sheet.getCell(noticeStart, 1).value = "사용 안내";
   sheet.getCell(noticeStart, 1).font = { name: "맑은 고딕", size: 10, bold: true, color: { argb: palette.paper } };
   sheet.getCell(noticeStart, 1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: palette.teal } };
-  sheet.getCell(noticeStart, 1).alignment = { vertical: "middle" };
+  sheet.getCell(noticeStart, 1).alignment = { vertical: ooxmlVerticalCenter };
   sheet.mergeCells(noticeStart + 1, 1, noticeStart + 2, 8);
   sheet.getCell(noticeStart + 1, 1).value = `첫 시트의 노란색 관리열에 진행상태·담당자·내부 목표일·메모를 입력해 실무 체크리스트로 사용하십시오.\n${report.disclaimer}`;
   sheet.getCell(noticeStart + 1, 1).font = { name: "맑은 고딕", size: 9, color: { argb: palette.ink } };
@@ -295,7 +301,10 @@ function addSummarySheet(workbook: Workbook, report: PermitReportModel) {
   sheet.getCell(noticeStart + 1, 1).alignment = { vertical: "top", wrapText: true };
   sheet.getCell(noticeStart + 1, 1).border = thinBorder;
   sheet.getRow(noticeStart + 1).height = 62;
-  sheet.views = [{ state: "frozen", ySplit: 2, showGridLines: false }];
+  // @alosha/xlsx does not serialize a matching selection record for a
+  // row-only frozen pane. Desktop Excel repairs that incomplete sheet view
+  // when opening the workbook, so keep this short summary unfrozen instead.
+  sheet.views = [{ showGridLines: false }];
   sheet.pageSetup = { orientation: "landscape", fitToPage: true, fitToWidth: 1, fitToHeight: 1, paperSize: 9 };
 }
 
@@ -348,12 +357,12 @@ function addSpecialLawsSheet(workbook: Workbook, report: PermitReportModel) {
   sheet.addRow(headers);
 
   report.specialLaws.forEach((item) => {
-    const row = sheet.addRow(["특별법", item.effect, item.note, item.status, `${item.title} · ${item.law} ${item.article}`, "", item.isActive ? "적용요건 확인" : "시행일·적용요건 확인", item.officialUrl]);
+    const row = sheet.addRow(["특별법", item.effect, item.note, item.status, `${item.title} · ${item.law} ${item.article}`, null, item.isActive ? "적용요건 확인" : "시행일·적용요건 확인", item.officialUrl]);
     setLink(row.getCell(8), item.officialUrl, item.officialUrl);
   });
 
   report.localOrdinances.transitionBasisLinks.forEach((item) => {
-    const row = sheet.addRow(["경과조치 근거", "지역 조례", item.note, "관할 확인", item.name, "", item.note, item.url]);
+    const row = sheet.addRow(["경과조치 근거", "지역 조례", item.note, "관할 확인", item.name, null, item.note, item.url]);
     setLink(row.getCell(8), item.url, item.url);
   });
 
@@ -372,13 +381,13 @@ function addSpecialLawsSheet(workbook: Workbook, report: PermitReportModel) {
       setLink(row.getCell(8), ordinance.url, ordinance.url);
     });
     category.fallbackLinks.forEach((link) => {
-      const row = sheet.addRow(["ELIS 관할 목록", category.title, category.affects, "최신 현행 확인", link.name, "", `${category.reviewPoint} · ${category.limitation} · ${link.note}`, link.url]);
+      const row = sheet.addRow(["ELIS 관할 목록", category.title, category.affects, "최신 현행 확인", link.name, null, `${category.reviewPoint} · ${category.limitation} · ${link.note}`, link.url]);
       setLink(row.getCell(8), link.url, link.url);
     });
   });
 
   if (report.localOrdinances.notice) {
-    sheet.addRow(["지역 확인 안내", "관할 조례", "", "추가 확인", "관할 조례 안내", "", report.localOrdinances.notice, ""]);
+    sheet.addRow(["지역 확인 안내", "관할 조례", null, "추가 확인", "관할 조례 안내", null, report.localOrdinances.notice, null]);
   }
   setColumns(sheet, [{ width: 18 }, { width: 26 }, { width: 34 }, { width: 24 }, { width: 38 }, { width: 16 }, { width: 52 }, { width: 44 }]);
   configureTableSheet(sheet, 4, headers.length, 2);

@@ -1,4 +1,5 @@
 import { readWorkbookBuffer } from "@alosha/xlsx";
+import { strFromU8, unzipSync } from "fflate";
 import { describe, expect, it } from "vitest";
 
 import { buildPermitReportModel } from "@/app/components/dashboard/pdf/permit-report-model";
@@ -26,8 +27,22 @@ describe("permit report spreadsheet", () => {
     const report = buildReport();
     const bytes = await generatePermitReportWorkbook(report);
     const workbook = readWorkbookBuffer(bytes);
+    const workbookArchive = unzipSync(bytes);
+    const stylesXml = strFromU8(workbookArchive["xl/styles.xml"]);
+    const summaryWorksheetXml = strFromU8(workbookArchive["xl/worksheets/sheet2.xml"]);
+    const frozenPanes = Object.entries(workbookArchive)
+      .filter(([path]) => /^xl\/worksheets\/sheet\d+\.xml$/.test(path))
+      .flatMap(([, xml]) => strFromU8(xml).match(/<pane[^>]*state="frozen"\/>/g) ?? []);
 
     expect(bytes.slice(0, 2)).toEqual(Uint8Array.from([80, 75]));
+    expect(stylesXml).toContain('vertical="center"');
+    expect(stylesXml).not.toContain('vertical="middle"');
+    expect(stylesXml).not.toMatch(/rgb="[0-9A-Fa-f]{6}"/);
+    expect(summaryWorksheetXml).not.toContain("<pane");
+    expect(frozenPanes).toHaveLength(6);
+    frozenPanes.forEach((pane) => {
+      expect(pane).toContain("topLeftCell=");
+    });
     expect(workbook.worksheets.map((sheet) => sheet.name)).toEqual([
       "실무 관리표",
       "요약",
@@ -52,6 +67,7 @@ describe("permit report spreadsheet", () => {
     expect(practical.getCell("B5").value).toBe("미착수");
     expect(practical.getCell("B5").dataValidation).toMatchObject({ type: "list" });
     expect(practical.getCell("D5").numFmt).toBe("yyyy-mm-dd");
+    expect(String(practical.getCell("A1").alignment?.vertical)).toBe("center");
 
     const projectInputs = workbook.getWorksheet("사업조건")!;
     expect(projectInputs.getRow(4).values).toEqual(expect.arrayContaining([
@@ -73,6 +89,7 @@ describe("permit report spreadsheet", () => {
     const summaryText = summary.getSheetValues().flat().join(" ");
     expect(summaryText).toContain("노란색 관리열");
     expect(summaryText).toContain("최종 판단이나 법률자문");
+    expect(summary.getCell("I9").value).toBeNull();
 
     const allCellText = workbook.worksheets.flatMap((sheet) =>
       sheet.getSheetValues().flat().map((value) => String(value ?? "")),
