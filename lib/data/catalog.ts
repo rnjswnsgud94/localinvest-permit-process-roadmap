@@ -85,6 +85,21 @@ export const scenarioAnswerSchema = z.object({
   industrialComplexOccupancyContractStatus: z
     .enum(["NOT_APPLIED", "PLANNED", "IN_PROGRESS", "COMPLETED"])
     .default("NOT_APPLIED"),
+  entryContractRegime: z
+    .enum([
+      "NONE",
+      "INDUSTRIAL_COMPLEX_ACT",
+      "PORT_ACT",
+      "FREE_TRADE_ZONE_ACT",
+    ])
+    .default("NONE"),
+  entryEligibilityConfirmed: z.boolean().nullable().default(null),
+  entryContractStatus: z
+    .enum(["NOT_APPLIED", "PLANNED", "IN_PROGRESS", "COMPLETED"])
+    .default("NOT_APPLIED"),
+  entryZoneName: z.string().max(120).default(""),
+  entryManagingAuthority: z.string().max(120).default(""),
+  entryContractEvidence: z.string().max(300).default(""),
   industryCategory: z.string(),
   ksicCode: z.string().max(20).default(""),
   products: z.string().max(500).default(""),
@@ -95,6 +110,7 @@ export const scenarioAnswerSchema = z.object({
   existingAreaM2: z.number().nullable(),
   increaseAreaM2: z.number().nullable(),
   totalAreaM2: z.number().nullable(),
+  siteDevelopmentAreaM2: z.number().nullable().default(null),
   landCategory: z.enum(["OTHER", "FARMLAND", "FOREST"]).nullable(),
   demolitionRequired: z.boolean().nullable(),
   roadConnectionRequired: z.boolean().nullable(),
@@ -152,6 +168,7 @@ export const scenarioAnswerSchema = z.object({
   waterDischargeFacility: z.boolean().nullable(),
   noiseVibrationFacility: z.boolean().nullable().default(null),
   environmentalAssessmentType: z.enum(["NONE", "ENVIRONMENTAL", "SMALL"]).nullable(),
+  localEnvironmentalAssessmentRequired: z.boolean().nullable().default(null),
   integratedEnvironmentalPermitTarget: z.boolean().nullable(),
   chemicalsHandled: z.boolean().nullable(),
   chemicalManufactureOrImport: z.boolean().nullable(),

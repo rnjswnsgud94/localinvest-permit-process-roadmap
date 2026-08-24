@@ -4,7 +4,7 @@ async function gotoHydratedDashboard(page: Page) {
   await page.goto("/");
   // The dashboard is server-rendered first. Its first share-state URL update is
   // a stable signal that React event handlers and client effects are ready.
-  await expect(page).toHaveURL(/[?&]v=13(?:&|$)/);
+  await expect(page).toHaveURL(/[?&]v=15(?:&|$)/, { timeout: 15_000 });
 }
 
 test("desktop result summary uses the available width without cramped copy", async ({ page }) => {
@@ -101,6 +101,138 @@ test("desktop result summary uses the available width without cramped copy", asy
   expect(collapsedFlowGeometry.scrollHeight - collapsedFlowGeometry.gridHeight).toBeLessThanOrEqual(1);
 });
 
+test("all-edge routing limits positive-length collinear overlap", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "desktop", "desktop flow-density regression");
+  test.setTimeout(60_000);
+  await gotoHydratedDashboard(page);
+  const flowGrid = page.locator(".swimlane-grid");
+  await page.getByRole("button", { name: /전체 연결/ }).click();
+  await expect(flowGrid).toHaveAttribute("data-connector-mode", "ALL");
+  await expect(flowGrid).toHaveAttribute("data-connector-routing", "true");
+  await expect(flowGrid).toHaveAttribute("data-connector-routing", "false", {
+    timeout: 30_000,
+  });
+
+  const overlap = await flowGrid.evaluate((element) => {
+    type Point = { x: number; y: number };
+    type Segment = {
+      orientation: "horizontal" | "vertical";
+      fixed: number;
+      start: number;
+      end: number;
+    };
+    const pointsFor = (path: string) => {
+      const tokens = path.split(/\s+/);
+      const points: Point[] = [];
+      let x = 0;
+      let y = 0;
+      for (let index = 0; index < tokens.length;) {
+        if (tokens[index] === "M") {
+          x = Number(tokens[index + 1]);
+          y = Number(tokens[index + 2]);
+          index += 3;
+        } else if (tokens[index] === "H") {
+          x = Number(tokens[index + 1]);
+          index += 2;
+        } else {
+          y = Number(tokens[index + 1]);
+          index += 2;
+        }
+        points.push({ x, y });
+      }
+      return points;
+    };
+    const segmentsFor = (path: string) => {
+      const points = pointsFor(path);
+      return points.slice(1).flatMap((point, index): Segment[] => {
+        const previous = points[index];
+        if (point.x === previous.x && point.y !== previous.y) {
+          return [{
+            orientation: "vertical",
+            fixed: point.x,
+            start: Math.min(point.y, previous.y),
+            end: Math.max(point.y, previous.y),
+          }];
+        }
+        if (point.y === previous.y && point.x !== previous.x) {
+          return [{
+            orientation: "horizontal",
+            fixed: point.y,
+            start: Math.min(point.x, previous.x),
+            end: Math.max(point.x, previous.x),
+          }];
+        }
+        return [];
+      });
+    };
+    const paths = [...element.querySelectorAll<SVGGElement>("g[data-edge-id]")]
+      .map((group) => ({
+        id: group.dataset.edgeId ?? "unknown",
+        from: group.dataset.from ?? "unknown",
+        to: group.dataset.to ?? "unknown",
+        path: group.querySelector<SVGPathElement>(".dependency-connector-line")
+          ?.getAttribute("d") ?? "",
+        segments: segmentsFor(
+          group.querySelector<SVGPathElement>(".dependency-connector-line")
+            ?.getAttribute("d") ?? "",
+        ),
+      }));
+    let overlappingPairs = 0;
+    let maximumOverlap = 0;
+    const worstPairs: Array<{
+      left: string;
+      leftPath: string;
+      right: string;
+      rightPath: string;
+      overlap: number;
+    }> = [];
+    for (let left = 0; left < paths.length; left += 1) {
+      for (let right = left + 1; right < paths.length; right += 1) {
+        let pairOverlap = 0;
+        for (const leftSegment of paths[left].segments) {
+          for (const rightSegment of paths[right].segments) {
+            if (
+              leftSegment.orientation !== rightSegment.orientation
+              || leftSegment.fixed !== rightSegment.fixed
+            ) continue;
+            pairOverlap += Math.max(
+              0,
+              Math.min(leftSegment.end, rightSegment.end)
+                - Math.max(leftSegment.start, rightSegment.start),
+            );
+          }
+        }
+        if (pairOverlap > 0) {
+          overlappingPairs += 1;
+          worstPairs.push({
+            left: `${paths[left].id} (${paths[left].from} -> ${paths[left].to})`,
+            leftPath: paths[left].path,
+            right: `${paths[right].id} (${paths[right].from} -> ${paths[right].to})`,
+            rightPath: paths[right].path,
+            overlap: pairOverlap,
+          });
+        }
+        maximumOverlap = Math.max(maximumOverlap, pairOverlap);
+      }
+    }
+    worstPairs.sort((left, right) => right.overlap - left.overlap);
+    return {
+      maximumOverlap,
+      overlappingPairs,
+      pathCount: paths.length,
+      pairCount: paths.length * (paths.length - 1) / 2,
+      worstPairs: worstPairs.slice(0, 8),
+    };
+  });
+
+  expect(overlap.pathCount).toBeGreaterThan(20);
+  expect(overlap.maximumOverlap, JSON.stringify(overlap, null, 2)).toBeLessThanOrEqual(40);
+  expect(
+    overlap.overlappingPairs / overlap.pairCount,
+    JSON.stringify(overlap, null, 2),
+  ).toBeLessThan(0.05);
+});
+
 test("desktop wizard keeps its navigation visible and scrolls independently", async ({ page }) => {
   await page.setViewportSize({ width: 1024, height: 768 });
   await gotoHydratedDashboard(page);
@@ -144,6 +276,29 @@ test("desktop wizard keeps its navigation visible and scrolls independently", as
   await expect(wizard.getByText("2 / 5", { exact: true })).toBeVisible();
   await expect.poll(() => body.evaluate((element) => element.scrollTop)).toBe(0);
   await expect(nextButton).toBeInViewport();
+});
+
+test("mobile Next returns the page to the new wizard step heading", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "mobile", "모바일 프로젝트에서만 실행합니다.");
+  await page.setViewportSize({ width: 390, height: 844 });
+  await gotoHydratedDashboard(page);
+
+  const wizard = page.getByLabel("사업조건 입력");
+  const nextButton = wizard.getByRole("button", { name: "다음", exact: true });
+  await nextButton.scrollIntoViewIfNeeded();
+  const scrolledPosition = await page.evaluate(() => window.scrollY);
+  expect(scrolledPosition).toBeGreaterThan(0);
+
+  await nextButton.click();
+
+  const heading = wizard.getByRole("heading", { name: "시설 규모" });
+  await expect(wizard.getByText("2 / 5", { exact: true })).toBeVisible();
+  await expect(heading).toBeFocused();
+  await expect(heading).toBeInViewport();
+  await expect.poll(async () => wizard.evaluate((element) =>
+    Math.abs(Math.round(element.getBoundingClientRect().top)),
+  )).toBeLessThanOrEqual(16);
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(scrolledPosition);
 });
 
 test("procedure lists expose stage and Korean-name sorting", async ({ page }) => {
@@ -218,6 +373,29 @@ test("wizard changes the route and detail links are official", async ({ page }) 
   await page.getByRole("button", { name: /공장설립·증설·업종변경 승인/ }).click();
   await expect(page.getByRole("dialog", { name: /공장설립·증설·업종변경 승인 상세정보/ })).toBeVisible();
   await expect(page.getByRole("link", { name: /원문 열기/ }).first()).toHaveAttribute("href", /^https:\/\//);
+});
+
+test("capital-region location survives sharing and exposes the extra factory review", async ({ page }) => {
+  await gotoHydratedDashboard(page);
+  const provinceSelect = page.locator('select:has(option[value="경기도"])');
+  await provinceSelect.selectOption("경기도");
+  const citySelect = page.locator('select:has(option[value="고양시"])');
+  await citySelect.selectOption("고양시");
+
+  await expect(page.getByText("수도권 공장입지 추가 확인")).toBeVisible();
+  await expect(page.getByRole("button", {
+    name: /수도권 공장입지 제한·예외·총량 확인 상세 보기/,
+  })).toBeVisible();
+  await expect(page.getByRole("link", { name: "고양시" }).first()).toHaveAttribute(
+    "href",
+    /ctpvCd=41&sggCd=470/,
+  );
+  await expect(page).toHaveURL(/pr=%EA%B2%BD%EA%B8%B0%EB%8F%84/);
+  await expect(page).toHaveURL(/ct=%EA%B3%A0%EC%96%91%EC%8B%9C/);
+
+  await page.reload();
+  await expect(provinceSelect).toHaveValue("경기도");
+  await expect(citySelect).toHaveValue("고양시");
 });
 
 test("AI data-center special-law selection is reflected in the result and share URL", async ({ page }) => {

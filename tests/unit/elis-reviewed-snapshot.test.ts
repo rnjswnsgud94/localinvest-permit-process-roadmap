@@ -19,7 +19,7 @@ describe("reviewed ELIS client fallback", () => {
         .replace(/\s/g, ""),
     );
 
-    expect(generatedSnapshot.records.length).toBeGreaterThan(1_600);
+    expect(generatedSnapshot.records.length).toBeGreaterThan(2_200);
     expect(new Set(identities).size).toBe(identities.length);
     expect(
       generatedSnapshot.records.every((record) =>
@@ -47,8 +47,8 @@ describe("reviewed ELIS client fallback", () => {
     );
 
     expect(Date.parse(reviewedElisSnapshotCheckedAt)).not.toBeNaN();
-    expect(reviewedElisSnapshotJurisdictionCount).toBe(173);
-    expect(reviewedElisSnapshotCoveredJurisdictionCount).toBe(172);
+    expect(reviewedElisSnapshotJurisdictionCount).toBe(243);
+    expect(reviewedElisSnapshotCoveredJurisdictionCount).toBe(243);
     expect(categories.get("sewerage-wastewater-cost")).toContainEqual(
       expect.objectContaining({
         name: "무주군 하수도 사용 조례",
@@ -68,6 +68,37 @@ describe("reviewed ELIS client fallback", () => {
     );
     expect(records.length).toBeGreaterThan(0);
     expect(records.some((record) => record.name.startsWith("무주군"))).toBe(false);
+  });
+
+  it("provides exact current capital-region ordinance details", () => {
+    const seoul = getReviewedElisOrdinanceRecords(
+      "서울특별시",
+      "강북구",
+      "MUNICIPALITY",
+    );
+    const incheon = getReviewedElisOrdinanceRecords(
+      "인천광역시",
+      "검단구",
+      "MUNICIPALITY",
+    );
+    const gyeonggi = getReviewedElisOrdinanceRecords(
+      "경기도",
+      "고양시",
+      "MUNICIPALITY",
+    );
+
+    expect(seoul).toContainEqual(expect.objectContaining({
+      name: "서울특별시 강북구 도시계획 조례",
+      url: "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11300106216001&histNo=007",
+    }));
+    expect(incheon).toContainEqual(expect.objectContaining({
+      name: "인천광역시 검단구 경관 조례",
+      url: "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28290129331001&histNo=001",
+    }));
+    expect(gyeonggi).toContainEqual(expect.objectContaining({
+      name: "고양시 도시계획 조례",
+      url: "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41470113223006&histNo=044",
+    }));
   });
 
   it("covers the observed Daejeon Jung-gu production failure with exact links", () => {

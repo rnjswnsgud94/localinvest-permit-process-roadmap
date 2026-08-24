@@ -1,4 +1,29 @@
-export const supplementalPermitTargetIds = [
+export const siteReviewSupplementalPermitTargetIds = [
+  "capital-region-large-scale-development-review",
+  "development-restriction-zone-action-permit",
+  "airport-obstacle-limitation-consultation",
+  "education-environment-protection-zone-review",
+  "railway-protection-zone-action-report",
+  "building-safety-impact-assessment",
+  "fire-performance-based-design-review",
+  "water-supply-factory-restriction-zone-review",
+  "water-discharge-facility-restriction-zone-review",
+  "han-river-riparian-zone-factory-location-review",
+  "paldang-special-measures-zone-wastewater-location-review",
+  "han-river-water-pollution-load-allocation",
+  "road-occupation-traffic-flow-plan-review",
+] as const;
+
+export const capitalRegionSiteReviewTargetIds = [
+  "capital-region-large-scale-development-review",
+  "road-occupation-traffic-flow-plan-review",
+] as const;
+
+export const gyeonggiSiteReviewTargetIds = [
+  "paldang-special-measures-zone-wastewater-location-review",
+] as const;
+
+export const constructionEnvironmentSupplementalPermitTargetIds = [
   "road-occupation-permit",
   "fugitive-emission-facility-report",
   "fugitive-dust-business-report",
@@ -28,6 +53,11 @@ export const supplementalPermitTargetIds = [
   "construction-quality-plan-submission",
 ] as const;
 
+export const supplementalPermitTargetIds = [
+  ...siteReviewSupplementalPermitTargetIds,
+  ...constructionEnvironmentSupplementalPermitTargetIds,
+] as const;
+
 export type SupplementalPermitTargetId =
   (typeof supplementalPermitTargetIds)[number];
 
@@ -35,6 +65,19 @@ export const supplementalPermitTargetNames: Record<
   SupplementalPermitTargetId,
   string
 > = {
+  "capital-region-large-scale-development-review": "수도권 대규모 공업용지 조성사업 심의·협의",
+  "development-restriction-zone-action-permit": "개발제한구역 입지제한·행위허가 검토",
+  "airport-obstacle-limitation-consultation": "민간공항 장애물 제한표면 협의·항공학적 검토",
+  "education-environment-protection-zone-review": "교육환경보호구역 금지시설 입지확인·제외 인정",
+  "railway-protection-zone-action-report": "철도보호지구 행위신고·안전조치 확인",
+  "building-safety-impact-assessment": "건축물 안전영향평가",
+  "fire-performance-based-design-review": "소방시설 성능위주설계 사전검토·신고",
+  "water-supply-factory-restriction-zone-review": "상수원보호구역 밖 공장설립 제한·승인지역 확인",
+  "water-discharge-facility-restriction-zone-review": "폐수배출시설 설치제한지역 입지 확인",
+  "han-river-riparian-zone-factory-location-review": "한강수계 수변구역 공장 입지제한 확인",
+  "paldang-special-measures-zone-wastewater-location-review": "팔당 특별대책지역 폐수배출시설 입지제한 확인",
+  "han-river-water-pollution-load-allocation": "한강수계 오염부하량 할당·허가제한 확인",
+  "road-occupation-traffic-flow-plan-review": "도로점용공사장 교통소통대책 제출·검토",
   "road-occupation-permit": "도로점용허가",
   "fugitive-emission-facility-report": "비산배출시설 설치·운영 신고",
   "fugitive-dust-business-report": "비산먼지 발생사업 신고",
@@ -68,6 +111,19 @@ export const supplementalPermitTargetDescriptions: Record<
   SupplementalPermitTargetId,
   string
 > = {
+  "capital-region-large-scale-development-review": "단순 입주가 아닌 30만㎡ 이상 공업용지 조성사업인지 여부(연접·분할 합산 포함)",
+  "development-restriction-zone-action-permit": "정확한 필지가 개발제한구역이고 법정 허용시설·행위에 해당하는지 여부",
+  "airport-obstacle-limitation-consultation": "민간공항 장애물 제한표면과 건축물·굴뚝·피뢰침·크레인 최고높이의 저촉 여부",
+  "education-environment-protection-zone-review": "정확한 필지가 교육환경보호구역이고 계획시설이 법정 금지시설 또는 상대보호구역 제외 인정 대상인지 여부",
+  "railway-protection-zone-action-report": "철도경계선과의 실제 거리 및 굴착·형질변경·건축·공작물 설치가 철도보호지구 신고대상인지 여부",
+  "building-safety-impact-assessment": "초고층 또는 개별 동 연면적 10만㎡ 이상·16층 이상 등 법정 안전영향평가 대상인지 여부",
+  "fire-performance-based-design-review": "신축 특정소방대상물의 연면적·높이·층수·용도상 성능위주설계 대상인지 여부",
+  "water-supply-factory-restriction-zone-review": "정확한 필지가 수도법상 공장설립 제한·승인지역인지와 승인 가능 공장·예외요건 충족 여부",
+  "water-discharge-facility-restriction-zone-review": "필지별 한강·임진강 등 고시지역, 특정수질유해물질 기준과 고시상 예외를 확인한 결과",
+  "han-river-riparian-zone-factory-location-review": "정확한 필지의 수변구역 여부와 KSIC·특정수질유해물질·1일 최대 오수 예외요건",
+  "paldang-special-measures-zone-wastewater-location-review": "필지별 Ⅰ·Ⅱ권역, 1일 폐수량·특정수질유해물질·방류경로와 기존허가 예외",
+  "han-river-water-pollution-load-allocation": "시·군 오염총량 시행계획상 개발부하량·사업장 할당 대상과 할당량 확보 여부",
+  "road-occupation-traffic-flow-plan-review": "서울·인천·경기에서 도로점용공사를 하며 조례상 교통소통대책 제출대상인지 여부",
   "road-occupation-permit": "실제 도로구역 점용·굴착 여부",
   "fugitive-emission-facility-report": "대상 업종·공정·유해대기오염물질 여부",
   "fugitive-dust-business-report": "공사 종류·면적·토공량 등 신고기준 충족 여부",

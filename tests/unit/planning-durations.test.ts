@@ -106,6 +106,30 @@ describe("automatic planning durations", () => {
 
     expect(
       durationFor("public-sewer-drainage-facility-completion-inspection", {
+        province: "경기도",
+        city: "파주시",
+      }),
+    ).toMatchObject({
+      minimum: 5,
+      typical: 5,
+      upperBound: 5,
+      unit: "BUSINESS_DAY",
+      sourceLabel: expect.stringContaining("파주시 공식 민원 처리기준"),
+    });
+    expect(
+      durationFor("public-sewer-drainage-facility-completion-inspection", {
+        province: "서울특별시",
+        city: "동대문구",
+      }),
+    ).toMatchObject({
+      minimum: 7,
+      typical: 7,
+      upperBound: 7,
+      unit: "BUSINESS_DAY",
+      sourceLabel: expect.stringContaining("동대문구 공식 민원 처리기준"),
+    });
+    expect(
+      durationFor("public-sewer-drainage-facility-completion-inspection", {
         province: "경상남도",
         city: "의령군",
       }),

@@ -1,6 +1,6 @@
 import { scenarioAnswerSchema } from "@/lib/data/catalog";
 
-/** Exact v13 state restored from the FPR1.1a72c37b sample supplied by the user. */
+/** Exact state restored from the user-supplied v13 code and migrated to the current schema. */
 export const userSampleAnswers = scenarioAnswerSchema.parse({
   assessmentDate: "2026-08-23",
   plannedConstructionStartDate: "2026-11-17",

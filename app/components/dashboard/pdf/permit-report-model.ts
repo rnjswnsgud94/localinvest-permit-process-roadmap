@@ -68,6 +68,15 @@ function stableUnique(values: Array<string | null | undefined>) {
   return [...new Set(values.filter((value): value is string => Boolean(value?.trim())))];
 }
 
+function matchedRuleCitationIds(
+  decision: ProjectEvaluation["decisions"][number],
+) {
+  const matchedRuleIds = new Set(decision.matchedRuleIds);
+  return decision.traces
+    .filter((trace) => matchedRuleIds.has(trace.ruleId))
+    .flatMap((trace) => trace.citationIds);
+}
+
 function citationLocator(citation: (typeof catalog.citations)[number]) {
   return [citation.article, citation.paragraph, citation.subparagraph, citation.item]
     .filter(Boolean)
@@ -583,7 +592,10 @@ export function buildPermitReportModel({
         : undefined;
       const planning = planningByProcedureId.get(procedure.id);
       const timelineNode = timelineNodeByProcedureId.get(procedure.id);
-      const sourceSummaries = stableUnique(procedure.citationIds.map((citationId) => {
+      const sourceSummaries = stableUnique([
+        ...procedure.citationIds,
+        ...matchedRuleCitationIds(decision),
+      ].map((citationId) => {
         const citation = catalog.citations.find((item) => item.id === citationId);
         if (!citation) return null;
         const source = catalog.legalSources.find((item) => item.id === citation.sourceId);
@@ -784,6 +796,7 @@ export function buildPermitReportModel({
         : undefined;
       return [
         ...decision.procedure.citationIds,
+        ...matchedRuleCitationIds(decision),
         ...(duration?.citationIds ?? []),
         ...(duration?.referencePeriods ?? []).flatMap((period) => period.citationIds),
       ];

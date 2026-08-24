@@ -36,7 +36,7 @@ interface LocalOrdinanceLookupState {
 
 function priorityReason(categoryId: string, answers: ScenarioAnswers): string | null {
   const hasBuildingWork = !["UNKNOWN", "NONE"].includes(answers.buildingAction);
-  const hasArea = (answers.totalAreaM2 ?? 0) > 0;
+  const hasArea = (answers.totalAreaM2 ?? 0) > 0 || (answers.siteDevelopmentAreaM2 ?? 0) > 0;
   if (categoryId === "urban-planning-development") return "입지와 공장 건축 가능 여부 확인";
   if (categoryId === "building-review-design" && hasBuildingWork) return "선택한 건축행위의 지역 심의·설계기준 확인";
   if (categoryId === "parking-installation" && hasBuildingWork && hasArea) return "공장 면적에 따른 부설주차장 기준 확인";

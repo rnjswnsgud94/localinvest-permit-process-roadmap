@@ -1,13 +1,13 @@
 # Coverage and gaps
 
-Catalog version: `2026.08.23-permits.14-special-law-industry-scope`
-Legal, duration and ELIS public-page review: `2026-08-23`
+Catalog version: `2026.08.24-permits.18-capital-agency-detailed`
+Legal, duration and ELIS public-page review: `2026-08-24`
 Snapshot mode: `SNAPSHOT_ONLY`
 
 ## Covered common layer
 
-- 145 nationwide common-layer permits, reports and inspections across site, building, environment, chemicals, industrial safety, fire, electricity, gas, energy, information/communications and marine use;
-- a duration-status record and official duration citation for all 145 procedures: 135 have at least one quantified statutory/official processing period or milestone and 10 have no safely quantifiable period while explicitly recording that a nationwide fixed total deadline is not prescribed, without substituting an invented estimate;
+- 162 nationwide common-layer permits, reports, inspections and preliminary reviews across site, building, environment, chemicals, industrial safety, fire, electricity, gas, energy, information/communications and marine use;
+- a duration-status record and official duration citation for all 162 procedures: 138 have at least one quantified statutory/official processing period or milestone and 24 have no safely quantifiable period while explicitly recording that a nationwide fixed total deadline is not prescribed, without substituting an invented estimate;
 - industrial-complex occupancy and off-site factory-establishment branches, including reviewed deeming relationships;
 - development, farmland, forest, demolition, road, traffic, groundwater and building routes, including applicable start/completion reports and completion inspections;
 - impact assessment, integrated environmental permitting and individual air/water/noise/waste routes with duplicate suppression;
@@ -26,12 +26,18 @@ Snapshot mode: `SNAPSHOT_ONLY`
 - information/communications design confirmation plus mutually exclusive supervised-work result-report and non-supervised pre-use-inspection routes; elevator installation reporting/inspection; and building energy-saving-plan review;
 - small-stream occupation, police road-work reporting, gas-pipeline excavation confirmation, buried-heritage excavation permit followed by field investigation/reporting/preservation, pasture conversion and land-transaction contract permission;
 - marine-use consultation/impact assessment, chemical emission-reduction planning, odor-facility reporting, water-tank reporting, separate-structure reporting and construction-quality-plan milestones.
+- a separate capital-region review for factories of at least 500㎡ that preserves the statutory zone, permitted-exception and factory-construction-total checks without converting “capital region” into an automatic siting rejection;
+- explicit, user-confirmed site gates for capital-region industrial-land development of at least 300,000㎡, development-restriction zones, civilian-airport obstacle limitation surfaces, Han River riparian zones, Paldang special-measures zones and Han River pollution-load allocation;
+- a province-ordinance environmental-impact-assessment route, plus Seoul/Incheon/Gyeonggi road-occupation worksite traffic-flow-plan review, without inferring applicability from industry or city name alone.
+- explicit parcel/facility gates for education-environment protection zones, railway protection zones, building safety impact assessment, fire performance-based design, Water Supply Act factory-restriction/approval zones and water-discharge-facility restriction notices;
+- mutually exclusive Industrial Cluster Act, Port Act and Free Trade Zone Act entry-contract routes, with Free Trade Zone factory-approval deeming applied only after eligibility, completed contract and evidence are all confirmed.
 
 ## Geographic and industry scope
 
-- Nationwide common rules are active for 13 non-capital provinces and metropolitan cities under the 2026 integrated-city structure; Seoul, Gyeonggi and Incheon are excluded.
+- Nationwide common rules are active for all 16 supported provinces and metropolitan cities under the 2026 administrative structure, including Seoul, Incheon and Gyeonggi.
 - Users may enter any listed city/county/district in the supported provinces. The server reads each selected jurisdiction's current ELIS ordinance list and links matched titles to the exact ELIS detail record.
-- The reviewed ELIS snapshot contains 1,712 exact detail records across 172 of 173 catalogued jurisdictions. All 163 user-selectable non-capital jurisdictions have exact or reviewed legacy-transition coverage for the seven core ordinance categories. The one unmatched catalog jurisdiction is a new integrated-city provincial-headquarters placeholder for which ELIS exposes no matching current ordinance title; the UI therefore labels a jurisdiction-list fallback instead of presenting a false exact link.
+- The reviewed ELIS snapshot contains 2,310 exact detail records across all 243 catalogued jurisdiction targets. It includes Seoul's 25 autonomous districts, Incheon's 11 municipalities after the 2026 reorganization and Gyeonggi's 31 cities/counties, plus exact provincial environmental-impact-assessment ordinance records where ELIS exposes a current match.
+- Seoul is wholly within the overconcentration-control zone, but Incheon and Gyeonggi can cross statutory zone boundaries below the city/county level. The dashboard therefore does not infer the exact zone from a city/county selection alone.
 - Generic manufacturing, semiconductor/electronics and secondary-battery/chemical scenarios are covered only to choose questions and examples. Industry labels do not prove environmental or safety coverage.
 
 ## Material gaps
@@ -48,6 +54,9 @@ Snapshot mode: `SNAPSHOT_ONLY`
 10. Detailed branch inputs for high-pressure-gas facility type, wastewater zero-discharge/treatment method, soil-test exemption and some inspection-booking routes. Until added, the roadmap shows the official branch range or milestone without selecting an arbitrary midpoint.
 11. Distributed-energy installation planning, non-road-authority road works, temporary farmland/forest use, public-sewer occupation/non-manager works/exclusion, other water-pollution sources, LPG storage and cadastral final survey need explicit target inputs and duplicate-route suppression before deterministic inclusion.
 12. Dedicated-waterworks, temporary buildings, private roads, environmental liability insurance, radiation equipment, high-pressure-gas safety-improvement planning and temporary building-use approval need additional facility and construction inputs.
+13. Capital-region zone classification, factory exceptions and remaining construction totals require the exact parcel, KSIC/company facts and the latest national, provincial and municipal notices; this dashboard records the review step but does not claim an automatic siting conclusion.
+14. Development-restriction, airport-height, Han River riparian, Paldang and pollution-load rules require exact parcel coordinates, current statutory maps, facility heights, discharge facts and local allocation plans; the explicit review inputs do not replace agency confirmation.
+15. Education, railway, building-safety, fire-performance, water-supply and water-discharge restriction gates require current parcel maps, facility thresholds, process/substance data and the competent authority's confirmation; industry or address labels alone do not establish applicability.
 
 ## Version warnings
 

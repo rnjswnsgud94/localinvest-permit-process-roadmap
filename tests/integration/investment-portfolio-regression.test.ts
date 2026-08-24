@@ -16,6 +16,7 @@ import {
   type ScenarioAnswers,
 } from "@/lib/data/catalog";
 import {
+  constructionEnvironmentSupplementalPermitTargetIds,
   supplementalPermitTargetIds,
   type SupplementalPermitTargetId,
 } from "@/lib/data/supplemental-permit-targets";
@@ -905,7 +906,7 @@ describe("ten reviewed investment portfolio regressions", () => {
     expect(new Set(cases.map((scenario) => scenario.name))).toHaveLength(10);
     expect(
       new Set(cases.flatMap((scenario) => scenario.answers.supplementalPermitTargetIds)),
-    ).toEqual(new Set(supplementalPermitTargetIds));
+    ).toEqual(new Set(constructionEnvironmentSupplementalPermitTargetIds));
 
     for (const scenario of cases) {
       expect(

@@ -105,6 +105,104 @@ describe("permit PDF report model", () => {
     ]));
   });
 
+  it("includes the capital-region review and exact selected-jurisdiction ordinances", () => {
+    const answers = catalog.scenarios.find(
+      (scenario) => scenario.id === "gyeonggi-capital-region-factory",
+    )!.answers;
+    const { report } = reportFor(answers);
+
+    expect(report.metadata.title).toContain("경기도 고양시");
+    expect(report.procedures).toContainEqual(expect.objectContaining({
+      id: "capital-region-factory-restriction-review",
+      name: "수도권 공장입지 제한·예외·총량 확인",
+    }));
+    expect(
+      report.localOrdinances.categories.flatMap((category) => category.ordinances),
+    ).toContainEqual(expect.objectContaining({
+      name: "고양시 도시계획 조례",
+      url: "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41470113223006&histNo=044",
+    }));
+  });
+
+  it.each([
+    {
+      province: "서울특별시",
+      city: "서울특별시",
+      regionId: "seoul",
+      localEiaUrl: "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2038401&chrClsCd=010202&gubun=",
+      roadPlanUrl: "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11000071000027&histNo=011",
+    },
+    {
+      province: "인천광역시",
+      city: "인천광역시",
+      regionId: "incheon",
+      localEiaUrl: "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28000013011002&histNo=007",
+      roadPlanUrl: "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28000010001033&histNo=004",
+    },
+    {
+      province: "경기도",
+      city: "수원시",
+      regionId: "gyeonggi",
+      localEiaUrl: "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41000041001028&histNo=003",
+      roadPlanUrl: "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41000034001016&histNo=005",
+    },
+  ])(
+    "$province 보고서에는 해당 관할 지역 환경영향평가·도로 교통대책 원문만 포함한다",
+    ({ province, city, regionId, localEiaUrl, roadPlanUrl }) => {
+      const base = catalog.scenarios[0].answers;
+      const regionalTargetIds = [
+        "road-occupation-traffic-flow-plan-review",
+        "road-occupation-permit",
+      ] as const;
+      const answers: ScenarioAnswers = {
+        ...base,
+        province,
+        city,
+        environmentalAssessmentType: "NONE",
+        localEnvironmentalAssessmentRequired: true,
+        siteDevelopmentAreaM2: 100_000,
+        supplementalPermitReviewedIds: [
+          ...new Set([...base.supplementalPermitReviewedIds, ...regionalTargetIds]),
+        ],
+        supplementalPermitTargetIds: [
+          ...new Set([...base.supplementalPermitTargetIds, ...regionalTargetIds]),
+        ],
+      };
+      const { evaluation, report } = reportFor(answers);
+      const decisions = new Map(
+        evaluation.decisions.map((decision) => [decision.procedure.id, decision]),
+      );
+      const matchedTraceCitationIds = (procedureId: string) => {
+        const decision = decisions.get(procedureId)!;
+        const matchedRuleIds = new Set(decision.matchedRuleIds);
+        return decision.traces
+          .filter((trace) => matchedRuleIds.has(trace.ruleId))
+          .flatMap((trace) => trace.citationIds);
+      };
+
+      expect(matchedTraceCitationIds("local-environmental-impact-assessment")).toContain(
+        `cit-exp-local-environmental-impact-assessment-${regionId}`,
+      );
+      expect(matchedTraceCitationIds("road-occupation-traffic-flow-plan-review")).toContain(
+        `cit-exp-road-occupation-traffic-flow-plan-review-${regionId}`,
+      );
+
+      const reportUrls = new Set(report.legalSources.map((source) => source.officialUrl));
+      expect(reportUrls).toContain(localEiaUrl);
+      expect(reportUrls).toContain(roadPlanUrl);
+
+      const otherUrls = [
+        "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2038401&chrClsCd=010202&gubun=",
+        "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28000013011002&histNo=007",
+        "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41000041001028&histNo=003",
+        "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11000071000027&histNo=011",
+        "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28000010001033&histNo=004",
+        "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41000034001016&histNo=005",
+      ].filter((url) => url !== localEiaUrl && url !== roadPlanUrl);
+      for (const otherUrl of otherUrls) expect(reportUrls).not.toContain(otherUrl);
+    },
+  );
+
   it("keeps project-specific titles and filenames safe and bounded", () => {
     const baseAnswers = catalog.scenarios[0].answers;
     const evaluation = evaluateProject(baseAnswers);
@@ -248,6 +346,29 @@ describe("permit PDF report model", () => {
     expect(selectedActSources.map((source) => source.locator).join(" · ")).not.toMatch(
       /제19조|제21조|제22조|제23조/,
     );
+  });
+
+  it("keeps AI-special sources out of a general manufacturing Port Act report", () => {
+    const answers: ScenarioAnswers = {
+      ...catalog.scenarios[0].answers,
+      assessmentDate: "2026-08-24",
+      industryCategory: "GENERAL_MANUFACTURING",
+      insideIndustrialComplex: true,
+      entryContractRegime: "PORT_ACT",
+      entryEligibilityConfirmed: true,
+      entryContractStatus: "PLANNED",
+      appliedSpecialLawIds: [],
+    };
+    const { report } = reportFor(answers);
+
+    expect(report.procedures).toContainEqual(expect.objectContaining({
+      id: "port-hinterland-entry-contract",
+    }));
+    expect(
+      report.legalSources.some((source) =>
+        source.title.includes("인공지능 데이터센터 산업 진흥에 관한 특별법"),
+      ),
+    ).toBe(false);
   });
 
   it("exposes official links without leaking internal law API identifiers", () => {

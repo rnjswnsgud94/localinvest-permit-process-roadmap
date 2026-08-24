@@ -1,5 +1,5 @@
 /**
- * Official local-ordinance directory for the non-capital-region dashboard.
+ * Official local-ordinance directory for the nationwide dashboard.
  *
  * ELIS (the Ministry of the Interior and Safety's Local Laws and Regulations
  * Information System) keeps its own jurisdiction codes in public URLs.  They
@@ -105,6 +105,62 @@ function municipality(
 }
 
 const provinceDirectory: readonly ProvinceDirectoryEntry[] = [
+  {
+    name: "서울특별시",
+    elisProvinceCode: "11",
+    elisProvinceListCode: "000",
+    municipalities: [
+      municipality("종로구", "110"), municipality("중구", "140"),
+      municipality("용산구", "170"), municipality("성동구", "200"),
+      municipality("광진구", "215"), municipality("동대문구", "230"),
+      municipality("중랑구", "260"), municipality("성북구", "290"),
+      municipality("강북구", "300"), municipality("도봉구", "320"),
+      municipality("노원구", "350"), municipality("은평구", "380"),
+      municipality("서대문구", "410"), municipality("마포구", "440"),
+      municipality("양천구", "470"), municipality("강서구", "500"),
+      municipality("구로구", "530"), municipality("금천구", "545"),
+      municipality("영등포구", "560"), municipality("동작구", "590"),
+      municipality("관악구", "620"), municipality("서초구", "650"),
+      municipality("강남구", "680"), municipality("송파구", "710"),
+      municipality("강동구", "740"),
+    ],
+  },
+  {
+    name: "인천광역시",
+    elisProvinceCode: "28",
+    elisProvinceListCode: "000",
+    municipalities: [
+      municipality("제물포구", "125"), municipality("영종구", "155"),
+      municipality("미추홀구", "177"), municipality("연수구", "180"),
+      municipality("남동구", "200"), municipality("부평구", "240"),
+      municipality("계양구", "250"), municipality("서해구", "275"),
+      municipality("검단구", "290"), municipality("강화군", "710"),
+      municipality("옹진군", "720"),
+    ],
+  },
+  {
+    name: "경기도",
+    elisProvinceCode: "41",
+    elisProvinceListCode: "000",
+    municipalities: [
+      municipality("수원시", "110"), municipality("성남시", "130"),
+      municipality("의정부시", "150"), municipality("안양시", "170"),
+      municipality("부천시", "190"), municipality("광명시", "210"),
+      municipality("평택시", "220"), municipality("동두천시", "250"),
+      municipality("안산시", "270"), municipality("고양시", "470"),
+      municipality("과천시", "290"), municipality("구리시", "310"),
+      municipality("남양주시", "360"), municipality("오산시", "370"),
+      municipality("시흥시", "390"), municipality("군포시", "410"),
+      municipality("의왕시", "430"), municipality("하남시", "450"),
+      municipality("용인시", "490"), municipality("파주시", "510"),
+      municipality("이천시", "530"), municipality("안성시", "860"),
+      municipality("김포시", "870"), municipality("화성시", "750"),
+      municipality("광주시", "610"), municipality("양주시", "630"),
+      municipality("포천시", "650"), municipality("여주시", "670"),
+      municipality("연천군", "800"), municipality("가평군", "820"),
+      municipality("양평군", "830"),
+    ],
+  },
   {
     name: "부산광역시",
     elisProvinceCode: "26",
@@ -298,7 +354,7 @@ export const officialLocalOrdinanceDirectorySource = {
   title: "행정안전부 자치법규정보시스템 자치단체별 자치법규",
   url: "https://www.elis.go.kr/locgovalr/locgovClAlrList",
   guideUrl: "https://www.elis.go.kr/sysinfo/guide",
-  reviewedAt: "2026-08-23",
+  reviewedAt: "2026-08-24",
   coverageNote:
     "관할 링크는 전체 현행 목록으로 이동하며, 대시보드의 지역기준 카드는 실제 관련 조례 상세 원문을 별도로 조회합니다.",
 } as const;
@@ -358,7 +414,7 @@ export function getOfficialLocalOrdinanceLinks(
     return {
       province: null,
       municipality: null,
-      notice: "지원하는 비수도권 시·도를 선택하면 공식 자치법규 링크가 표시됩니다.",
+      notice: "지원하는 시·도를 선택하면 공식 자치법규 링크가 표시됩니다.",
     };
   }
 
@@ -613,6 +669,26 @@ export const localOrdinanceReviewCategories: readonly LocalOrdinanceReviewCatego
     ],
     limitation:
       "시·도 조례와 도시교통정비지역 지정 여부를 확인하기 전에는 면적만으로 평가대상을 확정하지 않습니다.",
+  },
+  {
+    id: "local-environmental-impact-assessment",
+    title: "시·도 조례 환경영향평가",
+    scope: "PROVINCE",
+    searchTerms: ["환경영향평가 조례", "지역환경영향평가", "대상사업", "공장", "산업단지"],
+    ordinanceNamePatterns: ["환경영향평가 조례", "환경영향평가조례"],
+    affects:
+      "국가 환경영향평가 대상 규모 미만 사업에 대한 시·도 추가 평가대상, 평가서 작성·주민의견 수렴과 협의 절차",
+    reviewPoint:
+      "사업유형·개발면적·건축 연면적·입지와 시·도 조례 별표의 대상·제외·중복평가 기준을 대조합니다.",
+    legalBasis: [
+      {
+        title: "환경영향평가법",
+        provisions: "제42조",
+        officialUrl: "https://www.law.go.kr/법령/환경영향평가법/제42조",
+      },
+    ],
+    limitation:
+      "시·도별 조례 유무와 별표 기준이 다르므로 수도권 또는 면적만으로 자동 확정하지 않고, 현행 조례 상세 원문과 승인기관·협의기관을 확인합니다.",
   },
   {
     id: "landscape-review",

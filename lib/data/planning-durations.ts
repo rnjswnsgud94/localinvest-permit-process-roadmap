@@ -289,6 +289,28 @@ function resolveOfficialRoute(
   }
 
   if (
+    procedureId === "port-hinterland-entry-contract" &&
+    answers.entryContractRegime === "PORT_ACT" &&
+    answers.entryContractStatus === "COMPLETED"
+  ) {
+    return confirmedMilestone({
+      completedDate: null,
+      label: "1종 항만배후단지 입주계약 체결 완료",
+    });
+  }
+
+  if (
+    procedureId === "free-trade-zone-entry-contract" &&
+    answers.entryContractRegime === "FREE_TRADE_ZONE_ACT" &&
+    answers.entryContractStatus === "COMPLETED"
+  ) {
+    return confirmedMilestone({
+      completedDate: null,
+      label: "자유무역지역 입주계약 체결 완료",
+    });
+  }
+
+  if (
     procedureId === "industrial-complex-occupancy-contract" &&
     answers.insideIndustrialComplex === true &&
     answers.industrialComplexOccupancyContractStatus === "COMPLETED"

@@ -1,7 +1,7 @@
 import { writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 
-import { nonCapitalRegions } from "../lib/regions.ts";
+import { supportedRegions } from "../lib/regions.ts";
 import {
   buildElisOrdinanceDetailUrl,
   getElisJurisdictionTargets,
@@ -106,7 +106,7 @@ function parseRelevantRecords(html, context) {
 
 function buildTargets() {
   const byUrl = new Map();
-  for (const provinceName of nonCapitalRegions) {
+  for (const provinceName of supportedRegions) {
     for (const target of getElisJurisdictionTargets(provinceName)) {
       byUrl.set(target.listUrl, { provinceName, target });
     }
@@ -215,12 +215,14 @@ const payload = {
   records,
 };
 
-await writeFile(OUTPUT_PATH, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
-process.stdout.write("\n");
-console.log(
-  `Saved ${records.length} exact ELIS links for ${payload.coveredJurisdictionCount}/${targets.length} jurisdictions.`,
-);
 if (failures.length) {
+  process.stdout.write("\n");
   console.error(JSON.stringify({ failures }, null, 2));
   process.exitCode = 1;
+} else {
+  await writeFile(OUTPUT_PATH, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
+  process.stdout.write("\n");
+  console.log(
+    `Saved ${records.length} exact ELIS links for ${payload.coveredJurisdictionCount}/${targets.length} jurisdictions.`,
+  );
 }

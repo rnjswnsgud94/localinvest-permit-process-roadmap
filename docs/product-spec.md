@@ -25,7 +25,7 @@ The output is a review aid, not a filing, administrative disposition or legal op
 
 ## Input flow
 
-1. Project: investment type, assessment date, one of 14 non-capital provinces/metropolitan cities, city/county/district, industrial-complex status and industry family.
+1. Project: investment type, assessment date, one of 16 supported provinces/metropolitan cities, city/county/district, industrial-complex status and industry family. A qualifying capital-region factory also receives a separate zone, statutory-exception and factory-construction-total review step.
 2. Facility: land category, development/demolition/road/traffic facts, building action and existing/incremental/post-project factory-building area.
 3. Environment and safety: assessment class, integrated-permit target, air/water facilities, chemicals, PSM, hazardous materials, high-pressure gas and fire-work facts.
 4. Infrastructure: incremental power, water and wastewater demand plus energy-plan and groundwater facts.
@@ -52,4 +52,4 @@ Status is conveyed through label, symbol, border and pattern—not color alone. 
 
 ## Non-goals
 
-The dashboard does not file applications, make final legal determinations, optimize staffing, cover the capital region, or automatically resolve every local ordinance, parcel restriction and subordinate-table threshold. Expanded procedures remain decision-support candidates until the competent agency confirms the project-specific facts.
+The dashboard does not file applications, make final legal determinations, optimize staffing, infer a parcel's capital-region control zone from a city/county name, or automatically resolve every local ordinance, annual factory-total notice, parcel restriction and subordinate-table threshold. Expanded procedures remain decision-support candidates until the competent agency confirms the project-specific facts.

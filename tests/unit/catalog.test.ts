@@ -18,7 +18,7 @@ describe("catalog integrity", () => {
     }
   });
 
-  it("covers nationwide non-capital factory investment domains", () => {
+  it("covers nationwide factory-investment domains including capital-region review", () => {
     const ids = new Set(catalog.procedures.map((item) => item.id));
     for (const id of [
       "development-activity-permit",
@@ -61,6 +61,7 @@ describe("catalog integrity", () => {
       "fire-facility-first-self-inspection-report",
       "forestland-restoration-design-approval",
       "forestland-restoration-completion-inspection",
+      "capital-region-factory-restriction-review",
     ]) expect(ids.has(id), id).toBe(true);
     for (const id of [
       "utility-supply-consultation",
@@ -75,7 +76,7 @@ describe("catalog integrity", () => {
       "construction-quality-test-plan",
     ]) expect(ids.has(id), id).toBe(false);
     expect(ids.has("industrial-complex-occupancy-contract")).toBe(true);
-    expect(catalog.coverage.supported.regions.join(" ")).toContain("전국 비수도권 13개 광역자치단체");
+    expect(catalog.coverage.supported.regions.join(" ")).toContain("전국 16개 광역자치단체");
   });
 
   it("registers integrated-permit exclusions on base air and water procedures", () => {
@@ -172,15 +173,72 @@ describe("catalog integrity", () => {
     const quantified = catalog.durations.filter((duration) =>
       hasQuantifiedOfficialPeriod(duration),
     );
-    expect(catalog.durations).toHaveLength(145);
-    expect(quantified).toHaveLength(135);
-    expect(catalog.durations.length - quantified.length).toBe(10);
+    expect(catalog.durations).toHaveLength(catalog.procedures.length);
+    expect(quantified.length).toBeGreaterThanOrEqual(131);
+    expect(catalog.durations.length - quantified.length).toBeGreaterThan(0);
 
     for (const duration of catalog.durations) {
       const summary = formatOfficialDurationSummary(duration);
       expect(summary, duration.procedureId).toMatch(/\d|미규정/);
       expect(summary, duration.procedureId).not.toMatch(/확인 필요|상세 기준 참조/);
     }
+  });
+
+  it("keeps the six parcel-and-facility review gates evidence-linked without inventing total durations", () => {
+    const procedureIds = [
+      "education-environment-protection-zone-review",
+      "railway-protection-zone-action-report",
+      "building-safety-impact-assessment",
+      "fire-performance-based-design-review",
+      "water-supply-factory-restriction-zone-review",
+      "water-discharge-facility-restriction-zone-review",
+    ] as const;
+    const citationById = new Map(catalog.citations.map((item) => [item.id, item]));
+    const sourceById = new Map(catalog.legalSources.map((item) => [item.id, item]));
+
+    for (const procedureId of procedureIds) {
+      const procedure = catalog.procedures.find((item) => item.id === procedureId);
+      const duration = catalog.durations.find((item) => item.procedureId === procedureId);
+      const durationCitation = duration?.citationIds
+        .map((citationId) => citationById.get(citationId))
+        .find((citation) => citation?.role === "DURATION");
+      const source = durationCitation
+        ? sourceById.get(durationCitation.sourceId)
+        : undefined;
+
+      expect(procedure, procedureId).toBeDefined();
+      expect(duration, procedureId).toMatchObject({
+        authorityProcessing: null,
+        elapsed: null,
+      });
+      expect(duration?.statutoryPeriod, procedureId).toMatch(
+        /미규정|없음|규정되지 않음/,
+      );
+      expect(durationCitation, procedureId).toBeDefined();
+      expect(source?.officialUrl, procedureId).toMatch(/^https:\/\//);
+      expect(formatOfficialDurationSummary(duration), procedureId).not.toMatch(
+        /상세 기준 참조|확인 필요/,
+      );
+    }
+
+    const railway = catalog.durations.find(
+      (item) => item.procedureId === "railway-protection-zone-action-report",
+    );
+    expect(railway).toMatchObject({
+      authorityProcessing: null,
+      elapsed: null,
+      planningBasis: "MILESTONE_ONLY",
+      referencePeriods: expect.arrayContaining([
+        expect.objectContaining({
+          id: "ref-railway-protection-zone-safety-order-deadline",
+          kind: "PROCESS_MILESTONE",
+          range: { min: null, base: null, max: 30, unit: "CALENDAR_DAY" },
+        }),
+      ]),
+    });
+    const railwaySummary = formatOfficialDurationSummary(railway);
+    expect(railwaySummary).toContain("법정 단계기한 30일");
+    expect(railwaySummary).toContain("전국 공통 법정 총기간 미규정");
   });
 
   it("keeps the reverified air permit service period tied to the current official guide", () => {

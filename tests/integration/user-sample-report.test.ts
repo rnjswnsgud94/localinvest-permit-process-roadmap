@@ -9,7 +9,7 @@ import { userSampleAnswers } from "@/tests/fixtures/user-sample-answers";
 
 describe("user supplied FPR1.1a72c37b sample", () => {
   it("restores the exact state and keeps its practical risks visible in the report", () => {
-    expect(encodeInputCode(userSampleAnswers)).toMatch(/^FPR1\.1a72c37b\./);
+    expect(encodeInputCode(userSampleAnswers)).toMatch(/^FPR1\.dd78f747\./);
 
     const evaluation = evaluateProject(userSampleAnswers);
     const report = buildPermitReportModel({
@@ -28,11 +28,11 @@ describe("user supplied FPR1.1a72c37b sample", () => {
 
     expect(evaluation.counts).toEqual({
       APPLIES: 31,
-      DOES_NOT_APPLY: 62,
+      DOES_NOT_APPLY: 68,
       POSSIBLY_APPLIES: 52,
-      NEEDS_MORE_INFO: 0,
+      NEEDS_MORE_INFO: 11,
     });
-    expect(categoryCounts).toEqual({ REQUIRED: 89, CONFIRM: 0, NOT_REQUIRED: 56 });
+    expect(categoryCounts).toEqual({ REQUIRED: 89, CONFIRM: 11, NOT_REQUIRED: 62 });
     expect(report.summary.counts).toEqual(categoryCounts);
     expect(report.summary.roadmapBreakdown).toEqual({
       confirmed: 31,

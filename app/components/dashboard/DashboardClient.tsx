@@ -59,6 +59,12 @@ export const defaultAnswers: ScenarioAnswers = {
   industrialComplexIdentifier: "",
   industrialComplexManagingAuthority: "",
   industrialComplexOccupancyContractStatus: "NOT_APPLIED",
+  entryContractRegime: "NONE",
+  entryEligibilityConfirmed: null,
+  entryContractStatus: "NOT_APPLIED",
+  entryZoneName: "",
+  entryManagingAuthority: "",
+  entryContractEvidence: "",
   industryCategory: "UNKNOWN",
   ksicCode: "",
   products: "",
@@ -69,6 +75,7 @@ export const defaultAnswers: ScenarioAnswers = {
   existingAreaM2: null,
   increaseAreaM2: null,
   totalAreaM2: null,
+  siteDevelopmentAreaM2: null,
   landCategory: null,
   demolitionRequired: null,
   roadConnectionRequired: null,
@@ -120,6 +127,7 @@ export const defaultAnswers: ScenarioAnswers = {
   waterDischargeFacility: null,
   noiseVibrationFacility: null,
   environmentalAssessmentType: null,
+  localEnvironmentalAssessmentRequired: null,
   integratedEnvironmentalPermitTarget: null,
   chemicalsHandled: null,
   chemicalManufactureOrImport: null,
@@ -503,7 +511,7 @@ export function DashboardClient() {
       <header className="topbar">
         <a className="brand" href="#main-dashboard" aria-label="지역투자 인허가 입력으로 이동">
           <span className="brand-mark" aria-hidden="true"><i /><i /><i /></span>
-          <span><h1>지역투자 인허가 로드맵</h1><small>비수도권 사업 검토</small></span>
+          <span><h1>지역투자 인허가 로드맵</h1><small>전국 사업 검토</small></span>
         </a>
         <div className="topbar-meta">
           <span className="data-health"><i /> 법령 검토 기준 · {catalog.coverage.lastLegalReviewAt}</span>

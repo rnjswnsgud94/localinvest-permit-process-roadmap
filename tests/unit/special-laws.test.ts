@@ -66,6 +66,30 @@ describe("AI data-center special-law routing", () => {
     expect(decision(evaluation, "building-permit").provisionalEffect).not.toBe("EXCLUDE");
   });
 
+  it("does not apply the non-capital grid exemption to a capital-region data center", () => {
+    const evaluation = evaluateProject(
+      answers({
+        assessmentDate: "2027-03-10",
+        province: "경기도",
+        city: "고양시",
+        appliedSpecialLawIds: ["AIDC_GRID_IMPACT_EXEMPTION"],
+      }),
+    );
+
+    expect(decision(evaluation, "power-grid-impact-assessment")).toMatchObject({
+      status: "APPLIES",
+      provisionalEffect: "INCLUDE",
+    });
+    expect(evaluation.specialLawEvaluations[0]).toMatchObject({
+      id: "AIDC_GRID_IMPACT_EXEMPTION",
+      status: "MISMATCH",
+      statusLabel: "수도권 미해당",
+    });
+    expect(
+      decision(evaluation, "power-grid-impact-assessment").matchedRuleIds,
+    ).not.toContain("rule-aidc-grid-impact-exemption");
+  });
+
   it("adds the separate port-hinterland entry contract only after the location special case takes effect", () => {
     const beforeEffective = evaluateProject(
       answers({
@@ -99,12 +123,15 @@ describe("AI data-center special-law routing", () => {
       procedure: {
         receivingAuthority: "해당 1종 항만배후단지 관리기관",
         citationIds: expect.arrayContaining([
-          "cit-aidc-special-act-23",
           "cit-port-act-71-entry-contract",
           "cit-port-act-decree-72-3-duration",
         ]),
       },
     });
+    expect(
+      decision(afterEffective, "port-hinterland-entry-contract").traces
+        .flatMap((trace) => trace.citationIds),
+    ).toContain("cit-aidc-special-act-23");
     expect(
       catalog.durations.find(
         (item) => item.procedureId === "port-hinterland-entry-contract",
@@ -332,6 +359,117 @@ describe("AI data-center special-law routing", () => {
         (trace) => trace.ruleId,
       ),
     ).not.toContain("rule-aidc-grid-impact-exemption");
+  });
+});
+
+describe("port and free-trade-zone manufacturing entry contracts", () => {
+  it("keeps factory approval separate from an eligible Port Act contract and folds an overlapping industrial contract", () => {
+    const evaluation = evaluateProject(
+      answers({
+        assessmentDate: "2026-08-24",
+        industryCategory: "GENERAL_MANUFACTURING",
+        insideIndustrialComplex: true,
+        industrialComplexOccupancyContractStatus: "COMPLETED",
+        entryContractRegime: "PORT_ACT",
+        entryEligibilityConfirmed: true,
+        entryContractStatus: "PLANNED",
+      }),
+    );
+
+    expect(decision(evaluation, "port-hinterland-entry-contract")).toMatchObject({
+      status: "APPLIES",
+      provisionalEffect: "INCLUDE",
+      isDeemed: false,
+    });
+    expect(
+      decision(evaluation, "port-hinterland-entry-contract").procedure
+        .citationIds,
+    ).not.toContain("cit-aidc-special-act-23");
+    expect(decision(evaluation, "industrial-complex-occupancy-contract")).toMatchObject({
+      status: "DOES_NOT_APPLY",
+      provisionalEffect: "EXCLUDE",
+    });
+    expect(decision(evaluation, "factory-establishment-approval")).toMatchObject({
+      provisionalEffect: "INCLUDE",
+      isDeemed: false,
+    });
+  });
+
+  it.each([null, false] as const)(
+    "does not remove the industrial contract when Port Act eligibility is %s",
+    (entryEligibilityConfirmed) => {
+      const evaluation = evaluateProject(
+        answers({
+          assessmentDate: "2026-08-24",
+          industryCategory: "GENERAL_MANUFACTURING",
+          insideIndustrialComplex: true,
+          entryContractRegime: "PORT_ACT",
+          entryEligibilityConfirmed,
+        }),
+      );
+
+      expect(
+        decision(evaluation, "industrial-complex-occupancy-contract")
+          .provisionalEffect,
+      ).not.toBe("EXCLUDE");
+      expect(
+        decision(evaluation, "port-hinterland-entry-contract")
+          .provisionalEffect,
+      ).not.toBe("INCLUDE");
+    },
+  );
+
+  it("uses the dedicated FTZ completion route and deems factory approval only after completed, evidenced entry", () => {
+    const planned = evaluateProject(
+      answers({
+        assessmentDate: "2026-08-24",
+        industryCategory: "GENERAL_MANUFACTURING",
+        insideIndustrialComplex: true,
+        entryContractRegime: "FREE_TRADE_ZONE_ACT",
+        entryEligibilityConfirmed: true,
+        entryContractStatus: "PLANNED",
+        entryContractEvidence: "",
+      }),
+    );
+    expect(decision(planned, "free-trade-zone-entry-contract").provisionalEffect).toBe("INCLUDE");
+    expect(decision(planned, "factory-establishment-approval").isDeemed).toBe(false);
+
+    const completed = evaluateProject(
+      answers({
+        assessmentDate: "2026-08-24",
+        industryCategory: "GENERAL_MANUFACTURING",
+        insideIndustrialComplex: true,
+        entryContractRegime: "FREE_TRADE_ZONE_ACT",
+        entryEligibilityConfirmed: true,
+        entryContractStatus: "COMPLETED",
+        entryZoneName: "부산항 자유무역지역",
+        entryManagingAuthority: "부산항만공사",
+        entryContractEvidence: "입주계약 제2026-100호",
+      }),
+    );
+    expect(decision(completed, "factory-establishment-approval")).toMatchObject({
+      status: "DOES_NOT_APPLY",
+      provisionalEffect: "EXCLUDE",
+      isDeemed: true,
+    });
+    expect(decision(completed, "factory-completion-report-free-trade-zone").provisionalEffect).toBe("INCLUDE");
+    expect(decision(completed, "factory-completion-report-complex").provisionalEffect).toBe("EXCLUDE");
+    expect(decision(completed, "factory-completion-report-offsite").provisionalEffect).toBe("EXCLUDE");
+  });
+
+  it("has no FTZ include/exclude dead zone at the current Act effective edge", () => {
+    const evaluation = evaluateProject(
+      answers({
+        assessmentDate: "2026-01-02",
+        industryCategory: "GENERAL_MANUFACTURING",
+        insideIndustrialComplex: true,
+        entryContractRegime: "FREE_TRADE_ZONE_ACT",
+        entryEligibilityConfirmed: true,
+      }),
+    );
+
+    expect(decision(evaluation, "free-trade-zone-entry-contract").provisionalEffect).toBe("INCLUDE");
+    expect(decision(evaluation, "industrial-complex-occupancy-contract").provisionalEffect).toBe("EXCLUDE");
   });
 });
 

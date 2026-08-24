@@ -52,6 +52,14 @@ export const projectInputSchema = z.object({
     occupancyContractHeld: factSchema,
     managingAuthority: factSchema,
   }),
+  entryContract: z.object({
+    regime: factSchema,
+    eligibilityConfirmed: factSchema,
+    status: factSchema,
+    zoneName: factSchema,
+    managingAuthority: factSchema,
+    evidence: factSchema,
+  }),
   industry: z.object({
     category: factSchema,
     aiDataCenterActFacilityConfirmed: factSchema,
@@ -96,6 +104,7 @@ export const projectInputSchema = z.object({
     wasteFacility: factSchema,
     chemicalsHandled: factSchema,
     environmentalAssessmentType: factSchema,
+    localEnvironmentalAssessmentRequired: factSchema,
     integratedPermitTarget: factSchema,
     chemicalManufactureOrImport: factSchema,
     hazardousChemicalBusiness: factSchema,

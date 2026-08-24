@@ -120,12 +120,101 @@ export function buildInputConsistencyWarnings(answers: ScenarioAnswers) {
   }
 
   if (
+    ["서울특별시", "경기도"].includes(answers.province) &&
+    (answers.totalAreaM2 ?? 0) >= 100_000 &&
+    answers.localEnvironmentalAssessmentRequired !== true
+  ) {
+    warnings.push(
+      "서울·경기의 사업 후 총 연면적이 10만㎡ 이상인데 시·도 조례 환경영향평가는 미확인 또는 비대상으로 입력했습니다. 현행 조례의 건축물 대상·합산·연접사업·중복평가 제외기준을 확인하십시오.",
+    );
+  }
+
+  if (
+    answers.province === "인천광역시" &&
+    answers.industryCategory !== "AI_DATA_CENTER" &&
+    (answers.siteDevelopmentAreaM2 ?? 0) >= 75_000 &&
+    (answers.siteDevelopmentAreaM2 ?? 0) < 150_000 &&
+    answers.localEnvironmentalAssessmentRequired !== true
+  ) {
+    warnings.push(
+      "인천의 공장설립 사업면적이 7만5천㎡ 이상 15만㎡ 미만인데 시 조례 환경영향평가는 미확인 또는 비대상으로 입력했습니다. 현행 인천광역시 환경영향평가 조례의 대상사업과 기존 평가 부지·중복평가 제외기준을 확인하십시오.",
+    );
+  }
+
+  if (
+    answers.localEnvironmentalAssessmentRequired === true &&
+    answers.environmentalAssessmentType !== null &&
+    answers.environmentalAssessmentType !== "NONE"
+  ) {
+    warnings.push(
+      "국가 환경영향평가와 시·도 조례 환경영향평가를 모두 대상으로 입력했습니다. 서로 다른 사업범위에는 함께 적용될 수 있지만, 같은 사업범위라면 조례의 중복평가 제외·생략 규정과 승인기관 협의 결과를 확인하십시오.",
+    );
+  }
+
+  if (
+    isSelected(answers, "road-occupation-traffic-flow-plan-review") &&
+    !isSelected(answers, "road-occupation-permit")
+  ) {
+    warnings.push(
+      "도로점용공사장 교통소통대책은 대상으로 선택했지만 같은 공사구간의 도로점용허가가 확인되지 않았습니다. 점용·굴착 여부와 관할 도로관리청을 다시 확인하십시오.",
+    );
+  }
+
+  if (
     answers.fireFacilityWork === true &&
     answers.firstFireSelfInspectionTarget === false
   ) {
     warnings.push(
       "소방시설공사는 대상이지만 완공 후 최초 자체점검은 비대상으로 입력했습니다. 완공 시점 특정소방대상물의 용도·규모와 종합점검·작동점검 분기를 관할 소방서와 확인하십시오.",
     );
+  }
+
+  if (
+    ["PORT_ACT", "FREE_TRADE_ZONE_ACT"].includes(
+      answers.entryContractRegime,
+    ) &&
+    answers.entryEligibilityConfirmed === false
+  ) {
+    warnings.push(
+      "선택한 입주계약 법률의 입주자격을 충족하지 않는 것으로 입력했습니다. 해당 계약 경로는 적용하지 않으며, 실제 입지가 가능한지 관리기관 모집공고와 자격기준을 다시 확인하십시오.",
+    );
+  }
+
+  if (
+    answers.entryContractRegime === "FREE_TRADE_ZONE_ACT" &&
+    answers.entryContractStatus === "COMPLETED" &&
+    !answers.entryContractEvidence.trim()
+  ) {
+    warnings.push(
+      "자유무역지역 입주계약은 완료로 입력했지만 계약번호·체결일 등 증빙이 없습니다. 증빙이 확인되기 전에는 공장설립승인 의제를 적용하지 않습니다.",
+    );
+  }
+
+  if (
+    answers.entryContractRegime === "PORT_ACT" &&
+    answers.insideIndustrialComplex === true &&
+    answers.entryEligibilityConfirmed === true
+  ) {
+    warnings.push(
+      "산업단지와 1종 항만배후단지가 중첩된 부지에서 항만법상 입주계약을 선택했습니다. 항만 입주계약은 공장설립승인을 의제하지 않으며, 공장설립 완료신고·등록의 실제 접수기관은 항만 관리기관·산업단지 관리기관·관할 시군구에 확인하십시오.",
+    );
+  }
+
+  if (
+    ["PORT_ACT", "FREE_TRADE_ZONE_ACT"].includes(
+      answers.entryContractRegime,
+    ) &&
+    answers.entryContractStatus === "COMPLETED"
+  ) {
+    const missingContractDetails = [
+      !answers.entryZoneName.trim() ? "구역명" : null,
+      !answers.entryManagingAuthority.trim() ? "관리권자·관리기관" : null,
+    ].filter((value): value is string => Boolean(value));
+    if (missingContractDetails.length) {
+      warnings.push(
+        `입주계약 완료로 입력했지만 ${missingContractDetails.join("·")}이 비어 있습니다. 계약서와 공식 고시를 기준으로 접수기관·구역을 보완하십시오.`,
+      );
+    }
   }
 
   if (
@@ -160,7 +249,14 @@ export function buildInputConsistencyWarnings(answers: ScenarioAnswers) {
     }
 
     const developmentScopeProcedures = [
-      answers.environmentalAssessmentType === "ENVIRONMENTAL" ? "환경영향평가" : null,
+      answers.environmentalAssessmentType === "ENVIRONMENTAL"
+        ? "환경영향평가"
+        : answers.environmentalAssessmentType === "SMALL"
+          ? "소규모 환경영향평가"
+          : null,
+      answers.localEnvironmentalAssessmentRequired === true
+        ? "시·도 조례 환경영향평가"
+        : null,
       answers.disasterImpactAssessmentType &&
       answers.disasterImpactAssessmentType !== "NONE"
         ? "재해영향평가"

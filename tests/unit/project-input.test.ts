@@ -13,6 +13,8 @@ describe("project input normalization", () => {
         investmentType: "UNKNOWN",
         industryCategory: "UNKNOWN",
         buildingAction: "UNKNOWN",
+        insideIndustrialComplex: null,
+        entryContractRegime: "NONE",
       },
       catalog.procedures,
     );
@@ -22,6 +24,7 @@ describe("project input normalization", () => {
     expect(input.investmentType).toEqual({ status: "UNKNOWN" });
     expect(input.industry.category).toEqual({ status: "UNKNOWN" });
     expect(input.building.action).toEqual({ status: "UNKNOWN" });
+    expect(input.entryContract.regime).toEqual({ status: "UNKNOWN" });
     expect(input.existingApprovalIds).toEqual({ status: "UNKNOWN" });
   });
 
@@ -45,6 +48,38 @@ describe("project input normalization", () => {
     });
     expect(input.safety.hazardousMaterialsPreventionRulesRequired).toEqual({
       status: "NOT_APPLICABLE",
+    });
+  });
+
+  it("keeps development area and local environmental assessment separate from building area and national assessment", () => {
+    const input = scenarioAnswersToProjectInput(
+      {
+        ...catalog.scenarios[0].answers,
+        totalAreaM2: 12_000,
+        siteDevelopmentAreaM2: 80_000,
+        environmentalAssessmentType: "SMALL",
+        localEnvironmentalAssessmentRequired: true,
+      },
+      catalog.procedures,
+    );
+
+    expect(input.building.totalAreaM2).toMatchObject({
+      status: "KNOWN",
+      value: 12_000,
+      unit: "m2",
+    });
+    expect(input.site.developmentAreaM2).toMatchObject({
+      status: "KNOWN",
+      value: 80_000,
+      unit: "m2",
+    });
+    expect(input.environment.environmentalAssessmentType).toMatchObject({
+      status: "KNOWN",
+      value: "SMALL",
+    });
+    expect(input.environment.localEnvironmentalAssessmentRequired).toMatchObject({
+      status: "KNOWN",
+      value: true,
     });
   });
 });

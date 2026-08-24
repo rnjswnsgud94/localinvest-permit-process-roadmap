@@ -48,6 +48,8 @@ export { orthogonalConnectorPath };
 
 type ConnectorPath = {
   id: string;
+  from: string;
+  to: string;
   path: string;
   strength: ProcedureEdge["strength"];
   contextual: boolean;
@@ -63,12 +65,14 @@ type ConnectorLayout = {
   width: number;
   height: number;
   paths: ConnectorPath[];
+  routing: boolean;
 };
 
 const emptyConnectorLayout: ConnectorLayout = {
   width: 0,
   height: 0,
   paths: [],
+  routing: false,
 };
 
 const durationById = new Map(
@@ -151,6 +155,8 @@ export function Swimlane({
   const [connectorLayout, setConnectorLayout] = useState<ConnectorLayout>(emptyConnectorLayout);
   const gridRef = useRef<HTMLDivElement | null>(null);
   const cardRefs = useRef(new Map<string, HTMLElement>());
+  const connectorRoutingGenerationRef = useRef(0);
+  const connectorRoutingFrameRef = useRef<number | null>(null);
   const connectorMarkerId = `dependency-arrow-${useId().replaceAll(":", "")}`;
   const connectorGridId = `${connectorMarkerId}-grid`;
   const timelineNodes = useMemo(
@@ -426,6 +432,12 @@ export function Swimlane({
   const measureConnectors = useCallback(() => {
     const grid = gridRef.current;
     if (!grid) return;
+    const generation = connectorRoutingGenerationRef.current + 1;
+    connectorRoutingGenerationRef.current = generation;
+    if (connectorRoutingFrameRef.current !== null) {
+      window.cancelAnimationFrame(connectorRoutingFrameRef.current);
+      connectorRoutingFrameRef.current = null;
+    }
 
     const gridRect = grid.getBoundingClientRect();
     const width = grid.scrollWidth;
@@ -444,17 +456,32 @@ export function Swimlane({
       gridRect,
       { width, height },
     );
-    const paths = connectorEdges.flatMap(({
+    const strengthRoutePriority: Record<ProcedureEdge["strength"], number> = {
+      LEGAL_HARD: 0,
+      PRACTICAL: 1,
+      ADVISORY: 2,
+    };
+    const routingOrder = [...connectorEdges].sort((left, right) =>
+      Number(left.contextual) - Number(right.contextual)
+      || Number(right.verifiedSequence) - Number(left.verifiedSequence)
+      || Number(right.bottleneckCandidate) - Number(left.bottleneckCandidate)
+      || strengthRoutePriority[left.edge.strength] - strengthRoutePriority[right.edge.strength]
+      || left.edge.id.localeCompare(right.edge.id),
+    );
+    const paths: ConnectorPath[] = [];
+    const routeOne = ({
       edge,
       verifiedSequence,
       bottleneckCandidate,
       contextual,
       selected,
-    }) => {
+    }: (typeof routingOrder)[number]) => {
       const path = routeConnector(edge.from, edge.to);
-      if (!path) return [];
-      return [{
+      if (!path) return;
+      paths.push({
         id: edge.id,
+        from: edge.from,
+        to: edge.to,
         path,
         strength: edge.strength,
         contextual,
@@ -463,19 +490,59 @@ export function Swimlane({
         evidencePending:
           edge.strength === "LEGAL_HARD" && !verifiedSequence,
         selected,
-      } satisfies ConnectorPath];
+      });
+    };
+    const sortForPaint = () => paths.sort((left, right) => {
+      const strengthPaintPriority: Record<ProcedureEdge["strength"], number> = {
+        ADVISORY: 0,
+        PRACTICAL: 1,
+        LEGAL_HARD: 2,
+      };
+      return Number(right.contextual) - Number(left.contextual)
+        || strengthPaintPriority[left.strength] - strengthPaintPriority[right.strength]
+        || Number(left.verifiedSequence) - Number(right.verifiedSequence)
+        || Number(left.bottleneck) - Number(right.bottleneck)
+        || Number(left.selected) - Number(right.selected)
+        || left.id.localeCompare(right.id);
     });
+    const commit = () => {
+      if (connectorRoutingGenerationRef.current !== generation) return;
+      connectorRoutingFrameRef.current = null;
+      setConnectorLayout({ width, height, paths: sortForPaint(), routing: false });
+    };
 
-    setConnectorLayout({
-      width,
-      height,
-      paths,
-    });
+    if (routingOrder.length <= 24) {
+      routingOrder.forEach(routeOne);
+      commit();
+      return;
+    }
+
+    // Large legal/all-edge views can contain hundreds of connectors. Route
+    // them in frame-sized batches so changing a filter or collapsing a lane
+    // never holds the main thread for the entire graph calculation.
+    setConnectorLayout({ width, height, paths: [], routing: true });
+    let nextIndex = 0;
+    const routeBatch = () => {
+      if (connectorRoutingGenerationRef.current !== generation) return;
+      const deadline = window.performance.now() + 10;
+      do {
+        routeOne(routingOrder[nextIndex]);
+        nextIndex += 1;
+      } while (
+        nextIndex < routingOrder.length
+        && window.performance.now() < deadline
+      );
+      if (nextIndex >= routingOrder.length) {
+        commit();
+        return;
+      }
+      connectorRoutingFrameRef.current = window.requestAnimationFrame(routeBatch);
+    };
+    connectorRoutingFrameRef.current = window.requestAnimationFrame(routeBatch);
   }, [connectorEdges]);
 
   useLayoutEffect(() => {
     measureConnectors();
-    const frame = window.requestAnimationFrame(measureConnectors);
     const observer = typeof ResizeObserver === "undefined"
       ? null
       : new ResizeObserver(measureConnectors);
@@ -485,7 +552,11 @@ export function Swimlane({
     void document.fonts?.ready.then(measureConnectors);
 
     return () => {
-      window.cancelAnimationFrame(frame);
+      connectorRoutingGenerationRef.current += 1;
+      if (connectorRoutingFrameRef.current !== null) {
+        window.cancelAnimationFrame(connectorRoutingFrameRef.current);
+        connectorRoutingFrameRef.current = null;
+      }
       observer?.disconnect();
       window.removeEventListener("resize", measureConnectors);
     };
@@ -640,6 +711,8 @@ export function Swimlane({
           className="swimlane-grid flow-grid"
           style={{ gridTemplateColumns: `180px ${flowColumnTemplate}` }}
           data-connector-mode={connectorDisplayMode}
+          data-connector-routing={connectorLayout.routing ? "true" : "false"}
+          aria-busy={connectorLayout.routing || undefined}
           data-visible-edge-count={connectorEdges.length}
           data-core-edge-count={coreConnectorEdges.length}
           data-bottleneck-edge-count={bottleneckCandidateCount}
@@ -714,7 +787,12 @@ export function Swimlane({
                 </marker>
               </defs>
               {connectorLayout.paths.map((connector) => (
-                <g key={connector.id}>
+                <g
+                  key={connector.id}
+                  data-edge-id={connector.id}
+                  data-from={connector.from}
+                  data-to={connector.to}
+                >
                   <path className="dependency-connector-halo" d={connector.path} />
                   <path
                     className={`dependency-connector-line strength-${connector.strength.toLowerCase()}${connector.verifiedSequence ? " is-verified-sequence" : ""}${connector.bottleneck ? " is-bottleneck" : ""}${connector.evidencePending ? " is-evidence-pending" : ""}${connector.contextual ? " is-contextual" : ""}${connector.selected ? " is-selected" : ""}`}

@@ -192,5 +192,48 @@
       "waterDemandM3Day": null,
       "wastewaterM3Day": null
     }
+  },
+  {
+    "id": "gyeonggi-capital-region-factory",
+    "name": "경기 수도권 일반 제조업 신설",
+    "description": "수도권 공장입지 제한·예외와 공장건축 총량 확인이 추가되는 경기 제조업 공장 사례",
+    "answers": {
+      "assessmentDate": "2026-08-24",
+      "plannedConstructionStartDate": "2027-05-01",
+      "plannedConstructionEndDate": "2028-12-31",
+      "investmentType": "NEW",
+      "province": "경기도",
+      "city": "고양시",
+      "insideIndustrialComplex": false,
+      "industryCategory": "GENERAL_MANUFACTURING",
+      "buildingAction": "NEW_BUILD",
+      "existingAreaM2": 0,
+      "increaseAreaM2": 1500,
+      "totalAreaM2": 1500,
+      "landCategory": "OTHER",
+      "demolitionRequired": false,
+      "roadConnectionRequired": false,
+      "trafficImpactAssessmentRequired": false,
+      "permitCoordination": "NONE",
+      "airEmissionFacility": false,
+      "waterDischargeFacility": false,
+      "noiseVibrationFacility": false,
+      "environmentalAssessmentType": "NONE",
+      "integratedEnvironmentalPermitTarget": false,
+      "chemicalsHandled": false,
+      "chemicalManufactureOrImport": false,
+      "hazardousChemicalBusiness": false,
+      "hazardousMaterials": false,
+      "highPressureGas": false,
+      "specificHighPressureGasUse": false,
+      "psmCovered": false,
+      "fireFacilityWork": false,
+      "privateElectricalFacilityWork": false,
+      "energyUsePlanRequired": false,
+      "groundwaterDevelopment": false,
+      "powerIncreaseMw": 1,
+      "waterDemandM3Day": 20,
+      "wastewaterM3Day": 5
+    }
   }
 ]

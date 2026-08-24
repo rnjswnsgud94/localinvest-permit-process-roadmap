@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { nonCapitalRegions } from "@/lib/regions";
+import { supportedRegions } from "@/lib/regions";
 import {
   buildElisJurisdictionListUrl,
   buildElisOrdinanceDetailUrl,
@@ -65,8 +65,8 @@ describe("official local-ordinance directory", () => {
     ).toThrow("ELIS 자치법규 식별자 형식");
   });
 
-  it("covers every non-capital province used by the dashboard", () => {
-    for (const province of nonCapitalRegions) {
+  it("covers every province used by the nationwide dashboard", () => {
+    for (const province of supportedRegions) {
       const links = getOfficialLocalOrdinanceLinks(province);
       expect(links.province?.name).toBe(province);
       expect(links.province?.url).toMatch(/^https:\/\/www\.elis\.go\.kr\//);
@@ -74,7 +74,7 @@ describe("official local-ordinance directory", () => {
   });
 
   it("resolves every listed autonomous municipality without cross-region guessing", () => {
-    for (const province of nonCapitalRegions) {
+    for (const province of supportedRegions) {
       for (const municipality of listSupportedMunicipalities(province)) {
         const links = getOfficialLocalOrdinanceLinks(province, municipality);
         if (province === "제주특별자치도") {
@@ -112,11 +112,34 @@ describe("official local-ordinance directory", () => {
   });
 
   it("resolves same-named districts inside the selected province", () => {
+    const seoul = getOfficialLocalOrdinanceLinks("서울특별시", "중구");
     const busan = getOfficialLocalOrdinanceLinks("부산광역시", "중구");
     const daegu = getOfficialLocalOrdinanceLinks("대구광역시", "중구");
 
+    expect(seoul.municipality?.url).toContain("ctpvCd=11&sggCd=140");
     expect(busan.municipality?.url).toContain("ctpvCd=26&sggCd=110");
     expect(daegu.municipality?.url).toContain("ctpvCd=27&sggCd=110");
+  });
+
+  it("uses the current ELIS codes for reorganized Incheon and Gyeonggi cities", () => {
+    expect(listSupportedMunicipalities("인천광역시")).toEqual(
+      expect.arrayContaining(["제물포구", "영종구", "서해구", "검단구"]),
+    );
+    expect(listSupportedMunicipalities("인천광역시")).not.toEqual(
+      expect.arrayContaining(["중구", "동구", "서구"]),
+    );
+    expect(
+      getOfficialLocalOrdinanceLinks("인천광역시", "검단구").municipality?.url,
+    ).toContain("ctpvCd=28&sggCd=290");
+    expect(
+      getOfficialLocalOrdinanceLinks("경기도", "고양시").municipality?.url,
+    ).toContain("ctpvCd=41&sggCd=470");
+    expect(
+      getOfficialLocalOrdinanceLinks("경기도", "용인시").municipality?.url,
+    ).toContain("ctpvCd=41&sggCd=490");
+    expect(
+      getOfficialLocalOrdinanceLinks("경기도", "화성시").municipality?.url,
+    ).toContain("ctpvCd=41&sggCd=750");
   });
 
   it("uses the ELIS-preserved Gangwon code and current Jeonbuk code", () => {

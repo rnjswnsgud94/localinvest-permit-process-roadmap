@@ -34,7 +34,7 @@ export async function GET(request: Request) {
   );
   if (!links.province) {
     return NextResponse.json(
-      { error: "지원하는 비수도권 관할지역을 확인하지 못했습니다." },
+      { error: "지원하는 관할지역을 확인하지 못했습니다." },
       { status: 404 },
     );
   }

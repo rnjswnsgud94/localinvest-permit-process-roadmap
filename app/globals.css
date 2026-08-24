@@ -24,6 +24,9 @@
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
 body {
   margin: 0;
   background: var(--canvas);
@@ -338,7 +341,7 @@ a { color: inherit; }
 .dependency-connector-layer .connector-marker-pending path { fill: var(--amber); }
 .dependency-connector-layer .connector-marker-practical path { fill: #68798a; }
 .dependency-connector-halo, .dependency-connector-line { fill: none; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
-.dependency-connector-halo { stroke: rgba(255, 255, 255, .96); stroke-width: 6px; }
+.dependency-connector-halo { stroke: rgba(255, 255, 255, .96); stroke-width: 3.8px; }
 .dependency-connector-line { stroke: #315a77; stroke-width: 1.8px; opacity: .68; }
 .dependency-connector-line.is-bottleneck { stroke: var(--red); stroke-width: 2.6px; opacity: .86; }
 .dependency-connector-line.is-evidence-pending:not(.is-bottleneck) { stroke: var(--amber); stroke-dasharray: 8 3 2 3; opacity: .67; }

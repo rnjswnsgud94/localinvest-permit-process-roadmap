@@ -170,4 +170,40 @@ describe("flow edge evidence and bottleneck diagnostics", () => {
       ).not.toHaveLength(0);
     }
   });
+
+  it("orders each capital-region traffic plan no later than the road-occupation application", () => {
+    const regionalEdges = ["seoul", "incheon", "gyeonggi"].map((regionId) =>
+      catalog.edges.find(
+        (item) => item.id === `edge-exp-${regionId}-traffic-flow-plan-to-road-occupation`,
+      ),
+    );
+
+    for (const regionalEdge of regionalEdges) {
+      expect(regionalEdge).toMatchObject({
+        from: "road-occupation-traffic-flow-plan-review",
+        to: "road-occupation-permit",
+        relation: "START_TO_START",
+        strength: "PRACTICAL",
+      });
+    }
+    expect(
+      catalog.edges.some(
+        (item) =>
+          item.from === "road-occupation-permit" &&
+          item.to === "road-occupation-traffic-flow-plan-review",
+      ),
+    ).toBe(false);
+  });
+
+  it("keeps the railway-adjacent start proxy out of legal-hard project sequencing", () => {
+    expect(
+      catalog.edges.find(
+        (item) => item.id === "edge-exp-railway-protection-report-to-start",
+      ),
+    ).toMatchObject({
+      from: "railway-protection-zone-action-report",
+      to: "construction-start-report",
+      strength: "PRACTICAL",
+    });
+  });
 });

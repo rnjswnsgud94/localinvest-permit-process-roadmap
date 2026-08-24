@@ -32,6 +32,164 @@ describe("golden manufacturing scenarios", () => {
     expect(byId(offsite, "factory-completion-report-offsite")?.provisionalEffect).toBe("INCLUDE");
   });
 
+  it("adds the capital-region factory restriction review only to covered factories", () => {
+    const evaluate = (totalAreaM2: number, industryCategory = "GENERAL_MANUFACTURING") =>
+      evaluateProject({
+        ...catalog.scenarios[0].answers,
+        province: "경기도",
+        city: "고양시",
+        insideIndustrialComplex: false,
+        investmentType: "NEW",
+        buildingAction: "NEW_BUILD",
+        industryCategory,
+        totalAreaM2,
+        increaseAreaM2: totalAreaM2,
+      });
+    const capitalReview = (result: ReturnType<typeof evaluateProject>) =>
+      result.decisions.find(
+        (item) => item.procedure.id === "capital-region-factory-restriction-review",
+      );
+
+    expect(capitalReview(evaluate(500))).toMatchObject({
+      status: "APPLIES",
+      provisionalEffect: "INCLUDE",
+      procedure: {
+        citationIds: expect.arrayContaining([
+          "cit-exp-capital-region-factory-restriction-review-planning-act",
+          "cit-exp-capital-region-factory-restriction-review-planning-decree",
+        ]),
+      },
+    });
+    expect(capitalReview(evaluate(499))?.provisionalEffect).toBe("EXCLUDE");
+    expect(capitalReview(evaluate(30_000, "AI_DATA_CENTER"))?.provisionalEffect).toBe("EXCLUDE");
+  });
+
+  it("keeps new capital-region site gates explicit and preserves nationwide site reviews", () => {
+    const capitalOnlyTargets = [
+      "capital-region-large-scale-development-review",
+      "road-occupation-traffic-flow-plan-review",
+    ] as const;
+    const gyeonggiOnlyTargets = [
+      "paldang-special-measures-zone-wastewater-location-review",
+    ] as const;
+    const nationwideSiteTargets = [
+      "development-restriction-zone-action-permit",
+      "airport-obstacle-limitation-consultation",
+      "education-environment-protection-zone-review",
+      "railway-protection-zone-action-report",
+      "building-safety-impact-assessment",
+      "fire-performance-based-design-review",
+      "water-supply-factory-restriction-zone-review",
+      "water-discharge-facility-restriction-zone-review",
+      "han-river-riparian-zone-factory-location-review",
+      "han-river-water-pollution-load-allocation",
+    ] as const;
+    const selectedTargets = [
+      ...capitalOnlyTargets,
+      ...gyeonggiOnlyTargets,
+      ...nationwideSiteTargets,
+      "road-occupation-permit",
+    ] as const;
+    const base = catalog.scenarios[0].answers;
+    const capital = evaluateProject({
+      ...base,
+      province: "경기도",
+      city: "용인시",
+      insideIndustrialComplex: false,
+      investmentType: "NEW",
+      buildingAction: "NEW_BUILD",
+      industryCategory: "GENERAL_MANUFACTURING",
+      totalAreaM2: 100_000,
+      increaseAreaM2: 100_000,
+      siteDevelopmentAreaM2: 100_000,
+      environmentalAssessmentType: "SMALL",
+      localEnvironmentalAssessmentRequired: true,
+      supplementalPermitReviewedIds: [
+        ...new Set([...base.supplementalPermitReviewedIds, ...selectedTargets]),
+      ],
+      supplementalPermitTargetIds: [
+        ...new Set([...base.supplementalPermitTargetIds, ...selectedTargets]),
+      ],
+    });
+    const byId = (result: typeof capital, procedureId: string) =>
+      result.decisions.find((item) => item.procedure.id === procedureId);
+
+    for (const procedureId of [
+      ...capitalOnlyTargets,
+      ...gyeonggiOnlyTargets,
+      ...nationwideSiteTargets,
+    ]) {
+      expect(byId(capital, procedureId), procedureId).toMatchObject({
+        status: "APPLIES",
+        provisionalEffect: "INCLUDE",
+      });
+    }
+    expect(byId(capital, "local-environmental-impact-assessment")).toMatchObject({
+      status: "APPLIES",
+      provisionalEffect: "INCLUDE",
+      traces: expect.arrayContaining([
+        expect.objectContaining({
+          ruleId: "rule-exp-local-environmental-impact-assessment-gyeonggi",
+          citationIds: expect.arrayContaining([
+          "cit-exp-local-environmental-impact-assessment-gyeonggi",
+          ]),
+        }),
+      ]),
+    });
+    expect(byId(capital, "environmental-impact-assessment")?.provisionalEffect).toBe("EXCLUDE");
+    expect(byId(capital, "small-environmental-impact-assessment")?.provisionalEffect).toBe("INCLUDE");
+
+    const nonCapital = evaluateProject({
+      ...base,
+      province: "강원특별자치도",
+      city: "춘천시",
+      supplementalPermitReviewedIds: [
+        ...new Set([...base.supplementalPermitReviewedIds, ...selectedTargets]),
+      ],
+      supplementalPermitTargetIds: [
+        ...new Set([...base.supplementalPermitTargetIds, ...selectedTargets]),
+      ],
+    });
+    for (const procedureId of capitalOnlyTargets) {
+      expect(byId(nonCapital, procedureId)?.provisionalEffect, procedureId).toBe("EXCLUDE");
+    }
+    for (const procedureId of gyeonggiOnlyTargets) {
+      expect(byId(nonCapital, procedureId)?.provisionalEffect, procedureId).toBe("EXCLUDE");
+    }
+    for (const procedureId of nationwideSiteTargets) {
+      expect(byId(nonCapital, procedureId)?.provisionalEffect, procedureId).toBe("INCLUDE");
+    }
+
+    const legacyFactoryOnlyTargets = [
+      "water-supply-factory-restriction-zone-review",
+      "han-river-riparian-zone-factory-location-review",
+    ] as const;
+    const aiDataCenterWithLegacyFactoryTarget = evaluateProject({
+      ...base,
+      province: "경기도",
+      city: "용인시",
+      industryCategory: "AI_DATA_CENTER",
+      supplementalPermitReviewedIds: [
+        ...new Set<ScenarioAnswers["supplementalPermitReviewedIds"][number]>([
+          ...base.supplementalPermitReviewedIds,
+          ...legacyFactoryOnlyTargets,
+        ]),
+      ],
+      supplementalPermitTargetIds: [
+        ...new Set<ScenarioAnswers["supplementalPermitTargetIds"][number]>([
+          ...base.supplementalPermitTargetIds,
+          ...legacyFactoryOnlyTargets,
+        ]),
+      ],
+    });
+    for (const procedureId of legacyFactoryOnlyTargets) {
+      expect(
+        byId(aiDataCenterWithLegacyFactoryTarget, procedureId)?.provisionalEffect,
+        procedureId,
+      ).toBe("EXCLUDE");
+    }
+  });
+
   it("provides minimum, official-basis, and user-expected schedules", () => {
     const result = evaluateProject(catalog.scenarios[2].answers);
     expect(Object.keys(result.schedules).sort()).toEqual(["MIN", "TYPICAL", "USER"]);

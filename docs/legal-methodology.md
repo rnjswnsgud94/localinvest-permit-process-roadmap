@@ -17,7 +17,7 @@ The assessment date selects rules whose `effectiveFrom <= date <= effectiveTo`. 
 
 ## Jurisdiction method
 
-Nationwide rules are evaluated first for the 14 supported non-capital provinces and metropolitan cities. Province, city and industrial-complex rules require an exact named source. A selectable region means the nationwide common layer can be evaluated there; it does not claim local-ordinance completeness.
+Nationwide rules are evaluated first for the 16 supported provinces and metropolitan cities, including Seoul, Incheon and Gyeonggi. Province, city and industrial-complex rules require an exact named source. A selectable region means the nationwide common layer can be evaluated there; it does not claim local-ordinance completeness. For capital-region factories, the exact statutory zone, permitted exceptions and current factory-construction allocation remain unresolved until the parcel, business facts and latest official notices are checked; the model never treats capital-region location alone as an automatic rejection.
 
 ## Thresholds and facts
 

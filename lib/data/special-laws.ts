@@ -16,9 +16,14 @@ import {
   semiconductorClusterCandidateIndustryIds,
   semiconductorClusterPlanDeemedProcedureIds,
 } from "@/lib/data/special-law-processes";
+import { industryProfiles } from "@/lib/data/industry-profiles";
+import { isCapitalRegionProvince } from "@/lib/regions";
 
 export const AI_DATA_CENTER_INDUSTRY_ID = "AI_DATA_CENTER" as const;
 export const AI_DATA_CENTER_SPECIAL_ACT_EFFECTIVE_DATE = "2027-03-10" as const;
+const manufacturingIndustryIds = industryProfiles
+  .filter((profile) => profile.id !== AI_DATA_CENTER_INDUSTRY_ID)
+  .map((profile) => profile.id);
 
 export const aiDataCenterSpecialLawIds = [
   "AIDC_ONE_STOP",
@@ -108,6 +113,10 @@ const PORT_ACT_URL =
   "https://www.law.go.kr/LSW/lsInfoP.do?lsiSeq=283707";
 const PORT_ACT_DECREE_URL =
   "https://www.law.go.kr/LSW/lsInfoP.do?lsiSeq=287353";
+const FREE_TRADE_ZONE_ACT_URL =
+  "https://www.law.go.kr/LSW/lsInfoP.do?ancYnChk=0&chrClsCd=010202&efYd=20260102&lsiSeq=276577&urlMode=lsInfoP";
+const FREE_TRADE_ZONE_ACT_DECREE_URL =
+  "https://www.law.go.kr/LSW/lsInfoP.do?ancYnChk=0&chrClsCd=010202&efYd=20260326&lsiSeq=270123&urlMode=lsInfoP";
 const INDUSTRIAL_CLUSTER_ENFORCEMENT_RULE_URL =
   "https://www.law.go.kr/LSW/lsInfoP.do?lsiSeq=285509";
 const CIVIL_PETITIONS_ACT_URL =
@@ -375,9 +384,12 @@ const semiconductorClusterCandidateIndustryIdSet: ReadonlySet<string> = new Set(
   semiconductorClusterCandidateIndustryIds,
 );
 
-export function getAiDataCenterSpecialLawDefinitions() {
+export function getAiDataCenterSpecialLawDefinitions(province = "") {
   return specialLawDefinitions.filter(
-    (item) => item.selectionMode === "MANUAL",
+    (item) => item.selectionMode === "MANUAL" && !(
+      item.id === "AIDC_GRID_IMPACT_EXEMPTION" &&
+      isCapitalRegionProvince(province)
+    ),
   );
 }
 
@@ -436,6 +448,18 @@ export function evaluateSelectedSpecialLaws(
         status: "FUTURE",
         statusLabel: "시행 전",
         statusNote: `법 시행일 ${AI_DATA_CENTER_SPECIAL_ACT_EFFECTIVE_DATE} 전이므로 현재 절차를 면제하거나 대체하지 않습니다.`,
+      });
+      continue;
+    }
+    if (
+      definition.id === "AIDC_GRID_IMPACT_EXEMPTION" &&
+      isCapitalRegionProvince(answers.province)
+    ) {
+      evaluations.push({
+        ...definition,
+        status: "MISMATCH",
+        statusLabel: "수도권 미해당",
+        statusNote: "제19조 전력계통영향평가 특례는 비수도권 AI 데이터센터에 한정되어 수도권 사업의 절차 판정에는 반영하지 않았습니다.",
       });
       continue;
     }
@@ -860,6 +884,44 @@ export const specialLawLegalSources: LegalSource[] = [
     internallyVerifiedAt: "2026-08-21",
     contentHash: "official-text-287353-article-72",
     officialUrl: PORT_ACT_DECREE_URL,
+    status: "AUTHORITATIVE",
+  },
+  {
+    id: "src-free-trade-zone-act-20260102",
+    title: "자유무역지역의 지정 및 운영에 관한 법률",
+    documentType: "ACT",
+    issuingAuthority: "산업통상부",
+    jurisdictionCode: null,
+    industrialComplexId: null,
+    lawId: null,
+    mst: "276577",
+    proclamationDate: "2025-10-01",
+    proclamationNumber: "21065",
+    effectiveDate: "2026-01-02",
+    repealDate: null,
+    apiRetrievedAt: null,
+    internallyVerifiedAt: "2026-08-24",
+    contentHash: "official-text-276577-articles-11-14-23",
+    officialUrl: FREE_TRADE_ZONE_ACT_URL,
+    status: "AUTHORITATIVE",
+  },
+  {
+    id: "src-free-trade-zone-act-decree-20260326",
+    title: "자유무역지역의 지정 및 운영에 관한 법률 시행령",
+    documentType: "ENFORCEMENT_DECREE",
+    issuingAuthority: "산업통상부",
+    jurisdictionCode: null,
+    industrialComplexId: null,
+    lawId: null,
+    mst: "270123",
+    proclamationDate: "2025-03-25",
+    proclamationNumber: "35396",
+    effectiveDate: "2026-03-26",
+    repealDate: null,
+    apiRetrievedAt: null,
+    internallyVerifiedAt: "2026-08-24",
+    contentHash: "official-text-270123-article-8",
+    officialUrl: FREE_TRADE_ZONE_ACT_DECREE_URL,
     status: "AUTHORITATIVE",
   },
   {
@@ -1690,6 +1752,83 @@ export const specialLawCitations: LegalCitation[] = [
     summary: "관리기관은 입주계약 신청일부터 7일 이내에 계약 체결 여부를 결정해 신청인에게 알려야 한다.",
   },
   {
+    id: "cit-free-trade-zone-act-11-entry-contract",
+    sourceId: "src-free-trade-zone-act-20260102",
+    article: "제11조",
+    paragraph: "제1항",
+    subparagraph: null,
+    item: null,
+    role: "APPLICABILITY",
+    sourceVersion: "시행 2026-01-02",
+    summary: "자유무역지역에 입주하여 사업을 하려는 자는 관리권자와 입주계약을 체결해야 하며 계약 변경도 같은 절차를 거친다.",
+  },
+  {
+    id: "cit-free-trade-zone-act-11-entry-authority",
+    sourceId: "src-free-trade-zone-act-20260102",
+    article: "제11조",
+    paragraph: "제1항",
+    subparagraph: null,
+    item: null,
+    role: "AUTHORITY",
+    sourceVersion: "시행 2026-01-02",
+    summary: "자유무역지역 입주계약과 변경계약의 상대방은 해당 자유무역지역의 관리권자이다.",
+  },
+  {
+    id: "cit-free-trade-zone-decree-8-application",
+    sourceId: "src-free-trade-zone-act-decree-20260326",
+    article: "제8조",
+    paragraph: "제1항·제2항",
+    subparagraph: null,
+    item: null,
+    role: "SUBMISSION",
+    sourceVersion: "시행 2026-03-26",
+    summary: "입주계약 또는 변경계약을 신청하는 자는 신청서와 사업계획서 등 법정 서류를 관리권자에게 제출한다.",
+  },
+  {
+    id: "cit-free-trade-zone-decree-8-3-duration",
+    sourceId: "src-free-trade-zone-act-decree-20260326",
+    article: "제8조",
+    paragraph: "제3항",
+    subparagraph: null,
+    item: null,
+    role: "DURATION",
+    sourceVersion: "시행 2026-03-26",
+    summary: "관리권자는 입주계약 또는 변경계약 신청을 받으면 7일 이내에 계약 여부를 결정하여 신청인에게 통지해야 한다.",
+  },
+  {
+    id: "cit-free-trade-zone-act-14-1-factory-deeming",
+    sourceId: "src-free-trade-zone-act-20260102",
+    article: "제14조",
+    paragraph: "제1항",
+    subparagraph: null,
+    item: null,
+    role: "DEEMING",
+    sourceVersion: "시행 2026-01-02",
+    summary: "자유무역지역 입주계약을 체결한 경우 산업집적법 제13조 및 제20조의 공장 신설·증설·이전·업종변경 승인을 받은 것으로 본다.",
+  },
+  {
+    id: "cit-free-trade-zone-act-14-2-completion",
+    sourceId: "src-free-trade-zone-act-20260102",
+    article: "제14조",
+    paragraph: "제2항",
+    subparagraph: null,
+    item: null,
+    role: "APPLICABILITY",
+    sourceVersion: "시행 2026-01-02",
+    summary: "자유무역지역 입주기업체의 공장설립 완료신고와 공장등록에는 산업집적법상 관리기관·시장·군수·구청장을 관리권자로 보아 관련 규정을 적용한다.",
+  },
+  {
+    id: "cit-free-trade-zone-act-23-3-building-authority",
+    sourceId: "src-free-trade-zone-act-20260102",
+    article: "제23조",
+    paragraph: "제3항",
+    subparagraph: null,
+    item: null,
+    role: "AUTHORITY",
+    sourceVersion: "시행 2026-01-02",
+    summary: "자유무역지역 안에서 건축허가·신고 등 건축법상 허가권자 업무는 관리권자가 수행한다.",
+  },
+  {
     id: "cit-industrial-cluster-rule-34-2-duration",
     sourceId: "src-industrial-cluster-enforcement-rule-20260409",
     article: "제34조",
@@ -2082,12 +2221,21 @@ export const specialLawRules: ApplicabilityRule[] = [
       all: [
         aiDataCenterCondition,
         aiDataCenterActFacilityCondition,
+        {
+          not: {
+            in: {
+              path: "location.province",
+              values: ["서울특별시", "인천광역시", "경기도"],
+            },
+          },
+        },
         selectedLawCondition("AIDC_GRID_IMPACT_EXEMPTION"),
       ],
     },
     requiredInputs: [
       "industry.category",
       "industry.aiDataCenterActFacilityConfirmed",
+      "location.province",
       "strategicIndustrySpecialCase",
     ],
     missingPolicy: "INDETERMINATE",
@@ -2396,6 +2544,451 @@ export const specialLawRules: ApplicabilityRule[] = [
     note: "일반 심의대상은 건축법령과 관할 건축조례의 규모·용도 기준을 별도 확인해야 합니다.",
   },
   {
+    id: "rule-port-hinterland-entry-contract-manufacturing",
+    version: "2026.08.24.1",
+    procedureId: "port-hinterland-entry-contract",
+    effect: "INCLUDE",
+    industryScope: manufacturingIndustryIds,
+    effectiveFrom: "2026-07-01",
+    effectiveTo: null,
+    jurisdiction: nationwide,
+    condition: {
+      all: [
+        {
+          in: {
+            path: "industry.category",
+            values: manufacturingIndustryIds,
+          },
+        },
+        { eq: { path: "entryContract.regime", value: "PORT_ACT" } },
+        {
+          eq: {
+            path: "entryContract.eligibilityConfirmed",
+            value: true,
+          },
+        },
+      ],
+    },
+    requiredInputs: [
+      "industry.category",
+      "entryContract.regime",
+      "entryContract.eligibilityConfirmed",
+      "entryContract.status",
+    ],
+    missingPolicy: "INDETERMINATE",
+    citationIds: [
+      "cit-port-act-71-entry-contract",
+      "cit-port-act-decree-72-3-duration",
+    ],
+    explanationTemplate: "제조업의 1종 항만배후단지 입주자격과 적용 법률을 확인했으므로 관리기관 입주계약·변경계약 절차를 포함합니다.",
+    priority: 200,
+    status: "INTERNAL_REVIEWED",
+    reviewActor: "법제처 현행 항만법 제71조·시행령 제72조 대조",
+    note: "업종명이나 항만 소재만으로 자동 판정하지 않고, 해당 구역 모집공고와 관리기관이 확인한 입주자격 입력을 요구합니다. 항만법상 계약에는 공장설립승인 의제 효과를 부여하지 않습니다.",
+  },
+  {
+    id: "rule-free-trade-zone-entry-contract-manufacturing",
+    version: "2026.08.24.1",
+    procedureId: "free-trade-zone-entry-contract",
+    effect: "INCLUDE",
+    industryScope: manufacturingIndustryIds,
+    effectiveFrom: "2026-01-02",
+    effectiveTo: null,
+    jurisdiction: nationwide,
+    condition: {
+      all: [
+        {
+          in: {
+            path: "industry.category",
+            values: manufacturingIndustryIds,
+          },
+        },
+        {
+          eq: {
+            path: "entryContract.regime",
+            value: "FREE_TRADE_ZONE_ACT",
+          },
+        },
+        {
+          eq: {
+            path: "entryContract.eligibilityConfirmed",
+            value: true,
+          },
+        },
+      ],
+    },
+    requiredInputs: [
+      "industry.category",
+      "entryContract.regime",
+      "entryContract.eligibilityConfirmed",
+      "entryContract.status",
+    ],
+    missingPolicy: "INDETERMINATE",
+    citationIds: [
+      "cit-free-trade-zone-act-11-entry-contract",
+    ],
+    explanationTemplate: "제조업의 자유무역지역 입주자격과 적용 법률을 확인했으므로 관리권자 입주계약·변경계약 절차를 포함합니다.",
+    priority: 200,
+    status: "INTERNAL_REVIEWED",
+    reviewActor: "법제처 현행 자유무역지역법 제11조·시행령 제8조 대조",
+    note: "수출비중·외국인투자·국내복귀기업·예외입주 등 실제 입주자격과 구역별 모집공고를 관리권자에게 확인한 경우에만 포함합니다.",
+  },
+  {
+    id: "rule-factory-approval-deemed-by-free-trade-zone-contract",
+    version: "2026.08.24.1",
+    procedureId: "factory-establishment-approval",
+    effect: "EXCLUDE",
+    industryScope: manufacturingIndustryIds,
+    effectiveFrom: "2026-01-02",
+    effectiveTo: null,
+    jurisdiction: nationwide,
+    condition: {
+      all: [
+        {
+          in: {
+            path: "industry.category",
+            values: manufacturingIndustryIds,
+          },
+        },
+        {
+          eq: {
+            path: "entryContract.regime",
+            value: "FREE_TRADE_ZONE_ACT",
+          },
+        },
+        {
+          eq: {
+            path: "entryContract.eligibilityConfirmed",
+            value: true,
+          },
+        },
+        { eq: { path: "entryContract.status", value: "COMPLETED" } },
+        { exists: { path: "entryContract.evidence" } },
+      ],
+    },
+    requiredInputs: [
+      "industry.category",
+      "entryContract.regime",
+      "entryContract.eligibilityConfirmed",
+      "entryContract.status",
+      "entryContract.evidence",
+    ],
+    missingPolicy: "INDETERMINATE",
+    citationIds: ["cit-free-trade-zone-act-14-1-factory-deeming"],
+    explanationTemplate: "자유무역지역 입주자격, 계약 체결 완료와 계약 증빙이 모두 확인되어 공장설립승인 의제 경로를 반영하고 별도 승인을 중복 표시하지 않습니다.",
+    priority: 400,
+    status: "INTERNAL_REVIEWED",
+    reviewActor: "법제처 현행 자유무역지역법 제14조제1항 대조",
+    note: "입주계약 신청·심사 중이거나 계약 증빙이 없는 경우에는 의제를 적용하지 않습니다. 의제는 환경·안전·건축 인허가의 자동 승인이나 면제가 아닙니다.",
+  },
+  {
+    id: "rule-factory-completion-free-trade-zone",
+    version: "2026.08.24.1",
+    procedureId: "factory-completion-report-free-trade-zone",
+    effect: "INCLUDE",
+    industryScope: manufacturingIndustryIds,
+    effectiveFrom: "2026-01-02",
+    effectiveTo: null,
+    jurisdiction: nationwide,
+    condition: {
+      all: [
+        {
+          in: {
+            path: "industry.category",
+            values: manufacturingIndustryIds,
+          },
+        },
+        {
+          eq: {
+            path: "entryContract.regime",
+            value: "FREE_TRADE_ZONE_ACT",
+          },
+        },
+        {
+          eq: {
+            path: "entryContract.eligibilityConfirmed",
+            value: true,
+          },
+        },
+      ],
+    },
+    requiredInputs: [
+      "industry.category",
+      "entryContract.regime",
+      "entryContract.eligibilityConfirmed",
+    ],
+    missingPolicy: "INDETERMINATE",
+    citationIds: ["cit-free-trade-zone-act-14-2-completion"],
+    explanationTemplate: "자유무역지역 제조업 입주 경로이므로 공장건설과 제조시설 설치를 마친 뒤 관리권자 완료신고·공장등록 절차를 포함합니다.",
+    priority: 300,
+    status: "INTERNAL_REVIEWED",
+    reviewActor: "법제처 현행 자유무역지역법 제14조제2항 대조",
+    note: "비제조업 입주자의 사업개시 신고는 이 제조업 완료신고 절차에 포함하지 않습니다.",
+  },
+  {
+    id: "rule-factory-completion-offsite-excluded-by-free-trade-zone",
+    version: "2026.08.24.1",
+    procedureId: "factory-completion-report-offsite",
+    effect: "EXCLUDE",
+    industryScope: manufacturingIndustryIds,
+    effectiveFrom: "2026-01-02",
+    effectiveTo: null,
+    jurisdiction: nationwide,
+    condition: {
+      all: [
+        {
+          in: {
+            path: "industry.category",
+            values: manufacturingIndustryIds,
+          },
+        },
+        {
+          eq: {
+            path: "entryContract.regime",
+            value: "FREE_TRADE_ZONE_ACT",
+          },
+        },
+        {
+          eq: {
+            path: "entryContract.eligibilityConfirmed",
+            value: true,
+          },
+        },
+      ],
+    },
+    requiredInputs: [
+      "industry.category",
+      "entryContract.regime",
+      "entryContract.eligibilityConfirmed",
+    ],
+    missingPolicy: "INDETERMINATE",
+    citationIds: ["cit-free-trade-zone-act-14-2-completion"],
+    explanationTemplate: "자유무역지역 입주기업체의 완료신고·공장등록은 관리권자 전용 경로를 사용하므로 일반 개별입지 완료신고를 중복 표시하지 않습니다.",
+    priority: 300,
+    status: "INTERNAL_REVIEWED",
+    reviewActor: "법제처 현행 자유무역지역법 제14조제2항 대조",
+    note: "제조업 완료신고 경로만 분리하며 비제조업 사업개시 신고를 추가하지 않습니다.",
+  },
+  {
+    id: "rule-industrial-complex-occupancy-excluded-by-alternative-entry-regime",
+    version: "2026.08.24.1",
+    procedureId: "industrial-complex-occupancy-contract",
+    effect: "EXCLUDE",
+    effectiveFrom: "2026-07-01",
+    effectiveTo: null,
+    jurisdiction: nationwide,
+    condition: {
+      all: [
+        { eq: { path: "entryContract.regime", value: "PORT_ACT" } },
+        {
+          eq: {
+            path: "entryContract.eligibilityConfirmed",
+            value: true,
+          },
+        },
+      ],
+    },
+    requiredInputs: [
+      "entryContract.regime",
+      "entryContract.eligibilityConfirmed",
+    ],
+    missingPolicy: "INDETERMINATE",
+    citationIds: ["cit-port-act-71-entry-contract"],
+    explanationTemplate: "중첩 지정 구역에서 항만법을 실제 입주계약 근거로 확인했으므로 산업집적법상 입주계약을 중복 표시하지 않습니다.",
+    priority: 500,
+    status: "INTERNAL_REVIEWED",
+    reviewActor: "항만법 제71조와 산업단지 입주계약 경로 대조",
+    note: "단일 적용 법률을 명시적으로 선택한 경우에만 중복 계약 경로를 접습니다. 물리적 산업단지 소재와 기존 산업단지 입력값은 삭제하지 않습니다.",
+  },
+  {
+    id: "rule-industrial-complex-occupancy-excluded-by-free-trade-zone-entry-regime",
+    version: "2026.08.24.1",
+    procedureId: "industrial-complex-occupancy-contract",
+    effect: "EXCLUDE",
+    effectiveFrom: "2026-01-02",
+    effectiveTo: null,
+    jurisdiction: nationwide,
+    condition: {
+      all: [
+        {
+          eq: {
+            path: "entryContract.regime",
+            value: "FREE_TRADE_ZONE_ACT",
+          },
+        },
+        {
+          eq: {
+            path: "entryContract.eligibilityConfirmed",
+            value: true,
+          },
+        },
+      ],
+    },
+    requiredInputs: [
+      "entryContract.regime",
+      "entryContract.eligibilityConfirmed",
+    ],
+    missingPolicy: "INDETERMINATE",
+    citationIds: ["cit-free-trade-zone-act-11-entry-contract"],
+    explanationTemplate: "중첩 지정 구역에서 자유무역지역법을 실제 입주계약 근거로 확인했으므로 산업집적법상 입주계약을 중복 표시하지 않습니다.",
+    priority: 500,
+    status: "INTERNAL_REVIEWED",
+    reviewActor: "자유무역지역법 제11조와 산업단지 입주계약 경로 대조",
+    note: "단일 적용 법률을 명시적으로 선택한 경우에만 중복 계약 경로를 접습니다. 물리적 산업단지 소재와 기존 산업단지 입력값은 삭제하지 않습니다.",
+  },
+  {
+    id: "rule-factory-completion-complex-excluded-by-free-trade-zone",
+    version: "2026.08.24.1",
+    procedureId: "factory-completion-report-complex",
+    effect: "EXCLUDE",
+    industryScope: manufacturingIndustryIds,
+    effectiveFrom: "2026-01-02",
+    effectiveTo: null,
+    jurisdiction: nationwide,
+    condition: {
+      all: [
+        {
+          in: {
+            path: "industry.category",
+            values: manufacturingIndustryIds,
+          },
+        },
+        {
+          eq: {
+            path: "entryContract.regime",
+            value: "FREE_TRADE_ZONE_ACT",
+          },
+        },
+        {
+          eq: {
+            path: "entryContract.eligibilityConfirmed",
+            value: true,
+          },
+        },
+      ],
+    },
+    requiredInputs: [
+      "industry.category",
+      "entryContract.regime",
+      "entryContract.eligibilityConfirmed",
+    ],
+    missingPolicy: "INDETERMINATE",
+    citationIds: ["cit-free-trade-zone-act-14-2-completion"],
+    explanationTemplate: "자유무역지역법상 관리권자 완료신고·공장등록 전용 경로를 사용하므로 산업단지 관리기관 완료신고를 중복 표시하지 않습니다.",
+    priority: 500,
+    status: "INTERNAL_REVIEWED",
+    reviewActor: "법제처 현행 자유무역지역법 제14조제2항 대조",
+    note: "자유무역지역 입주자격을 명시적으로 확인한 경우에만 전용 완료신고 경로로 대체합니다.",
+  },
+  {
+    id: "rule-factory-approval-port-contract-over-500",
+    version: "2026.08.24.1",
+    procedureId: "factory-establishment-approval",
+    effect: "INCLUDE",
+    industryScope: manufacturingIndustryIds,
+    effectiveFrom: "2026-07-01",
+    effectiveTo: null,
+    jurisdiction: nationwide,
+    condition: {
+      all: [
+        {
+          in: {
+            path: "industry.category",
+            values: manufacturingIndustryIds,
+          },
+        },
+        { eq: { path: "entryContract.regime", value: "PORT_ACT" } },
+        {
+          eq: {
+            path: "entryContract.eligibilityConfirmed",
+            value: true,
+          },
+        },
+        {
+          in: {
+            path: "investmentType",
+            values: [
+              "NEW",
+              "EXPANSION",
+              "RELOCATION",
+              "PROCESS_CHANGE",
+              "INDUSTRY_CHANGE",
+            ],
+          },
+        },
+        { gte: { path: "building.totalAreaM2", value: 500 } },
+      ],
+    },
+    requiredInputs: [
+      "industry.category",
+      "entryContract.regime",
+      "entryContract.eligibilityConfirmed",
+      "investmentType",
+      "building.totalAreaM2",
+    ],
+    missingPolicy: "INDETERMINATE",
+    citationIds: [
+      "cit-indcluster-13-1",
+      "cit-port-act-71-entry-contract",
+    ],
+    explanationTemplate: "항만법상 입주계약에는 공장설립승인 의제 효과가 없고 공장건축면적이 500㎡ 이상이므로 별도 공장설립 승인 경로를 유지합니다.",
+    priority: 500,
+    status: "INTERNAL_REVIEWED",
+    reviewActor: "산업집적법 제13조제1항·항만법 제71조 대조",
+    note: "항만배후단지 입주계약을 공장설립승인으로 보지 않습니다. 환경·건축·안전 절차도 별도 판정합니다.",
+  },
+  {
+    id: "rule-factory-approval-port-contract-under-500-coordination",
+    version: "2026.08.24.1",
+    procedureId: "factory-establishment-approval",
+    effect: "INCLUDE",
+    industryScope: manufacturingIndustryIds,
+    effectiveFrom: "2026-07-01",
+    effectiveTo: null,
+    jurisdiction: nationwide,
+    condition: {
+      all: [
+        {
+          in: {
+            path: "industry.category",
+            values: manufacturingIndustryIds,
+          },
+        },
+        { eq: { path: "entryContract.regime", value: "PORT_ACT" } },
+        {
+          eq: {
+            path: "entryContract.eligibilityConfirmed",
+            value: true,
+          },
+        },
+        { lt: { path: "building.totalAreaM2", value: 500 } },
+        {
+          in: {
+            path: "permitCoordination",
+            values: ["LOCAL_ONLY", "OTHER_LT_20", "OTHER_GTE_20"],
+          },
+        },
+      ],
+    },
+    requiredInputs: [
+      "industry.category",
+      "entryContract.regime",
+      "entryContract.eligibilityConfirmed",
+      "building.totalAreaM2",
+      "permitCoordination",
+    ],
+    missingPolicy: "INDETERMINATE",
+    citationIds: [
+      "cit-indcluster-13-3",
+      "cit-port-act-71-entry-contract",
+    ],
+    explanationTemplate: "항만법상 입주계약에는 공장설립승인 의제가 없고 500㎡ 미만 공장에서 개별 인허가 의제 활용을 선택했으므로 별도 승인 경로를 포함합니다.",
+    priority: 500,
+    status: "INTERNAL_REVIEWED",
+    reviewActor: "산업집적법 제13조제3항·항만법 제71조 대조",
+    note: "항만 입주계약과 공장설립승인 의제협의 범위를 분리해 판정합니다.",
+  },
+  {
     id: "rule-industrial-complex-occupancy-contract",
     version: "2026.08.21.1",
     procedureId: "industrial-complex-occupancy-contract",
@@ -2450,20 +3043,21 @@ export const specialLawProcedures: Procedure[] = [
     id: "port-hinterland-entry-contract",
     name: "1종 항만배후단지 입주계약·변경계약",
     aliases: ["항만배후단지 입주계약", "항만 입주 변경계약"],
-    description: "AI 데이터센터가 특별법상 입주자격 특례로 1종 항만배후단지에 입주하더라도, 사업을 하기 전 항만배후단지 관리기관과 별도로 체결해야 하는 입주계약 경로입니다. 계약을 변경할 때도 같은 절차를 거칩니다.",
+    description: "제조업체 또는 특별법상 입주자격을 갖춘 AI 데이터센터가 1종 항만배후단지에서 사업을 하기 전에 관리기관과 체결하는 입주계약 경로입니다. 계약을 변경할 때도 같은 절차를 거칩니다.",
     outcome: "1종 항만배후단지 입주계약서 또는 변경계약서",
     stage: "PLAN_AND_OCCUPANCY",
     actionType: "CONTRACT",
     domain: "항만배후단지 입주",
     lane: "CENTRAL_OR_REGIONAL_OFFICE",
-    applicant: "1종 항만배후단지에서 AI 데이터센터 사업을 하려는 자",
+    applicant: "1종 항만배후단지 입주자격을 갖추고 그 구역에서 사업을 하려는 자",
     receivingAuthority: "해당 1종 항만배후단지 관리기관",
     statutoryDecisionMaker: "해당 1종 항만배후단지 관리기관",
     consultationAuthorities: ["해양수산부 및 관할 항만기관(관리기관에 따라 확인)"],
     submissions: [
       "입주계약 또는 변경계약 신청서",
-      "사업계획서와 AI 데이터센터 업종·시설내용",
-      "특별법상 AI 데이터센터 인정·입주자격 특례 확인자료",
+      "업종·시설내용과 사업시설 조성계획을 포함한 사업계획서",
+      "해당 관리기관이 확인한 입주자격과 입주기업 모집·선정 자료",
+      "AI 데이터센터 입주 특례를 사용하는 경우 특별법상 시설 인정·입주자격 확인자료",
     ],
     validity: "입주계약 내용, 부가조건과 계약 변경·해지 사유에 따름",
     followUpObligations: [
@@ -2474,9 +3068,9 @@ export const specialLawProcedures: Procedure[] = [
     ruleIds: [
       "rule-aidc-port-hinterland-entry-before-effective",
       "rule-aidc-port-hinterland-entry-contract",
+      "rule-port-hinterland-entry-contract-manufacturing",
     ],
     citationIds: [
-      "cit-aidc-special-act-23",
       "cit-port-act-71-entry-contract",
       "cit-port-act-71-entry-authority",
       "cit-port-act-71-entry-submission",
@@ -2487,9 +3081,56 @@ export const specialLawProcedures: Procedure[] = [
     durationId: "duration-port-hinterland-entry-contract",
     verificationStatus: "INTERNAL_REVIEWED",
     reviewedAt: "2026-08-21",
-    reviewNote: "AI 데이터센터 특별법 제23조의 입주자격 특례, 항만법 제71조의 별도 입주계약 의무와 시행령 제72조의 신청·결정기한을 대조했습니다. 모집·선정 선행단계와 민원처리법 적용 여부는 해당 관리기관에서 확인해야 합니다.",
+    reviewNote: "항만법 제71조의 일반 입주계약 의무, 시행령 제72조의 신청·결정기한과 AI 데이터센터 특별법 제23조의 별도 입주자격 특례를 구분해 대조했습니다. 모집·선정 선행단계와 민원처리법 적용 여부는 해당 관리기관에서 확인해야 합니다.",
     deemedByProcedureIds: [],
     deemedProcedureIds: [],
+  },
+  {
+    id: "free-trade-zone-entry-contract",
+    name: "자유무역지역 입주계약·변경계약",
+    aliases: ["자유무역지역 입주계약", "자유무역지역 변경계약"],
+    description: "자유무역지역의 제조업 입주자격과 구역별 선정기준을 확인한 사업자가 사업을 시작하기 전에 관리권자와 체결하는 입주계약 경로입니다. 계약을 변경할 때도 같은 절차를 거칩니다.",
+    outcome: "자유무역지역 입주계약서 또는 변경계약서",
+    stage: "PLAN_AND_OCCUPANCY",
+    actionType: "CONTRACT",
+    domain: "자유무역지역 입주",
+    lane: "CENTRAL_OR_REGIONAL_OFFICE",
+    applicant: "자유무역지역 제조업 입주자격을 갖추고 해당 구역에서 사업을 하려는 자",
+    receivingAuthority: "입력한 자유무역지역 관리권자",
+    statutoryDecisionMaker: "해당 자유무역지역 관리권자",
+    consultationAuthorities: [
+      "산업통상부·국토교통부·해양수산부 등 구역 유형별 관리권자",
+      "해당 자유무역지역 관리업무 수임·수탁기관",
+    ],
+    submissions: [
+      "입주계약 또는 변경계약 신청서",
+      "사업계획서와 업종·수출계획·시설계획",
+      "수출비중·외국인투자·국내복귀기업 등 적용 입주자격 확인자료",
+      "구역별 모집공고와 관리권자가 요구하는 선정·계약 자료",
+    ],
+    validity: "입주계약 내용과 유지해야 하는 입주자격, 변경·해지 사유에 따름",
+    followUpObligations: [
+      "입주계약 조건과 사업계획 이행",
+      "계약내용 변경 전 변경계약 여부 확인",
+      "제조시설 설치 완료 후 관리권자에게 공장설립 완료신고·공장등록",
+      "건축허가·신고의 허가권자가 해당 관리권자인지 접수 전 확인",
+    ],
+    ruleIds: ["rule-free-trade-zone-entry-contract-manufacturing"],
+    citationIds: [
+      "cit-free-trade-zone-act-11-entry-contract",
+      "cit-free-trade-zone-act-11-entry-authority",
+      "cit-free-trade-zone-decree-8-application",
+      "cit-free-trade-zone-decree-8-3-duration",
+      "cit-free-trade-zone-act-14-1-factory-deeming",
+      "cit-free-trade-zone-act-23-3-building-authority",
+      "cit-civil-petitions-act-19-time-calculation",
+    ],
+    durationId: "duration-free-trade-zone-entry-contract",
+    verificationStatus: "INTERNAL_REVIEWED",
+    reviewedAt: "2026-08-24",
+    reviewNote: "자유무역지역법 제11조의 계약 의무, 제14조제1항의 공장설립승인 의제와 시행령 제8조제3항의 7일 결정기한을 대조했습니다. 입주자격은 업종명으로 추정하지 않고 관리권자 확인값을 사용합니다.",
+    deemedByProcedureIds: [],
+    deemedProcedureIds: ["factory-establishment-approval"],
   },
   {
     id: "industrial-complex-occupancy-contract",
@@ -2531,6 +3172,43 @@ export const specialLawProcedures: Procedure[] = [
     reviewNote: "법 제38조의 계약의무, 제13조제2항의 공장설립 승인 의제와 시행규칙 제34조·제35조의 계약 결정기한을 대조했습니다. 실제 접수창구와 민원처리법 적용 여부는 관리기관에서 확인해야 합니다.",
     deemedByProcedureIds: [],
     deemedProcedureIds: ["factory-establishment-approval"],
+  },
+  {
+    id: "factory-completion-report-free-trade-zone",
+    name: "공장설립 완료신고·공장등록(자유무역지역)",
+    aliases: ["자유무역지역 공장 완료신고", "자유무역지역 공장등록"],
+    description: "자유무역지역 제조업 입주기업체가 공장건설과 제조시설 설치를 완료한 뒤 해당 관리권자에게 하는 공장설립 완료신고·공장등록 경로입니다.",
+    outcome: "자유무역지역 공장설립 완료신고 확인 및 공장등록 반영",
+    stage: "PRE_OPERATION",
+    actionType: "NOTICE",
+    domain: "공장설립",
+    lane: "CENTRAL_OR_REGIONAL_OFFICE",
+    applicant: "자유무역지역 제조업 입주기업체",
+    receivingAuthority: "입력한 자유무역지역 관리권자",
+    statutoryDecisionMaker: "해당 자유무역지역 관리권자",
+    consultationAuthorities: ["공장등록·검사 관련 관계기관(해당 시)"],
+    submissions: [
+      "공장설립 등의 완료신고서",
+      "입주계약서와 계약 이행 확인자료",
+      "제조시설 설치·건축물 사용승인 확인자료",
+      "공장등록 관련 법정 첨부서류",
+    ],
+    validity: "등록된 공장 현황과 자유무역지역 입주계약 유지",
+    followUpObligations: [
+      "등록사항 또는 입주계약 중요사항 변경 시 변경절차 확인",
+      "가동 후 환경·안전·관세구역 관리 의무 이행",
+    ],
+    ruleIds: ["rule-factory-completion-free-trade-zone"],
+    citationIds: [
+      "cit-free-trade-zone-act-14-2-completion",
+      "cit-gov24-completion-duration",
+    ],
+    durationId: "duration-factory-completion-free-trade-zone",
+    verificationStatus: "INTERNAL_REVIEWED",
+    reviewedAt: "2026-08-24",
+    reviewNote: "자유무역지역법 제14조제2항의 제조업 완료신고·공장등록 경로를 확인했습니다. 정부24의 공장설립 완료신고 처리기준은 법정기간이 아닌 공식 민원서비스 기준으로 구분합니다.",
+    deemedByProcedureIds: [],
+    deemedProcedureIds: [],
   },
   {
     id: "power-grid-impact-assessment",
@@ -2752,6 +3430,103 @@ export const specialLawDurations: DurationEstimate[] = [
         observedFrom: null,
         observedTo: null,
         note: "입주기업 모집·선정과 신청인 준비기간은 포함하지 않는 법정 상한입니다.",
+      },
+    ],
+  },
+  {
+    id: "duration-free-trade-zone-entry-contract",
+    procedureId: "free-trade-zone-entry-contract",
+    applicantPreparation: null,
+    authorityProcessing: { min: null, base: null, max: 7, unit: "BUSINESS_DAY" },
+    interagencyConsultation: null,
+    elapsed: { min: null, base: null, max: 7, unit: "BUSINESS_DAY" },
+    statutoryPeriod: "입주계약 또는 변경계약 신청을 받은 날부터 7일 이내에 계약 여부 결정·통지",
+    stopClockRules: [
+      "민원처리법이 적용되는 관리권자 경로에서는 6일 이상 처리기간의 첫날을 산입하고 토요일·공휴일을 제외",
+      "서류 보완, 입주기업 모집·선정과 입주자격 검토 등 신청 접수 전 단계는 7일에 포함되지 않음",
+    ],
+    variabilityFactors: [
+      "자유무역지역별 입주기업 모집·선정 절차",
+      "수출비중·외국인투자·국내복귀기업 등 입주자격 확인",
+      "사업계획서와 시설계획 보완",
+      "구역별 관리권자와 수임·수탁기관 접수 경로",
+    ],
+    evidenceType: "STATUTE",
+    citationIds: [
+      "cit-free-trade-zone-act-11-entry-contract",
+      "cit-free-trade-zone-decree-8-3-duration",
+      "cit-civil-petitions-act-19-time-calculation",
+    ],
+    sampleSize: null,
+    assumptions: [
+      "7일은 완비된 신청을 받은 뒤의 법정 결정 상한이며 실제 평균·최소가 아닙니다.",
+      "업무일 표시는 해당 관리권자가 민원처리법상 행정기관이고 신청이 법정민원에 해당하는 경로를 전제로 하므로 접수 전 계산기준을 확인해야 합니다.",
+      "입주자 모집·평가·협상과 신청인 준비기간은 별도입니다.",
+    ],
+    verifiedAt: "2026-08-24",
+    legalConfidence: "HIGH",
+    estimateConfidence: "LOW",
+    planningBasis: "OFFICIAL_CAP_ONLY",
+    referencePeriods: [
+      {
+        id: "ref-free-trade-zone-entry-contract-decision-cap",
+        kind: "NATIONWIDE_STATUTORY",
+        label: "자유무역지역 입주계약·변경계약 결정기한",
+        range: { min: null, base: null, max: 7, unit: "BUSINESS_DAY" },
+        jurisdiction: null,
+        startsWhen: "관리권자가 완비된 입주계약 또는 변경계약 신청을 받은 날",
+        includes: ["AUTHORITY_PROCESSING", "RESULT_NOTICE"],
+        citationIds: [
+          "cit-free-trade-zone-decree-8-3-duration",
+          "cit-civil-petitions-act-19-time-calculation",
+        ],
+        sampleSize: null,
+        observedFrom: null,
+        observedTo: null,
+        note: "입주기업 모집·선정과 신청인 준비기간은 포함하지 않는 법정 상한입니다.",
+      },
+    ],
+  },
+  {
+    id: "duration-factory-completion-free-trade-zone",
+    procedureId: "factory-completion-report-free-trade-zone",
+    applicantPreparation: null,
+    authorityProcessing: { min: 3, base: 3, max: 20, unit: "BUSINESS_DAY" },
+    interagencyConsultation: null,
+    elapsed: { min: 3, base: 3, max: 20, unit: "BUSINESS_DAY" },
+    statutoryPeriod: "정부24 공장설립 완료신고 기준: 단순처리 3일, 별도 등록 의제처리 20일",
+    stopClockRules: ["보완과 의제기관 협의에 따른 처리기간 정지는 별도"],
+    variabilityFactors: [
+      "별도 등록 의제 여부",
+      "현지 확인",
+      "기계·장치 설치 완료 여부",
+      "자유무역지역 관리권자의 접수·확인 경로",
+    ],
+    evidenceType: "OFFICIAL_SERVICE_STANDARD",
+    citationIds: ["cit-gov24-completion-duration"],
+    sampleSize: null,
+    assumptions: [
+      "3일·20일은 법률상 별도 법정기간이 아니라 정부24 공장설립 완료신고의 공식 민원서비스 기준입니다.",
+      "기준 시나리오는 단순처리이며 실제 자유무역지역 관리권자 경로를 접수 전에 확인해야 합니다.",
+    ],
+    verifiedAt: "2026-08-24",
+    legalConfidence: "HIGH",
+    estimateConfidence: "MEDIUM",
+    planningBasis: "DIRECT_OFFICIAL",
+    referencePeriods: [
+      {
+        id: "ref-free-trade-zone-factory-completion-service-standard",
+        kind: "NATIONWIDE_OFFICIAL_STANDARD",
+        label: "공장설립 완료신고 정부24 처리기준",
+        range: { min: 3, base: 3, max: 20, unit: "BUSINESS_DAY" },
+        jurisdiction: null,
+        startsWhen: "완비된 공장설립 완료신고가 관리권자에게 접수된 날",
+        includes: ["AUTHORITY_PROCESSING", "RESULT_NOTICE"],
+        citationIds: ["cit-gov24-completion-duration"],
+        sampleSize: null,
+        observedFrom: null,
+        observedTo: null,
+        note: "법정기간이 아니라 공식 민원서비스 기준이며 관리권자별 실제 접수경로를 확인해야 합니다.",
       },
     ],
   },
@@ -3293,6 +4068,54 @@ export const specialLawEdges: ProcedureEdge[] = [
     ],
     branchId: "aidc-port-hinterland-entry-route",
     note: "입주계약의 업종·시설내용과 사업시설 조성계획 조건을 건축계획에 반영하는 통상 경로이며, 실제 병행 가능 여부는 관리기관과 건축허가권자에게 확인합니다.",
+  },
+  {
+    id: "edge-port-hinterland-entry-contract-to-building-permit-manufacturing",
+    from: "port-hinterland-entry-contract",
+    to: "building-permit",
+    relation: "FINISH_TO_START",
+    lag: 0,
+    lagUnit: "BUSINESS_DAY",
+    strength: "PRACTICAL",
+    conditionRuleId: "rule-port-hinterland-entry-contract-manufacturing",
+    citationIds: [
+      "cit-port-act-71-entry-contract",
+      "cit-port-act-71-entry-submission",
+    ],
+    branchId: "manufacturing-port-hinterland-entry-route",
+    note: "입주계약의 업종·시설내용과 사업시설 조성계획을 건축계획에 반영하는 실무 경로입니다. 항만 입주계약은 건축허가나 공장설립승인을 의제하지 않습니다.",
+  },
+  {
+    id: "edge-free-trade-zone-entry-contract-to-building-permit",
+    from: "free-trade-zone-entry-contract",
+    to: "building-permit",
+    relation: "FINISH_TO_START",
+    lag: 0,
+    lagUnit: "BUSINESS_DAY",
+    strength: "PRACTICAL",
+    conditionRuleId: "rule-free-trade-zone-entry-contract-manufacturing",
+    citationIds: [
+      "cit-free-trade-zone-act-11-entry-contract",
+      "cit-free-trade-zone-act-23-3-building-authority",
+    ],
+    branchId: "manufacturing-free-trade-zone-entry-route",
+    note: "입주계약의 시설계획을 반영한 뒤 건축허가·신고로 이어지는 실무 경로입니다. 자유무역지역에서는 해당 관리권자가 건축법상 허가권자 업무를 수행하는지 접수 전에 확인합니다.",
+  },
+  {
+    id: "edge-building-use-to-factory-completion-free-trade-zone",
+    from: "building-use-approval",
+    to: "factory-completion-report-free-trade-zone",
+    relation: "FINISH_TO_START",
+    lag: 0,
+    lagUnit: "BUSINESS_DAY",
+    strength: "PRACTICAL",
+    conditionRuleId: "rule-factory-completion-free-trade-zone",
+    citationIds: [
+      "cit-free-trade-zone-act-14-2-completion",
+      "cit-building-22-1",
+    ],
+    branchId: "manufacturing-free-trade-zone-completion-route",
+    note: "건축물 사용승인과 제조시설 설치를 마친 뒤 자유무역지역 관리권자에게 공장설립 완료신고·공장등록을 하는 경로입니다.",
   },
   {
     id: "edge-industrial-complex-occupancy-to-completion-report",

@@ -150,6 +150,22 @@ export function scenarioAnswersToProjectInput(
   >[],
 ): ProjectInput {
   const inside = nullableFact(answers.insideIndustrialComplex);
+  // Published scenarios and v14-or-earlier share links only carried the
+  // industrial-complex fields. Keep that route intact while letting an
+  // explicitly selected Port Act or Free Trade Zone Act contract govern an
+  // overlapping designation without activating two entry contracts.
+  const entryContractRegime =
+    answers.entryContractRegime === "NONE" &&
+    answers.insideIndustrialComplex === true
+      ? "INDUSTRIAL_COMPLEX_ACT"
+      : answers.entryContractRegime;
+  const usesIndustrialComplexContract =
+    entryContractRegime === "INDUSTRIAL_COMPLEX_ACT";
+  const hasEntryContract = entryContractRegime !== "NONE";
+  const entryContractRegimeFact =
+    entryContractRegime === "NONE" && answers.insideIndustrialComplex === null
+      ? unknown()
+      : known(entryContractRegime);
   const normalizedProvince = answers.province.trim();
   const normalizedCity = answers.city.trim() || (
     normalizedProvince === "세종특별자치시" ? normalizedProvince : ""
@@ -318,6 +334,46 @@ export function scenarioAnswersToProjectInput(
             : unknown()
           : notApplicable(),
     },
+    entryContract: {
+      regime: entryContractRegimeFact,
+      eligibilityConfirmed: hasEntryContract
+        ? nullableFact(answers.entryEligibilityConfirmed)
+        : entryContractRegimeFact.status === "UNKNOWN"
+          ? unknown()
+        : notApplicable(),
+      status: !hasEntryContract
+        ? notApplicable()
+        : usesIndustrialComplexContract
+          ? known(answers.industrialComplexOccupancyContractStatus)
+          : known(answers.entryContractStatus),
+      zoneName: !hasEntryContract
+        ? notApplicable()
+        : (answers.entryZoneName.trim() ||
+            (usesIndustrialComplexContract
+              ? answers.industrialComplexName.trim()
+              : ""))
+          ? known(
+              answers.entryZoneName.trim() ||
+                answers.industrialComplexName.trim(),
+            )
+          : unknown(),
+      managingAuthority: !hasEntryContract
+        ? notApplicable()
+        : (answers.entryManagingAuthority.trim() ||
+            (usesIndustrialComplexContract
+              ? answers.industrialComplexManagingAuthority.trim()
+              : ""))
+          ? known(
+              answers.entryManagingAuthority.trim() ||
+                answers.industrialComplexManagingAuthority.trim(),
+            )
+          : unknown(),
+      evidence: !hasEntryContract
+        ? notApplicable()
+        : answers.entryContractEvidence.trim()
+          ? known(answers.entryContractEvidence.trim())
+          : unknown(),
+    },
     industry: {
       category: choiceFact(answers.industryCategory),
       aiDataCenterActFacilityConfirmed: nullableFact(
@@ -336,7 +392,7 @@ export function scenarioAnswersToProjectInput(
       zoning: answers.siteZoning.trim() ? known(answers.siteZoning.trim()) : unknown(),
       landCategory: nullableFact(answers.landCategory),
       ownership: unknown(),
-      developmentAreaM2: nullableFact(answers.totalAreaM2, "m2"),
+      developmentAreaM2: nullableFact(answers.siteDevelopmentAreaM2, "m2"),
       restrictedFactors: answers.siteRestrictedFactors.trim()
         ? known(answers.siteRestrictedFactors.split(/[,\n]/).map((item) => item.trim()).filter(Boolean))
         : unknown(),
@@ -374,6 +430,9 @@ export function scenarioAnswersToProjectInput(
       wasteFacility: nullableFact(answers.wasteFacility),
       chemicalsHandled: nullableFact(answers.chemicalsHandled),
       environmentalAssessmentType: nullableFact(answers.environmentalAssessmentType),
+      localEnvironmentalAssessmentRequired: nullableFact(
+        answers.localEnvironmentalAssessmentRequired,
+      ),
       integratedPermitTarget: nullableFact(answers.integratedEnvironmentalPermitTarget),
       chemicalManufactureOrImport: chemicalDetailFact(answers.chemicalManufactureOrImport),
       hazardousChemicalBusiness: chemicalDetailFact(answers.hazardousChemicalBusiness),

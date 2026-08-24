@@ -14,6 +14,25 @@ export const nonCapitalRegions = [
   "제주특별자치도",
 ] as const;
 
+export const capitalRegions = [
+  "서울특별시",
+  "인천광역시",
+  "경기도",
+] as const;
+
+export const supportedRegions = [
+  ...capitalRegions,
+  ...nonCapitalRegions,
+] as const;
+
+export function isCapitalRegionProvince(value: string) {
+  return (capitalRegions as readonly string[]).includes(value);
+}
+
+export function isSupportedProvince(value: string) {
+  return (supportedRegions as readonly string[]).includes(value);
+}
+
 export function isSupportedNonCapitalProvince(value: string) {
   return (nonCapitalRegions as readonly string[]).includes(value);
 }

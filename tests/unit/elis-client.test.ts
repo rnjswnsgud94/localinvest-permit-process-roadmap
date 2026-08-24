@@ -121,6 +121,26 @@ describe("ELIS current-ordinance client", () => {
     );
   });
 
+  it("uses reviewed capital-region details with the current ELIS jurisdiction code", async () => {
+    const fetchImpl = vi.fn().mockRejectedValue(new Error("worker subrequest blocked"));
+    const result = await fetchElisOrdinanceRecords(
+      {
+        name: "고양시",
+        level: "MUNICIPALITY",
+        listUrl:
+          "https://www.elis.go.kr/alrpop/locgovAlrPopup?ctpvCd=41&sggCd=470",
+      },
+      "경기도",
+      { fetchImpl, timeoutMs: 10 },
+    );
+
+    expect(result.mode).toBe("REVIEWED");
+    expect(result.records).toContainEqual(expect.objectContaining({
+      name: "고양시 도시계획 조례",
+      url: "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41470113223006&histNo=044",
+    }));
+  });
+
   it("rejects non-canonical ELIS list URLs before issuing a request", async () => {
     const fetchImpl = vi.fn();
 

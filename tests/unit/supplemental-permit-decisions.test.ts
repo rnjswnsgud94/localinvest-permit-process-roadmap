@@ -6,7 +6,11 @@ import {
   scenarioAnswerSchema,
   type ScenarioAnswers,
 } from "@/lib/data/catalog";
-import { supplementalPermitTargetIds } from "@/lib/data/supplemental-permit-targets";
+import {
+  capitalRegionSiteReviewTargetIds,
+  gyeonggiSiteReviewTargetIds,
+  supplementalPermitTargetIds,
+} from "@/lib/data/supplemental-permit-targets";
 import { evaluateProject } from "@/lib/engine/pipeline";
 
 function evaluate(overrides: Partial<ScenarioAnswers>) {
@@ -51,10 +55,24 @@ describe("supplemental permit threshold review", () => {
 
     for (const procedureId of supplementalPermitTargetIds) {
       const result = decision(evaluation, procedureId);
-      expect(procedureCategoryForDecision(result), procedureId).toBe("CONFIRM");
-      expect(result.missingInputs, procedureId).toContain(
-        `confirmation.supplementalPermitTargets.${procedureId}`,
+      const capitalOnly = capitalRegionSiteReviewTargetIds.includes(
+        procedureId as (typeof capitalRegionSiteReviewTargetIds)[number],
       );
+      const gyeonggiOnly = gyeonggiSiteReviewTargetIds.includes(
+        procedureId as (typeof gyeonggiSiteReviewTargetIds)[number],
+      );
+      expect(procedureCategoryForDecision(result), procedureId).toBe(
+        capitalOnly || gyeonggiOnly ? "NOT_REQUIRED" : "CONFIRM",
+      );
+      if (capitalOnly || gyeonggiOnly) {
+        expect(result.missingInputs, procedureId).not.toContain(
+          `confirmation.supplementalPermitTargets.${procedureId}`,
+        );
+      } else {
+        expect(result.missingInputs, procedureId).toContain(
+          `confirmation.supplementalPermitTargets.${procedureId}`,
+        );
+      }
     }
   });
 

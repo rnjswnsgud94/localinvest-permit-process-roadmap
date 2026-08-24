@@ -270,7 +270,7 @@ function buildItemsForProcedure(
     : "NEEDS_CONFIRMATION";
 
   const authorityEvidence = buildEvidence(
-    generalCitationIds,
+    [...procedure.citationIds, ...ruleCitationIds],
     ["AUTHORITY"],
     indexes.citationById,
     indexes.sourceById,
@@ -302,7 +302,7 @@ function buildItemsForProcedure(
   );
 
   const submissionEvidence = buildEvidence(
-    generalCitationIds,
+    [...procedure.citationIds, ...ruleCitationIds],
     ["SUBMISSION"],
     indexes.citationById,
     indexes.sourceById,

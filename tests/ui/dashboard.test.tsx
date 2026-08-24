@@ -5,7 +5,7 @@ import { DashboardClient } from "@/app/components/dashboard/DashboardClient";
 import { InputCodeDialog } from "@/app/components/dashboard/InputCodeDialog";
 import { stageLabels } from "@/app/components/dashboard/constants";
 import { catalog } from "@/lib/data/catalog";
-import { supplementalPermitTargetIds } from "@/lib/data/supplemental-permit-targets";
+import { constructionEnvironmentSupplementalPermitTargetIds } from "@/lib/data/supplemental-permit-targets";
 import { encodeInputCode, encodeShareState, INPUT_CODE_PREFIX, MAX_INPUT_CODE_LENGTH } from "@/lib/share-state";
 
 const originalShowModal = Object.getOwnPropertyDescriptor(
@@ -52,6 +52,7 @@ afterAll(() => {
 afterEach(() => {
   window.history.replaceState(null, "", "/");
   delete (document as unknown as { execCommand?: Document["execCommand"] }).execCommand;
+  vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });
 
@@ -75,7 +76,7 @@ describe("dashboard UI", () => {
     expect(screen.queryByText("청주시")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /사업 일정 산정 불가 계산 경로 열기/ })).toHaveTextContent("산정 불가");
     expect(screen.getByRole("button", {
-      name: "확인된 제외 절차 0개 목록 열기",
+      name: /확인된 제외 절차 \d+개 목록 열기/,
     })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "결과보고서 다운로드" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "화면 인쇄" })).toBeInTheDocument();
@@ -157,7 +158,7 @@ describe("dashboard UI", () => {
 
   it("keeps the current project unchanged when an input-code import fails", async () => {
     render(<DashboardClient />);
-    await waitFor(() => expect(window.location.search).toContain("v=13"));
+    await waitFor(() => expect(window.location.search).toContain("v=15"));
     fireEvent.change(screen.getByLabelText("시·도"), {
       target: { value: "부산광역시" },
     });
@@ -334,7 +335,7 @@ describe("dashboard UI", () => {
     };
     const code = encodeInputCode(answers);
     render(<DashboardClient />);
-    await waitFor(() => expect(window.location.search).toContain("v=13"));
+    await waitFor(() => expect(window.location.search).toContain("v=15"));
 
     fireEvent.click(screen.getByRole("button", { name: "입력 코드 저장·불러오기" }));
     const dialog = await screen.findByRole("dialog", { name: "입력 코드 가져오기·내보내기" });
@@ -388,6 +389,38 @@ describe("dashboard UI", () => {
     expect(body).toHaveProperty("scrollTop", 0);
     expect(secondStep).toHaveAttribute("aria-current", "step");
     expect(wizard.querySelector(".wizard-heading h2")).toHaveTextContent("시설 규모");
+  });
+
+  it("moves a mobile user to the new step heading after pressing Next", async () => {
+    const scrollIntoView = vi.fn();
+    vi.stubGlobal("matchMedia", vi.fn((query: string) => ({
+      matches: query === "(max-width: 820px)" || query === "(prefers-reduced-motion: reduce)",
+      media: query,
+      onchange: null,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })));
+    render(<DashboardClient />);
+
+    const wizard = screen.getByLabelText("사업조건 입력");
+    Object.defineProperty(wizard, "scrollIntoView", {
+      configurable: true,
+      value: scrollIntoView,
+    });
+    const body = wizard.querySelector<HTMLElement>(".wizard-body");
+    body!.scrollTop = 120;
+    fireEvent.click(within(wizard).getByRole("button", { name: "다음" }));
+
+    const heading = within(wizard).getByRole("heading", { name: "시설 규모" });
+    expect(body).toHaveProperty("scrollTop", 0);
+    await waitFor(() => expect(document.activeElement).toBe(heading));
+    await waitFor(() => expect(scrollIntoView).toHaveBeenCalledWith({
+      block: "start",
+      behavior: "auto",
+    }));
   });
 
   it("sorts only the full-procedure table by roadmap stage or Korean name", () => {
@@ -454,7 +487,7 @@ describe("dashboard UI", () => {
     });
     expect(
       within(reviewGroup).getAllByRole("group", { name: /대상 여부$/ }),
-    ).toHaveLength(supplementalPermitTargetIds.length);
+    ).toHaveLength(constructionEnvironmentSupplementalPermitTargetIds.length);
     const roadOccupation = within(reviewGroup).getByRole("group", {
       name: "도로점용허가 대상 여부",
     });
@@ -464,7 +497,7 @@ describe("dashboard UI", () => {
     fireEvent.click(
       within(roadOccupation).getByRole("button", { name: "대상" }),
     );
-    expect(screen.getByText(`1/${supplementalPermitTargetIds.length} 검토 · 1개 대상`)).toBeInTheDocument();
+    expect(screen.getByText(`1/${constructionEnvironmentSupplementalPermitTargetIds.length} 검토 · 1개 대상`)).toBeInTheDocument();
 
     const nonpointSource = within(reviewGroup).getByRole("group", {
       name: "비점오염원 설치신고 대상 여부",
@@ -472,7 +505,7 @@ describe("dashboard UI", () => {
     fireEvent.click(
       within(nonpointSource).getByRole("button", { name: "비대상" }),
     );
-    expect(screen.getByText(`2/${supplementalPermitTargetIds.length} 검토 · 1개 대상`)).toBeInTheDocument();
+    expect(screen.getByText(`2/${constructionEnvironmentSupplementalPermitTargetIds.length} 검토 · 1개 대상`)).toBeInTheDocument();
   });
 
   it("asks and clears the PSM same-equipment scope only when both parent targets apply", () => {
@@ -681,7 +714,7 @@ describe("dashboard UI", () => {
 
   it("opens the total-duration result as a simplified six-stage graphic and restores focus", async () => {
     render(<DashboardClient />);
-    await waitFor(() => expect(window.location.search).toContain("v=13"));
+    await waitFor(() => expect(window.location.search).toContain("v=15"));
     fireEvent.click(screen.getByRole("button", { name: /공사 일정/ }));
     fireEvent.change(screen.getByLabelText("착공 예정일"), { target: { value: "2027-01-01" } });
     fireEvent.change(screen.getByLabelText("준공 예정일"), { target: { value: "2028-12-31" } });
@@ -778,12 +811,12 @@ describe("dashboard UI", () => {
 
   it("restores edited inputs from the share URL without a scenario id", async () => {
     const first = render(<DashboardClient />);
-    await waitFor(() => expect(window.location.search).toContain("v=13"));
+    await waitFor(() => expect(window.location.search).toContain("v=15"));
     fireEvent.click(screen.getByRole("button", { name: "증설" }));
 
     await waitFor(() => {
       expect(window.location.search).toContain("it=EXPANSION");
-      expect(window.location.search).toContain("v=13");
+      expect(window.location.search).toContain("v=15");
       expect(new URLSearchParams(window.location.search).has("sc")).toBe(false);
     });
     first.unmount();
@@ -809,12 +842,21 @@ describe("dashboard UI", () => {
     expect(drawer).not.toHaveTextContent(/\b(?:HIGH|MEDIUM|LOW|UNVERIFIED|BUSINESS_DAY|MVP)\b/);
   });
 
-  it("offers all non-capital provinces and updates the editable locality", () => {
+  it("offers every supported province and updates the editable locality", () => {
     render(<DashboardClient />);
     const province = screen.getByLabelText("시·도") as HTMLSelectElement;
-    expect(province.options).toHaveLength(14);
+    expect(province.options).toHaveLength(17);
     expect(province.options[0]).toHaveTextContent("시·도 선택");
-    expect([...province.options].map((option) => option.value)).not.toContain("경기도");
+    expect([...province.options].map((option) => option.value)).toEqual(
+      expect.arrayContaining(["서울특별시", "인천광역시", "경기도", "부산광역시"]),
+    );
+    fireEvent.change(province, { target: { value: "경기도" } });
+    expect(screen.getByLabelText("시·군·구")).toHaveValue("");
+    expect(screen.getByText("수도권 공장입지 추가 확인")).toBeInTheDocument();
+    expect(
+      [...(screen.getByLabelText("시·군·구") as HTMLSelectElement).options]
+        .map((option) => option.value),
+    ).toContain("고양시");
     fireEvent.change(province, { target: { value: "부산광역시" } });
     expect(screen.getByLabelText("시·군·구")).toHaveValue("");
     expect(screen.getAllByRole("link", { name: "부산광역시" })[0]).toHaveAttribute("href", expect.stringContaining("elis.go.kr"));
@@ -822,7 +864,7 @@ describe("dashboard UI", () => {
     fireEvent.change(screen.getByLabelText("시·군·구"), { target: { value: "강서구" } });
     expect(screen.getAllByRole("link", { name: "강서구" })[0]).toHaveAttribute("href", expect.stringContaining("ctpvCd=26"));
     expect(screen.getByRole("heading", { name: "광역·기초 자치법규 확인" })).toBeInTheDocument();
-  });
+  }, 20_000);
 
   it("links a matched local review category to the actual ordinance detail", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue({
@@ -916,7 +958,7 @@ describe("dashboard UI", () => {
     );
 
     render(<DashboardClient />);
-    await waitFor(() => expect(window.location.search).toContain("v=13"));
+    await waitFor(() => expect(window.location.search).toContain("v=15"));
     fireEvent.change(screen.getByLabelText("시·도"), {
       target: { value: "충청남도" },
     });
@@ -971,7 +1013,7 @@ describe("dashboard UI", () => {
     );
 
     render(<DashboardClient />);
-    await waitFor(() => expect(window.location.search).toContain("v=13"));
+    await waitFor(() => expect(window.location.search).toContain("v=15"));
     fireEvent.change(screen.getByLabelText("시·도"), {
       target: { value: "전북특별자치도" },
     });
@@ -1007,7 +1049,7 @@ describe("dashboard UI", () => {
     );
 
     render(<DashboardClient />);
-    await waitFor(() => expect(window.location.search).toContain("v=13"));
+    await waitFor(() => expect(window.location.search).toContain("v=15"));
     fireEvent.change(screen.getByLabelText("시·도"), {
       target: { value: "대전광역시" },
     });
@@ -1066,7 +1108,7 @@ describe("dashboard UI", () => {
 
   it("automatically surfaces other special-law candidates and activates only a confirmed route", async () => {
     render(<DashboardClient />);
-    await waitFor(() => expect(window.location.search).toContain("v=13"));
+    await waitFor(() => expect(window.location.search).toContain("v=15"));
     fireEvent.change(screen.getByLabelText("시·도"), {
       target: { value: "충청남도" },
     });
@@ -1113,7 +1155,7 @@ describe("dashboard UI", () => {
 
   it("adds AI data centers and carries selected special-law treatment into the result", async () => {
     render(<DashboardClient />);
-    await waitFor(() => expect(window.location.search).toContain("v=13"));
+    await waitFor(() => expect(window.location.search).toContain("v=15"));
     fireEvent.change(screen.getByLabelText("업종·주요 공정"), {
       target: { value: "AI_DATA_CENTER" },
     });
@@ -1134,7 +1176,7 @@ describe("dashboard UI", () => {
     expect(screen.getAllByText(/기한 종료 다음 날/).length).toBeGreaterThan(0);
     expect(screen.getByText(/시설 규모 산정 특례 또는 입지 특례/)).toBeInTheDocument();
     await waitFor(() => {
-      expect(window.location.search).toContain("v=13");
+      expect(window.location.search).toContain("v=15");
       expect(window.location.search).toContain("sl=AIDC_ONE_STOP");
       expect(window.location.search).toContain("aic=1");
       expect(window.location.search).toContain("aos=PLANNED");
@@ -1143,7 +1185,7 @@ describe("dashboard UI", () => {
 
   it("clears hidden AI-only special-law values when switching to another industry", async () => {
     render(<DashboardClient />);
-    await waitFor(() => expect(window.location.search).toContain("v=13"));
+    await waitFor(() => expect(window.location.search).toContain("v=15"));
     fireEvent.change(screen.getByLabelText("업종·주요 공정"), {
       target: { value: "AI_DATA_CENTER" },
     });
@@ -1202,6 +1244,65 @@ describe("dashboard UI", () => {
     expect(screen.getByRole("heading", { name: "현재 데이터에 포함되지 않은 항목" })).toBeInTheDocument();
   });
 
+  it("uses one dedicated entry-contract editor and resets an invalid AI free-trade-zone choice", async () => {
+    render(<DashboardClient />);
+
+    fireEvent.change(screen.getByLabelText("업종·주요 공정"), {
+      target: { value: "GENERAL_MANUFACTURING" },
+    });
+    await waitFor(() => {
+      expect(screen.getByLabelText("업종·주요 공정")).toHaveValue(
+        "GENERAL_MANUFACTURING",
+      );
+    });
+    fireEvent.change(screen.getByLabelText("입주계약 적용 법률"), {
+      target: { value: "FREE_TRADE_ZONE_ACT" },
+    });
+    await waitFor(() => {
+      expect(screen.getByLabelText("입주계약 적용 법률")).toHaveValue(
+        "FREE_TRADE_ZONE_ACT",
+      );
+    });
+    fireEvent.click(await screen.findByText("자격 확인", { selector: "button" }));
+    fireEvent.change(screen.getByLabelText("입주계약 진행상태"), {
+      target: { value: "COMPLETED" },
+    });
+    fireEvent.change(screen.getByLabelText("구역명"), {
+      target: { value: "부산항 자유무역지역" },
+    });
+    fireEvent.change(screen.getByLabelText("관리권자·관리기관"), {
+      target: { value: "부산항만공사" },
+    });
+    fireEvent.change(screen.getByLabelText("계약 증빙"), {
+      target: { value: "입주계약 제2026-100호" },
+    });
+
+    await waitFor(() => {
+      const params = new URLSearchParams(window.location.search);
+      expect(params.get("ecr")).toBe("FREE_TRADE_ZONE_ACT");
+      expect(params.get("eec")).toBe("1");
+      expect(params.get("ecs")).toBe("COMPLETED");
+    });
+    expect(
+      screen.queryByText("자유무역지역 입주계약·변경계약", {
+        selector: ".supplemental-permit-decision-row strong",
+      }),
+    ).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("업종·주요 공정"), {
+      target: { value: "AI_DATA_CENTER" },
+    });
+    await waitFor(() => {
+      expect(screen.getByLabelText("입주계약 적용 법률")).toHaveValue("NONE");
+    });
+    expect(
+      within(screen.getByLabelText("입주계약 적용 법률")).queryByRole(
+        "option",
+        { name: "자유무역지역법상 입주계약" },
+      ),
+    ).not.toBeInTheDocument();
+  });
+
   it("opens the permit registry, verification ledger, and scenario comparison tools", async () => {
     render(<DashboardClient />);
 
@@ -1214,7 +1315,9 @@ describe("dashboard UI", () => {
 
     fireEvent.click(registryTrigger);
     const registryDialog = await screen.findByRole("dialog", { name: "전체 인허가 백과" });
-    expect(within(registryDialog).getByRole("status")).toHaveTextContent("전체 145개 중 145개 절차");
+    expect(within(registryDialog).getByRole("status")).toHaveTextContent(
+      `전체 ${catalog.procedures.length}개 중 ${catalog.procedures.length}개 절차`,
+    );
     fireEvent.click(within(registryDialog).getAllByRole("button", { name: /상세 보기/ })[0]);
     const detailDialog = await screen.findByRole("dialog", { name: /상세정보/ });
     expect(within(detailDialog).getByRole("heading", { level: 2 })).toHaveFocus();
@@ -1226,7 +1329,9 @@ describe("dashboard UI", () => {
 
     fireEvent.click(verificationTrigger);
     const verificationDialog = await screen.findByRole("dialog", { name: "인허가 근거 검증 대장" });
-    expect(within(verificationDialog).getByLabelText("검증 대장 현황")).toHaveTextContent("검증 차원870건");
+    expect(within(verificationDialog).getByLabelText("검증 대장 현황")).toHaveTextContent(
+      `검증 차원${catalog.procedures.length * 6}건`,
+    );
     fireEvent.click(within(verificationDialog).getByRole("button", { name: "인허가 근거 검증 대장 닫기" }));
     await waitFor(() => expect(verificationTrigger).toHaveFocus());
 

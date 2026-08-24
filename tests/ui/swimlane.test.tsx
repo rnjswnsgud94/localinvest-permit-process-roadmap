@@ -6,6 +6,7 @@ import {
   orthogonalConnectorPath,
   Swimlane,
 } from "@/app/components/dashboard/Swimlane";
+import { createObstacleAvoidingConnectorRouter } from "@/app/components/dashboard/connector-routing";
 import { catalog } from "@/lib/data/catalog";
 import { evaluateProject } from "@/lib/engine/pipeline";
 import type { ProcedureDecision } from "@/lib/engine/rule-engine";
@@ -96,6 +97,36 @@ function crossesRect(
   return from.x > rect.left && from.x < rect.right
     && Math.min(from.y, to.y) < rect.bottom
     && Math.max(from.y, to.y) > rect.top;
+}
+
+function collinearOverlapLength(
+  left: ReturnType<typeof svgPathPoints>,
+  right: ReturnType<typeof svgPathPoints>,
+) {
+  let overlap = 0;
+  for (let leftIndex = 1; leftIndex < left.length; leftIndex += 1) {
+    const leftFrom = left[leftIndex - 1];
+    const leftTo = left[leftIndex];
+    for (let rightIndex = 1; rightIndex < right.length; rightIndex += 1) {
+      const rightFrom = right[rightIndex - 1];
+      const rightTo = right[rightIndex];
+      if (leftFrom.y === leftTo.y && rightFrom.y === rightTo.y && leftFrom.y === rightFrom.y) {
+        overlap += Math.max(
+          0,
+          Math.min(Math.max(leftFrom.x, leftTo.x), Math.max(rightFrom.x, rightTo.x))
+            - Math.max(Math.min(leftFrom.x, leftTo.x), Math.min(rightFrom.x, rightTo.x)),
+        );
+      }
+      if (leftFrom.x === leftTo.x && rightFrom.x === rightTo.x && leftFrom.x === rightFrom.x) {
+        overlap += Math.max(
+          0,
+          Math.min(Math.max(leftFrom.y, leftTo.y), Math.max(rightFrom.y, rightTo.y))
+            - Math.max(Math.min(leftFrom.y, leftTo.y), Math.min(rightFrom.y, rightTo.y)),
+        );
+      }
+    }
+  }
+  return overlap;
 }
 
 describe("swimlane dense procedure columns", () => {
@@ -219,6 +250,33 @@ describe("swimlane dense procedure columns", () => {
     expect(endpoint).toEqual({ x: target.left - 4, y: 240 });
     expect(beforeTarget.y).toBe(endpoint.y);
     expect(Math.abs(endpoint.x - beforeTarget.x)).toBeGreaterThanOrEqual(12);
+  });
+
+  it("assigns parallel tracks to sequential fan-out connectors", () => {
+    const cards = new Map([
+      ["source", { top: 100, right: 260, bottom: 160, left: 180, width: 80, height: 60 }],
+      ["target-a", { top: 70, right: 480, bottom: 130, left: 400, width: 80, height: 60 }],
+      ["target-b", { top: 150, right: 480, bottom: 210, left: 400, width: 80, height: 60 }],
+      ["target-c", { top: 230, right: 480, bottom: 290, left: 400, width: 80, height: 60 }],
+    ]);
+    const route = createObstacleAvoidingConnectorRouter(
+      cards,
+      { top: 0, left: 0 },
+      { width: 660, height: 380 },
+    );
+    const paths = ["target-a", "target-b", "target-c"].map((target) =>
+      route("source", target),
+    );
+
+    expect(paths.every((path) => path !== null)).toBe(true);
+    for (let left = 0; left < paths.length; left += 1) {
+      for (let right = left + 1; right < paths.length; right += 1) {
+        expect(collinearOverlapLength(
+          svgPathPoints(paths[left]!),
+          svgPathPoints(paths[right]!),
+        )).toBe(0);
+      }
+    }
   });
 
   it("detours around intervening cards without lifting the line over their content", () => {

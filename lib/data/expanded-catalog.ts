@@ -8,14 +8,25 @@ import type {
   ProcedureEdge,
 } from "@/lib/domain/schemas";
 import {
+  capitalRegionSiteReviewTargetIds,
+  gyeonggiSiteReviewTargetIds,
   supplementalPermitTargetIds,
   type SupplementalPermitTargetId,
 } from "@/lib/data/supplemental-permit-targets";
 
-const REVIEW_DATE = "2026-08-23";
-const VERSION = "2026.08.23.3";
+const REVIEW_DATE = "2026-08-24";
+const VERSION = "2026.08.24.1";
 const internallyReviewedExpandedProcedureIds = new Set<string>([
   "development-activity-permit",
+  "capital-region-factory-restriction-review",
+  "capital-region-large-scale-development-review",
+  "development-restriction-zone-action-permit",
+  "airport-obstacle-limitation-consultation",
+  "han-river-riparian-zone-factory-location-review",
+  "paldang-special-measures-zone-wastewater-location-review",
+  "han-river-water-pollution-load-allocation",
+  "road-occupation-traffic-flow-plan-review",
+  "local-environmental-impact-assessment",
   "integrated-environmental-permit",
   "integrated-environmental-operation-start-report",
   "air-total-management-business-permit",
@@ -29,6 +40,14 @@ const internallyReviewedExpandedProcedureIds = new Set<string>([
   "elevator-installation-inspection",
   ...supplementalPermitTargetIds,
 ]);
+
+const capitalRegionSiteReviewTargetSet = new Set<SupplementalPermitTargetId>(
+  capitalRegionSiteReviewTargetIds,
+);
+
+const gyeonggiSiteReviewTargetSet = new Set<SupplementalPermitTargetId>(
+  gyeonggiSiteReviewTargetIds,
+);
 
 const supplementalPermitCondition = (
   procedureId: SupplementalPermitTargetId,
@@ -44,12 +63,82 @@ const supplementalPermitCondition = (
         { eq: { path: "safety.psmCovered", value: false } },
       ],
     }
-  : ({
-      eq: {
-        path: `confirmation.supplementalPermitTargets.${procedureId}`,
-        value: true,
-      },
-    });
+  : procedureId === "water-supply-factory-restriction-zone-review" ||
+      procedureId === "han-river-riparian-zone-factory-location-review"
+    ? {
+        all: [
+          {
+            in: {
+              path: "industry.category",
+              values: [...manufacturingIndustryCategories],
+            },
+          },
+          {
+            eq: {
+              path: `confirmation.supplementalPermitTargets.${procedureId}`,
+              value: true,
+            },
+          },
+        ],
+      }
+  : procedureId === "road-occupation-traffic-flow-plan-review"
+    ? {
+        all: [
+          {
+            in: {
+              path: "location.province",
+              values: ["서울특별시", "인천광역시", "경기도"],
+            },
+          },
+          {
+            eq: {
+              path: "confirmation.supplementalPermitTargets.road-occupation-traffic-flow-plan-review",
+              value: true,
+            },
+          },
+          {
+            eq: {
+              path: "confirmation.supplementalPermitTargets.road-occupation-permit",
+              value: true,
+            },
+          },
+        ],
+      }
+    : capitalRegionSiteReviewTargetSet.has(procedureId)
+    ? {
+        all: [
+          {
+            in: {
+              path: "location.province",
+              values: ["서울특별시", "인천광역시", "경기도"],
+            },
+          },
+          {
+            eq: {
+              path: `confirmation.supplementalPermitTargets.${procedureId}`,
+              value: true,
+            },
+          },
+        ],
+      }
+    : gyeonggiSiteReviewTargetSet.has(procedureId)
+      ? {
+          all: [
+            { eq: { path: "location.province", value: "경기도" } },
+            {
+              eq: {
+                path: `confirmation.supplementalPermitTargets.${procedureId}`,
+                value: true,
+              },
+            },
+          ],
+        }
+    : ({
+        eq: {
+          path: `confirmation.supplementalPermitTargets.${procedureId}`,
+          value: true,
+        },
+      });
 
 const supplementalPermitRequiredInputs = (
   procedureId: SupplementalPermitTargetId,
@@ -58,7 +147,27 @@ const supplementalPermitRequiredInputs = (
       "confirmation.supplementalPermitTargets.hazard-prevention-plan",
       "safety.psmCovered",
     ]
-  : [`confirmation.supplementalPermitTargets.${procedureId}`];
+  : procedureId === "water-supply-factory-restriction-zone-review" ||
+      procedureId === "han-river-riparian-zone-factory-location-review"
+    ? [
+        "industry.category",
+        `confirmation.supplementalPermitTargets.${procedureId}`,
+      ]
+  : procedureId === "road-occupation-traffic-flow-plan-review"
+    ? [
+        "location.province",
+        "confirmation.supplementalPermitTargets.road-occupation-traffic-flow-plan-review",
+        "confirmation.supplementalPermitTargets.road-occupation-permit",
+      ]
+    : [
+      ...(capitalRegionSiteReviewTargetSet.has(procedureId)
+        ? ["location.province"]
+        : []),
+      ...(gyeonggiSiteReviewTargetSet.has(procedureId)
+        ? ["location.province"]
+        : []),
+      `confirmation.supplementalPermitTargets.${procedureId}`,
+    ];
 
 const manufacturingIndustryCategories = [
   "FOOD_BEVERAGE_TOBACCO",
@@ -90,11 +199,39 @@ type SourceSeed = {
   authority: string;
   url: string;
   effectiveDate?: string;
+  repealDate?: string;
   mst?: string;
   documentType?: LegalSource["documentType"];
 };
 
 const sourceSeeds: SourceSeed[] = [
+  { id: "src-capital-region-planning-act-current", title: "수도권정비계획법", authority: "국토교통부", url: "https://www.law.go.kr/법령/수도권정비계획법", effectiveDate: "2026-06-02", mst: "286575" },
+  { id: "src-capital-region-planning-decree-current", title: "수도권정비계획법 시행령", authority: "국토교통부", url: "https://www.law.go.kr/법령/수도권정비계획법시행령", effectiveDate: "2025-10-01", mst: "277967", documentType: "ENFORCEMENT_DECREE" },
+  { id: "src-industrial-cluster-decree-current", title: "산업집적활성화 및 공장설립에 관한 법률 시행령", authority: "산업통상부", url: "https://www.law.go.kr/법령/산업집적활성화및공장설립에관한법률시행령", documentType: "ENFORCEMENT_DECREE" },
+  { id: "src-capital-region-factory-total-notice-2024-2026", title: "2024년~2026년 수도권 공장건축 총허용량 고시", authority: "국토교통부", url: "https://www.law.go.kr/conAdmrulByLsPop.do?admRulPttninfSeq=9407&datClsCd=010102&dguBun=DEG&joBrNo=00&joNo=0022&lnkText=%25EA%25B3%25A0%25EC%258B%259C%25ED%2595%2598%25EC%2597%25AC%25EC%2595%25BC%2520%25ED%2595%259C%25EB%258B%25A4&lsiSeq=204551", effectiveDate: "2024-04-09", repealDate: "2026-12-31", documentType: "NOTICE" },
+  { id: "src-development-restriction-zone-act-current", title: "개발제한구역의 지정 및 관리에 관한 특별조치법", authority: "국토교통부", url: "https://www.law.go.kr/법령/개발제한구역의지정및관리에관한특별조치법" },
+  { id: "src-development-restriction-zone-decree-current", title: "개발제한구역의 지정 및 관리에 관한 특별조치법 시행령", authority: "국토교통부", url: "https://www.law.go.kr/법령/개발제한구역의지정및관리에관한특별조치법시행령", documentType: "ENFORCEMENT_DECREE" },
+  { id: "src-airport-facilities-act-current", title: "공항시설법", authority: "국토교통부", url: "https://www.law.go.kr/법령/공항시설법" },
+  { id: "src-airport-facilities-rule-current", title: "공항시설법 시행규칙", authority: "국토교통부", url: "https://www.law.go.kr/법령/공항시설법시행규칙", documentType: "ENFORCEMENT_RULE" },
+  { id: "src-han-river-watershed-act-current", title: "한강수계 상수원수질개선 및 주민지원 등에 관한 법률", authority: "기후에너지환경부", url: "https://www.law.go.kr/법령/한강수계상수원수질개선및주민지원등에관한법률" },
+  { id: "src-han-river-watershed-decree-current", title: "한강수계 상수원수질개선 및 주민지원 등에 관한 법률 시행령", authority: "기후에너지환경부", url: "https://www.law.go.kr/법령/한강수계상수원수질개선및주민지원등에관한법률시행령", documentType: "ENFORCEMENT_DECREE" },
+  { id: "src-han-river-watershed-rule-current", title: "한강수계 상수원수질개선 및 주민지원 등에 관한 법률 시행규칙", authority: "기후에너지환경부", url: "https://www.law.go.kr/법령/한강수계상수원수질개선및주민지원등에관한법률시행규칙", documentType: "ENFORCEMENT_RULE" },
+  { id: "src-paldang-special-measures-notice-current", title: "팔당·대청호 상수원 수질보전 특별대책지역 지정 및 특별종합대책", authority: "기후에너지환경부", url: "https://www.law.go.kr/행정규칙/팔당·대청호상수원수질보전특별대책지역지정및특별종합대책", documentType: "ADMINISTRATIVE_RULE" },
+  { id: "src-education-environment-act-current", title: "교육환경 보호에 관한 법률", authority: "교육부", url: "https://www.law.go.kr/법령/교육환경보호에관한법률" },
+  { id: "src-education-environment-rule-current", title: "교육환경 보호에 관한 법률 시행규칙", authority: "교육부", url: "https://www.law.go.kr/법령/교육환경보호에관한법률시행규칙", documentType: "ENFORCEMENT_RULE" },
+  { id: "src-railway-safety-act-current", title: "철도안전법", authority: "국토교통부", url: "https://www.law.go.kr/법령/철도안전법" },
+  { id: "src-railway-safety-decree-current", title: "철도안전법 시행령", authority: "국토교통부", url: "https://www.law.go.kr/법령/철도안전법시행령", documentType: "ENFORCEMENT_DECREE" },
+  { id: "src-fire-facilities-decree-current", title: "소방시설 설치 및 관리에 관한 법률 시행령", authority: "소방청", url: "https://www.law.go.kr/법령/소방시설설치및관리에관한법률시행령", documentType: "ENFORCEMENT_DECREE" },
+  { id: "src-water-environment-decree-current", title: "물환경보전법 시행령", authority: "기후에너지환경부", url: "https://www.law.go.kr/법령/물환경보전법시행령", documentType: "ENFORCEMENT_DECREE" },
+  { id: "src-han-river-wastewater-restriction-notice-current", title: "한강유역 폐수배출시설 설치제한을 위한 대상 지역 및 시설 지정", authority: "한강유역환경청", url: "https://www.law.go.kr/행정규칙/한강유역폐수배출시설설치제한을위한대상지역및시설지정", documentType: "ADMINISTRATIVE_RULE" },
+  { id: "src-imjin-river-wastewater-restriction-notice-current", title: "임진강유역 폐수배출시설 설치제한을 위한 대상 지역 및 시설 지정", authority: "기후에너지환경부", url: "https://www.law.go.kr/행정규칙/임진강유역폐수배출시설설치제한을위한대상지역및시설지정", documentType: "ADMINISTRATIVE_RULE" },
+  { id: "src-seoul-local-eia-ordinance-20250519", title: "서울특별시 환경영향평가 조례", authority: "서울특별시", url: "https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=2038401&chrClsCd=010202&gubun=", effectiveDate: "2025-05-19", documentType: "LOCAL_ORDINANCE" },
+  { id: "src-seoul-local-eia-rule-20260119", title: "서울특별시 환경영향평가 조례 시행규칙", authority: "서울특별시", url: "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11000094000020&histNo=014", effectiveDate: "2026-01-19", documentType: "LOCAL_ORDINANCE" },
+  { id: "src-incheon-local-eia-ordinance-20140526", title: "인천광역시 환경영향평가 조례", authority: "인천광역시", url: "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28000013011002&histNo=007", effectiveDate: "2014-05-26", documentType: "LOCAL_ORDINANCE" },
+  { id: "src-gyeonggi-local-eia-ordinance-20251110", title: "경기도 환경영향평가 조례", authority: "경기도", url: "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41000041001028&histNo=003", effectiveDate: "2025-11-10", documentType: "LOCAL_ORDINANCE" },
+  { id: "src-seoul-road-occupation-traffic-ordinance-current", title: "서울특별시 도로점용공사장 교통소통대책에 관한 조례", authority: "서울특별시", url: "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11000071000027&histNo=011", documentType: "LOCAL_ORDINANCE" },
+  { id: "src-incheon-road-occupation-traffic-ordinance-current", title: "인천광역시 도로점용공사장 교통소통대책에 관한 조례", authority: "인천광역시", url: "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28000010001033&histNo=004", documentType: "LOCAL_ORDINANCE" },
+  { id: "src-gyeonggi-road-occupation-traffic-ordinance-current", title: "경기도 도로점용공사장 교통소통대책에 관한 조례", authority: "경기도", url: "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41000034001016&histNo=005", documentType: "LOCAL_ORDINANCE" },
   { id: "src-national-land-planning-act-20260603", title: "국토의 계획 및 이용에 관한 법률", authority: "국토교통부", url: "https://www.law.go.kr/법령/국토의계획및이용에관한법률", effectiveDate: "2026-06-03", mst: "280113" },
   { id: "src-farmland-act-20260616", title: "농지법", authority: "농림축산식품부", url: "https://www.law.go.kr/법령/농지법", effectiveDate: "2026-06-16", mst: "286901" },
   { id: "src-forestland-act-current", title: "산지관리법", authority: "산림청", url: "https://www.law.go.kr/법령/산지관리법" },
@@ -173,6 +310,12 @@ type OfficialDurationOverride = {
 };
 
 const officialDurationOverrides: OfficialDurationOverride[] = [
+  { procedureId: "education-environment-protection-zone-review", range: null, unit: "BUSINESS_DAY", statutoryPeriod: "전국 공통 처리 총기간 미규정; 교육지원청별 민원기준과 지역위원회 일정을 별도 확인", sourceTitle: "교육환경 보호에 관한 법률 제9조·시행규칙 제4조", authority: "교육부", url: "https://www.law.go.kr/법령/교육환경보호에관한법률/제9조", evidenceType: "STATUTE", planningBasis: "INSUFFICIENT_DATA", endToEndKnown: false, assumptions: ["서울교육청 등 지역 민원기준을 전국 공통값으로 일반화하지 않음", "현장확인·학교 의견조회·지역위원회 일정과 보완기간은 관할 교육지원청 확인"] },
+  { procedureId: "railway-protection-zone-action-report", range: null, unit: "CALENDAR_DAY", statutoryPeriod: "전국 공통 총기간 미규정; 신고일부터 30일 이내 안전조치·금지·제한 명령 여부를 검토·명령하되 신고수리 또는 전체 완료 상한이 아님", sourceTitle: "철도안전법 시행령 제46조", authority: "국토교통부", url: "https://www.law.go.kr/법령/철도안전법시행령/제46조", evidenceType: "STATUTE", planningBasis: "MILESTONE_ONLY", endToEndKnown: false, assumptions: ["30일은 안전조치등이 필요할 때 명령하는 법정 창구이며 무명령 시 자동 승인으로 해석하지 않음", "설계도서 보완·철도시설관리자 협의와 실제 안전조치 이행기간은 별도"] },
+  { procedureId: "building-safety-impact-assessment", range: null, unit: "BUSINESS_DAY", statutoryPeriod: "건축허가 전 안전영향평가·건축위원회 심의 의무는 있으나 전국 공통 총 처리기간은 법령에 별도로 규정되지 않음", sourceTitle: "건축법 제13조의2·시행령 제10조의3", authority: "국토교통부", url: "https://www.law.go.kr/법령/건축법/제13조의2", evidenceType: "STATUTE", planningBasis: "INSUFFICIENT_DATA", endToEndKnown: false, assumptions: ["안전영향평가기관 검토와 건축위원회 일정·재심의 기간을 임의 합산하지 않음"] },
+  { procedureId: "fire-performance-based-design-review", range: null, unit: "BUSINESS_DAY", statutoryPeriod: "전국 공통 전체 완료기간 미규정; 건축허가 신청 전 성능위주설계 신고와 해당 시 건축위원회 심의 전 사전검토가 필요", sourceTitle: "소방시설 설치 및 관리에 관한 법률 제8조·시행규칙 제4조·제7조", authority: "소방청", url: "https://www.law.go.kr/법령/소방시설설치및관리에관한법률/제8조", evidenceType: "STATUTE", planningBasis: "INSUFFICIENT_DATA", endToEndKnown: false, assumptions: ["평가단·중앙소방기술심의위원회 분기와 사전검토 보완기간을 단일 총기간으로 만들지 않음"] },
+  { procedureId: "water-supply-factory-restriction-zone-review", range: null, unit: "BUSINESS_DAY", statutoryPeriod: "공장설립 제한·승인지역과 예외요건 확인의 전국 공통 총 처리기간은 수도법령에 별도로 규정되지 않음", sourceTitle: "수도법 제7조의2·시행령 제14조의2·제14조의3", authority: "기후에너지환경부", url: "https://www.law.go.kr/법령/수도법/제7조의2", evidenceType: "STATUTE", planningBasis: "INSUFFICIENT_DATA", endToEndKnown: false, assumptions: ["취수시설·유하거리·승인지역 도면과 공장별 승인요건 확인기간을 관할기관에 확인"] },
+  { procedureId: "water-discharge-facility-restriction-zone-review", range: null, unit: "BUSINESS_DAY", statutoryPeriod: "고시상 설치제한지역·시설·예외 확인의 별도 전국 공통 총 처리기간은 규정되지 않음", sourceTitle: "물환경보전법 제33조·시행령 제32조", authority: "기후에너지환경부", url: "https://www.law.go.kr/법령/물환경보전법/제33조", evidenceType: "STATUTE", planningBasis: "INSUFFICIENT_DATA", endToEndKnown: false, assumptions: ["필지별 고시지역, 특정수질유해물질 기준과 개별 예외 확인은 후속 폐수배출시설 허가기간과 구분"] },
   { procedureId: "information-communication-design-confirmation", range: null, unit: "BUSINESS_DAY", statutoryPeriod: "정보통신공사업법 제36조상 공사 시작 전 설계도 확인 이정표; 전국 공통 총 처리기간은 법령에 별도로 규정되지 않음", sourceTitle: "정보통신공사업법 제36조", authority: "과학기술정보통신부", url: "https://www.law.go.kr/법령/정보통신공사업법/제36조", evidenceType: "STATUTE", planningBasis: "MILESTONE_ONLY", endToEndKnown: false, assumptions: ["일부 지자체 민원편람은 14일을 안내하지만 전국 공통값으로 일반화하지 않음", "설계도서 보완과 기술기준 검토기간은 관할청에 확인"] },
   { procedureId: "information-communication-supervisor-assignment-report", range: [7, 7, 7], unit: "BUSINESS_DAY", statutoryPeriod: "정부24 감리원 배치현황 신고 공식 처리기간 총 7일; 공사 시작일부터 30일 이내(30일 이내 공사는 완료 전) 신고", sourceTitle: "정부24 정보통신공사 감리원 배치현황 신고 민원안내", authority: "정부24·과학기술정보통신부", url: "https://www.gov.kr/mw/AA020InfoCappView.do?CappBizCD=17210000009&HighCtgCD=A03004", evidenceType: "OFFICIAL_SERVICE_STANDARD", assumptions: ["7일은 완비 신고의 행정처리기간이고 30일은 별도 제출기한", "감리대상 공사와 배치기간·교체 여부를 별도 확인"] },
   { procedureId: "information-communication-pre-use-inspection", range: [14, 14, 14], unit: "BUSINESS_DAY", statutoryPeriod: "정부24 구내 정보통신공사 사용전검사 공식 처리기간 총 14일", sourceTitle: "정부24 구내 정보통신공사 사용전검사 민원안내", authority: "정부24·과학기술정보통신부", url: "https://www.gov.kr/mw/AA020InfoCappView.do?CappBizCD=14400000160&HighCtgCD=A09006", evidenceType: "OFFICIAL_SERVICE_STANDARD", assumptions: ["공사가 완료되고 시험성적·준공도서가 갖춰진 뒤의 공식 처리기간", "재검사와 보완기간은 별도"] },
@@ -418,7 +561,7 @@ export const expandedLegalSources: LegalSource[] = [
   proclamationDate: null,
   proclamationNumber: null,
   effectiveDate: source.effectiveDate ?? null,
-  repealDate: null,
+  repealDate: source.repealDate ?? null,
   apiRetrievedAt: null,
   internallyVerifiedAt: REVIEW_DATE,
   contentHash: `official-page-review:${source.id}`,
@@ -478,6 +621,271 @@ type PermitSeed = {
 
 const permitSeeds: PermitSeed[] = [
   {
+    id: "capital-region-factory-restriction-review",
+    name: "수도권 공장입지 제한·예외·총량 확인",
+    aliases: ["수도권 공장총량 확인", "수도권 공장 신설·증설 제한 검토"],
+    description: "서울·인천·경기의 500㎡ 이상 제조업 공장이 신설·증설·이전·업종변경 등을 추진할 때 법정 권역, 산업집적법상 허용 예외와 시·도·시군별 공장건축 총허용량을 공장설립 승인 전에 확인하는 절차입니다. 수도권이라는 이유만으로 입지 불가를 자동 확정하지 않습니다.",
+    outcome: "권역별 허용 예외와 공장총량 배정 가능 여부 확인",
+    stage: "SITE_REVIEW",
+    actionType: "REVIEW",
+    domain: "입지·수도권",
+    lane: "CITY_COUNTY_DISTRICT",
+    applicant: "수도권에서 500㎡ 이상 제조업 공장을 신설·증설·이전하거나 업종변경하려는 사업자",
+    authority: "관할 시장·군수·구청장 및 시·도 공장총량 담당부서",
+    decisionMaker: "관할 시장·군수·구청장과 시·도지사(총허용량 배정·집행)",
+    consultations: ["시·도 공장총량 담당부서", "공장설립 승인부서", "도시계획·산업단지 관리기관", "필요 시 국토교통부·산업통상부"],
+    submissions: ["정확한 사업지 주소와 수도권 법정 권역", "기존·증설·사업 후 공장건축면적", "KSIC·생산품·공정과 기업규모", "산업단지·공업지역·특별구역 및 기존 공장 승인·등록 자료", "신설·증설·이전·업종변경 계획"],
+    followUp: ["시행령 별표의 권역별 허용 예외와 개별 특별법 특례 확인", "최신 시·도·시군 공장총량 배정공고와 잔여량 확인", "확인 결과를 공장설립 승인·건축허가 도서에 반영"],
+    sourceId: "src-industrial-cluster-act-20260701",
+    article: "제20조",
+    paragraph: "제1항",
+    citationSummary: "과밀억제권역·성장관리권역·자연보전권역의 공장건축면적 500㎡ 이상 공장은 신설·증설·이전·업종변경이 원칙적으로 제한되지만 대통령령상 예외에 해당하면 허용될 수 있다.",
+    condition: {
+      all: [
+        { in: { path: "location.province", values: ["서울특별시", "인천광역시", "경기도"] } },
+        { in: { path: "industry.category", values: [...manufacturingIndustryCategories] } },
+        { gte: { path: "building.totalAreaM2", value: 500 } },
+        {
+          any: [
+            { in: { path: "investmentType", values: ["NEW", "EXPANSION", "RELOCATION", "INDUSTRY_CHANGE"] } },
+            { in: { path: "building.action", values: ["NEW_BUILD", "EXTENSION", "CHANGE_OF_USE"] } },
+          ],
+        },
+      ],
+    },
+    requiredInputs: ["location.province", "industry.category", "building.totalAreaM2"],
+    explanation: "수도권의 500㎡ 이상 제조업 공장 계획이므로 권역별 허용 예외와 공장건축 총허용량을 공장설립 승인 전에 확인합니다.",
+    reviewNote: "서울은 전역 과밀억제권역이지만 인천·경기는 하위 행정구역별 권역이 갈릴 수 있습니다. 시·군만으로 권역을 추정하지 않고 시행령 별표 1과 주소를 대조합니다. 시행령 별표 1의2·2·3의 업종·기업규모·기존공장·산단 예외, 미군공여구역·평택 등 특별법 특례와 최신 공장총량 잔여량 확인 전에는 입지 가능·불가를 확정하지 않습니다.",
+    verified: true,
+    statutoryPeriod: "수도권 권역·허용 예외·총량 확인은 별도 민원 절차가 아니며 법령에 전국 공통 처리기간을 규정하지 않음; 최신 총량 배정 가능 여부는 관할기관 확인 필요",
+    durationSourceId: "src-capital-region-planning-act-current",
+    durationArticle: "제18조",
+    durationCitationSummary: "수도권정비계획법은 공장 총량규제의 근거를 두지만, 개별 사업의 권역·예외·잔여 총량 확인을 완료하는 전국 공통 처리기간은 규정하지 않는다.",
+    durationEvidence: "INSUFFICIENT_DATA",
+    variability: ["법정 권역", "KSIC·기업규모·기존공장 여부", "산업단지·공업지역·특별법 예외", "시·도·시군별 공장총량 잔여량"],
+  },
+  {
+    id: "capital-region-large-scale-development-review",
+    name: "수도권 대규모 공업용지 조성사업 심의·협의",
+    aliases: ["수도권정비위원회 대규모개발사업 심의", "수도권 공업용지 조성 협의"],
+    description: "수도권에서 단순 공장 입주가 아니라 30만㎡ 이상의 공업용지를 조성하는 개발사업이면 관계 행정기관이 개발계획 승인 전에 수도권정비위원회 심의를 거쳐 국토교통부와 협의하거나 승인을 받는 절차입니다.",
+    outcome: "수도권정비위원회 심의 및 국토교통부 협의·승인 결과",
+    stage: "SITE_REVIEW", actionType: "CONSULTATION", domain: "입지·수도권", lane: "CENTRAL_OR_REGIONAL_OFFICE",
+    applicant: "개발사업 시행자와 관계 행정기관", authority: "국토교통부 및 수도권정비위원회", decisionMaker: "관계 행정기관과 국토교통부장관",
+    consultations: ["수도권정비위원회", "관할 시·도", "개발계획 승인기관", "교통·환경·인구·기반시설 관계기관"],
+    submissions: ["공업용지 조성사업 유형과 개발계획", "전체·연접·분할 사업면적 산출서", "교통·환경오염·인구집중 방지대책", "광역 기반시설 설치계획"],
+    followUp: ["위원회 심의·협의 조건을 개발계획에 반영", "개발계획 승인 전에 협의·승인 완료 여부 확인"],
+    sourceId: "src-capital-region-planning-act-current", article: "제19조", citationSummary: "관계 행정기관은 수도권의 대규모 개발사업 계획을 승인하기 전에 수도권정비위원회 심의를 거쳐 국토교통부장관과 협의하거나 승인을 받아야 한다.",
+    condition: supplementalPermitCondition("capital-region-large-scale-development-review"), requiredInputs: supplementalPermitRequiredInputs("capital-region-large-scale-development-review"),
+    explanation: "수도권의 30만㎡ 이상 공업용지 조성사업으로 정밀검토되어 개발계획 승인 전 수도권정비위원회 심의와 국토교통부 협의·승인 경로를 포함합니다.",
+    reviewNote: "일반 입주기업의 개별 공장 건축면적이 아니라 산업단지·특수지역·자유무역지역·협동화단지 또는 공장설립용 공장용지의 조성면적을 봅니다. 같은 목적의 분할·연접사업은 합산 여부를 확인해야 하며 단순히 수도권 공장이라는 이유로 자동 적용하지 않습니다.", verified: true,
+    statutoryPeriod: "전체 심의·협의의 전국 공통 총 처리기간은 법령상 미규정", durationEvidence: "INSUFFICIENT_DATA", durationSourceId: "src-capital-region-planning-act-current", durationArticle: "제19조", durationCitationSummary: "대규모 개발사업 승인 전 심의·협의 의무는 두지만 접수부터 협의·승인 완료까지의 전국 공통 총 처리기간은 별도로 정하지 않는다.", variability: ["개발사업 범위", "연접·분할 합산", "위원회 심의", "관계기관 보완"],
+  },
+  {
+    id: "development-restriction-zone-action-permit",
+    name: "개발제한구역 입지제한·행위허가 검토",
+    aliases: ["그린벨트 행위허가", "개발제한구역 건축허가"],
+    description: "개발제한구역에서는 건축·용도변경·공작물 설치·토지형질변경이 원칙적으로 금지되며, 법에서 열거한 허용시설·행위에 해당할 때만 관할 시장·군수·구청장의 허가를 받을 수 있습니다. 공장 신설 가능성을 먼저 확인하는 입지 게이트입니다.",
+    outcome: "개발제한구역 허용행위 해당 여부와 행위허가",
+    stage: "SITE_REVIEW", actionType: "REVIEW", domain: "입지·개발제한구역", lane: "CITY_COUNTY_DISTRICT",
+    applicant: "개발제한구역에서 건축·형질변경 등을 하려는 자", authority: "관할 시장·군수·구청장",
+    consultations: ["도시계획위원회", "관계 행정기관", "개발제한구역 관리부서"],
+    submissions: ["토지이용계획확인서와 구역도", "법정 허용시설·행위 검토서", "건축 연면적·형질변경면적 산출서", "배치도·설계도·복구계획"],
+    followUp: ["허가조건·원상복구 조건 이행", "건축·개발행위 인허가와 중복·의제 범위 확인"],
+    sourceId: "src-development-restriction-zone-act-current", article: "제12조", citationSummary: "개발제한구역의 건축물 건축·용도변경, 공작물 설치와 토지형질변경 등은 원칙적으로 금지되고 법정 허용행위에 한해 시장·군수·구청장 허가를 받을 수 있다.",
+    condition: supplementalPermitCondition("development-restriction-zone-action-permit"), requiredInputs: supplementalPermitRequiredInputs("development-restriction-zone-action-permit"),
+    explanation: "정확한 필지가 개발제한구역이고 계획한 행위가 법정 허용·허가 검토대상으로 확인되어 선행 입지검토와 행위허가를 포함합니다.",
+    reviewNote: "개발제한구역 소재만으로 허가 가능성을 뜻하지 않습니다. 공장 신설은 일반적으로 허용시설이 아니므로 정확한 시설유형·기존 건축물·이축·증축 등 예외와 구역도면을 먼저 확인합니다. 1,500㎡ 이상 건축 또는 5,000㎡ 이상 형질변경의 14일 주민열람은 전체 처리기간이 아닙니다.", verified: true,
+    statutoryPeriod: "전국 공통 전체 처리기간 없음; 일정 규모 이상 허가의 주민열람은 14일 이상이나 심의·협의·보완기간을 포함하지 않음", durationEvidence: "INSUFFICIENT_DATA", durationSourceId: "src-development-restriction-zone-decree-current", durationArticle: "제20조", durationCitationSummary: "일정 규모 이상 행위허가의 14일 이상 주민열람과 협의·심의를 규정하지만 신청부터 처분까지의 전국 공통 총기간은 두지 않는다.", variability: ["허용시설 유형", "주민열람", "관계기관 협의", "도시계획위원회 심의"],
+  },
+  {
+    id: "airport-obstacle-limitation-consultation",
+    name: "민간공항 장애물 제한표면 협의·항공학적 검토",
+    aliases: ["공항 고도제한 협의", "항공학적 검토"],
+    description: "민간공항 장애물 제한표면 주변의 건축물·굴뚝·피뢰설비·타워크레인 등이 표면에 저촉될 수 있으면 건축 허가권자가 국토교통부장관 또는 공항시설 관리·사업시행자와 협의하고, 표면 초과 시설의 제한적 예외는 항공학적 검토를 거치는 절차입니다.",
+    outcome: "장애물 제한표면 협의결과 또는 항공학적 검토 결정",
+    stage: "SITE_REVIEW", actionType: "CONSULTATION", domain: "입지·항공", lane: "CENTRAL_OR_REGIONAL_OFFICE",
+    applicant: "건축·시설 설치자 및 건축 허가권자", authority: "국토교통부장관 또는 공항시설 관리·사업시행자",
+    consultations: ["항공학적 검토위원회", "공항운영자", "관할 건축허가 부서"],
+    submissions: ["사업지 좌표·지반표고", "건축물·굴뚝·피뢰침·크레인의 최고높이", "장애물 제한표면 검토도", "차폐기준·항공안전 영향자료"],
+    followUp: ["협의·결정 조건을 건축설계와 공사계획에 반영", "공사개시 후와 준공·사용승인 전 법정 현황통보 확인"],
+    sourceId: "src-airport-facilities-act-current", article: "제34조", citationSummary: "장애물 제한표면 높이 이상의 건축물·구조물 등은 원칙적으로 설치가 금지되며, 법정 시설의 허가권자는 공항시설 관리·사업시행자와 협의하고 제한적 예외는 항공학적 검토를 거친다.",
+    condition: supplementalPermitCondition("airport-obstacle-limitation-consultation"), requiredInputs: supplementalPermitRequiredInputs("airport-obstacle-limitation-consultation"),
+    explanation: "민간공항 장애물 제한표면과 계획시설 최고높이의 저촉 가능성이 확인되어 건축허가 전 협의·항공학적 검토 경로를 포함합니다.",
+    reviewNote: "군 비행장은 별도의 군사기지·군사시설 보호구역 협의로 판단합니다. 항공학적 검토위원회 의결 후 14일은 결과 통보기한일 뿐 신청부터 결정까지의 총기간이 아닙니다.", verified: true,
+    statutoryPeriod: "항공학적 검토위원회 의결일부터 14일 이내 결과 통보; 신청·보완·위원회 개최를 포함한 전체 기간은 규정되지 않음", durationEvidence: "STATUTE", durationSourceId: "src-airport-facilities-rule-current", durationArticle: "제27조", durationCitationSummary: "항공학적 검토위원회 의결 후 결과 통보는 14일 이내이지만 신청부터 의결까지의 총 완료기한은 별도로 정하지 않는다.", variability: ["제한표면 종류", "시설 최고높이", "항공학적 검토위원회", "설계 보완"],
+  },
+  {
+    id: "education-environment-protection-zone-review",
+    name: "교육환경보호구역 금지시설 입지확인·제외 인정",
+    aliases: ["교육환경보호구역 금지시설 확인", "교육환경보호위원회 제외 인정"],
+    description: "정확한 필지가 학교 경계 주변 교육환경보호구역이고 계획시설이 법정 금지시설에 해당하면 입지 가능성을 먼저 확인합니다. 상대보호구역에서 법이 허용한 시설만 지역교육환경보호위원회 심의를 거쳐 제외 인정을 받을 수 있으며, 절대금지 시설을 단순 신청으로 허용하는 절차가 아닙니다.",
+    outcome: "교육환경보호구역 저촉·금지시설 해당 여부와 제외 인정 결과",
+    stage: "SITE_REVIEW", actionType: "REVIEW", domain: "입지·교육환경", lane: "CENTRAL_OR_REGIONAL_OFFICE",
+    applicant: "교육환경보호구역에서 법정 금지시설 설치를 검토하는 사업자", authority: "관할 교육감 또는 위임받은 교육지원청", decisionMaker: "관할 교육감 또는 위임받은 자와 지역교육환경보호위원회",
+    consultations: ["지역교육환경보호위원회", "해당 학교장", "관할 건축·공장설립·환경부서"],
+    submissions: ["필지별 교육환경보호구역 도면과 학교 경계 최단거리", "시설·공정·오염·위험물 자료", "건축물대장 또는 신축 설계도면", "토지이용계획확인서와 주변약도"],
+    followUp: ["금지시설·예외 가능 범위를 건축·입지계획에 반영", "제외 인정 전 임대차·시설공사 착수 금지 여부 확인", "건축·공장설립 허가부서에 결과 제출"],
+    sourceId: "src-education-environment-act-current", article: "제8조·제9조", citationSummary: "학교 경계 주변에는 절대·상대 교육환경보호구역이 설정되고 법정 금지행위·시설은 원칙적으로 설치할 수 없으며, 상대보호구역의 열거된 일부 시설만 지역위원회 심의를 거쳐 제외 인정될 수 있다.",
+    condition: supplementalPermitCondition("education-environment-protection-zone-review"), requiredInputs: supplementalPermitRequiredInputs("education-environment-protection-zone-review"),
+    explanation: "필지와 계획시설을 대조한 결과 교육환경보호구역 금지시설 입지확인 또는 상대보호구역 제외 인정 검토가 필요한 것으로 확인되었습니다.",
+    reviewNote: "시·군명, 학교 존재 또는 업종명만으로 자동 적용하지 않습니다. 정확한 학교 경계·보호구역 도면, 시설 종류와 교육환경법 제9조 각 호를 대조하고, 절대금지인지 상대보호구역 제외 인정 가능 시설인지 먼저 구분합니다. 지역 민원편람 처리기간을 전국 공통값으로 사용하지 않습니다.", verified: true,
+    variability: ["학교 경계·보호구역", "금지시설 호목", "절대·상대보호구역", "학교 의견·위원회 일정"],
+  },
+  {
+    id: "railway-protection-zone-action-report",
+    name: "철도보호지구 행위신고·안전조치 확인",
+    aliases: ["철도보호지구 행위신고", "철도 인접공사 안전협의"],
+    description: "철도경계선에서 법정 거리 안의 철도보호지구에서 굴착·형질변경·건축·공작물 설치 등을 하려면 국토교통부장관 또는 시·도지사에게 신고하고 철도시설 보호와 열차 안전운행을 위한 안전조치·제한 여부를 확인합니다.",
+    outcome: "철도보호지구 행위신고 접수와 안전조치·제한 확인",
+    stage: "PRE_CONSTRUCTION", actionType: "NOTICE", domain: "입지·철도안전", lane: "CENTRAL_OR_REGIONAL_OFFICE",
+    applicant: "철도보호지구에서 법정 행위를 하려는 사업자", authority: "국토교통부장관 또는 관할 시·도지사",
+    consultations: ["철도시설관리자", "국가철도공단·철도운영기관(해당 노선)", "관할 건축·굴착 인허가부서"],
+    submissions: ["철도경계선과 공사구간 거리도", "행위 목적·공사기간", "굴착·흙막이·구조물 설계도서", "철도시설 변위·진동·안전관리계획"],
+    followUp: ["명령된 안전조치·공법·계측조건 이행", "변경신고 대상 변경 시 재신고", "철도시설관리자 입회·계측·복구조건 확인"],
+    sourceId: "src-railway-safety-act-current", article: "제45조", citationSummary: "철도경계선에서 30미터 이내 등의 철도보호지구에서 굴착·형질변경·건축·공작물 설치 등 법정 행위를 하려는 자는 국토교통부장관 또는 시·도지사에게 신고해야 하며 안전운행에 필요한 금지·제한·안전조치 명령을 받을 수 있다.",
+    condition: supplementalPermitCondition("railway-protection-zone-action-report"), requiredInputs: supplementalPermitRequiredInputs("railway-protection-zone-action-report"),
+    explanation: "철도경계선과 계획행위를 대조한 결과 철도보호지구 행위신고와 안전조치 검토가 필요한 것으로 확인되었습니다.",
+    reviewNote: "주소 또는 철도역 인접 여부만으로 자동 적용하지 않습니다. 선로별 철도경계선, 일반 철도 30미터·노면전차 관련 법정거리, 굴착 깊이와 구조물·크레인 등 실제 행위를 확인합니다. 시행령의 30일은 안전조치등 명령 기한이지 신고수리·자동승인·전체 공사협의 기간이 아닙니다.", verified: true,
+    variability: ["철도경계선 거리", "굴착·구조물 공법", "철도시설관리자 협의", "안전조치 이행"],
+  },
+  {
+    id: "building-safety-impact-assessment",
+    name: "건축물 안전영향평가",
+    aliases: ["초고층 건축물 안전영향평가", "주요 건축물 안전영향평가"],
+    description: "초고층 건축물 또는 개별 동의 연면적과 층수가 법정 기준을 모두 충족하는 주요 건축물은 건축허가 전에 구조·지반·풍환경이 해당 건축물과 인접 대지 안전에 미치는 영향을 전문기관이 평가하고 건축위원회 심의로 결과를 확정합니다.",
+    outcome: "건축물 안전영향평가 및 건축위원회 심의 확정 결과",
+    stage: "PLAN_AND_OCCUPANCY", actionType: "REVIEW", domain: "건축·구조안전", lane: "CITY_COUNTY_DISTRICT",
+    applicant: "법정 대상 주요 건축물의 건축주", authority: "건축 허가권자와 국토교통부 지정 안전영향평가기관", decisionMaker: "건축 허가권자 및 건축위원회",
+    consultations: ["안전영향평가기관", "건축위원회", "구조·지반·풍환경 전문가"],
+    submissions: ["개별 동 연면적·층수·높이 산출", "구조계획·지반조사·기초계획", "풍환경·인접 대지 안전 검토", "건축허가 설계도서와 평가 반영표"],
+    followUp: ["평가·심의결과를 건축허가 도서에 반영", "반영 곤란 시 근거자료를 갖춘 재심의 검토", "설계변경 시 재평가·재심의 여부 확인"],
+    sourceId: "src-building-act-20260227", article: "제13조의2", citationSummary: "허가권자는 초고층 건축물 등 대통령령상 주요 건축물의 건축허가 전에 구조·지반·풍환경 등의 안전영향평가를 실시하게 하고 그 결과를 건축위원회 심의로 확정해야 한다.",
+    condition: supplementalPermitCondition("building-safety-impact-assessment"), requiredInputs: supplementalPermitRequiredInputs("building-safety-impact-assessment"),
+    explanation: "개별 동 규모와 건축물 유형을 대조한 결과 건축허가 전 안전영향평가 대상으로 확인되었습니다.",
+    reviewNote: "단지 전체 연면적이나 대지 내 여러 동을 단순 합산해 자동 판정하지 않습니다. 초고층 여부 또는 개별 동 연면적 10만㎡ 이상이면서 16층 이상인 기준과 다른 법률 평가의 중복 인정 범위를 확인한 최종 검토값만 입력합니다.", verified: true,
+    variability: ["개별 동 연면적·층수", "구조·지반·풍환경 검토", "평가기관", "건축위원회·재심의"],
+  },
+  {
+    id: "fire-performance-based-design-review",
+    name: "소방시설 성능위주설계 사전검토·신고",
+    aliases: ["소방 성능위주설계", "성능위주설계 사전검토"],
+    description: "연면적·높이·층수·용도가 법정 기준에 해당하는 신축 특정소방대상물은 화재·피난 모의와 소방시설 성능을 반영한 성능위주설계를 하고 건축허가 신청 전에 관할 소방서장에게 신고합니다. 건축위원회 심의 대상이면 그 심의 신청 전에 사전검토를 거칩니다.",
+    outcome: "성능위주설계 사전검토·검토평가 결과와 신고",
+    stage: "PLAN_AND_OCCUPANCY", actionType: "REVIEW", domain: "소방·설계", lane: "ENVIRONMENT_SAFETY_FIRE_UTILITY",
+    applicant: "법정 대상 신축 특정소방대상물의 관계인과 성능위주설계자", authority: "관할 소방서장·소방본부장 또는 소방청장",
+    consultations: ["성능위주설계 평가단", "중앙소방기술심의위원회(해당 시)", "건축위원회·건축 허가권자"],
+    submissions: ["건축물 위치·구조·규모·용도", "소방차 진입·부지·도로계획", "화재안전성능 확보계획", "화재·피난 모의실험", "소방시설 설계도서와 성능위주설계 계약·자격자료"],
+    followUp: ["검토·평가 결과를 건축허가·소방설계에 반영", "소방시설공사 착공·감리·완공검사와 연계", "법정 중요 변경 시 변경신고·재검토"],
+    sourceId: "src-fire-facilities-act-current", article: "제8조", citationSummary: "대통령령으로 정하는 규모 이상의 신축 특정소방대상물에 소방시설을 설치하려는 자는 성능위주설계를 하고 건축허가 신청 전에 신고해야 하며 건축위원회 심의 대상은 심의 전에 사전검토를 받아야 한다.",
+    condition: supplementalPermitCondition("fire-performance-based-design-review"), requiredInputs: supplementalPermitRequiredInputs("fire-performance-based-design-review"),
+    explanation: "건축물 규모·용도와 신축 여부를 대조한 결과 성능위주설계 사전검토·신고 대상으로 확인되었습니다.",
+    reviewNote: "공장·AI 데이터센터라는 업종명만으로 자동 적용하지 않습니다. 신축 여부, 시행령상 특정소방대상물 용도와 연면적·높이·층수 기준 및 건축위원회 심의 대상 여부를 관할 소방기관과 확인한 입력값으로 판정합니다.", verified: true,
+    variability: ["특정소방대상물 유형·규모", "사전검토", "평가단·중앙심의", "보완·설계변경"],
+  },
+  {
+    id: "water-supply-factory-restriction-zone-review",
+    name: "상수원보호구역 밖 공장설립 제한·승인지역 확인",
+    aliases: ["수도법 공장설립 제한지역 확인", "공장설립 승인지역 승인"],
+    description: "상수원보호구역 밖이라도 취수시설 상·하류의 대통령령상 공장설립 제한지역에서는 공장설립이 원칙적으로 제한됩니다. 별도 공장설립 승인지역에서 환경부령상 요건을 충족하는 공장만 시장·군수·구청장의 승인을 받을 수 있는지 토지계약과 공장설립 승인 전에 확인합니다.",
+    outcome: "공장설립 제한·승인지역 및 법정 승인·예외요건 확인",
+    stage: "SITE_REVIEW", actionType: "REVIEW", domain: "입지·상수원", lane: "CITY_COUNTY_DISTRICT",
+    applicant: "취수시설 상·하류에서 공장 설립·증설·업종변경을 검토하는 사업자", authority: "관할 시장·군수·구청장 및 수도사업자",
+    consultations: ["관할 상수원·수도부서", "공장설립 승인부서", "수도사업자·유역환경청"],
+    submissions: ["필지별 제한·승인지역 도면", "취수시설·유하거리 확인자료", "공장 정의·KSIC·생산공정", "특정수질유해물질과 폐수·오수 계획", "기존공장·증설·업종변경 이력"],
+    followUp: ["입지 가능성 확인 후 공장설립 승인 진행", "승인지역 공장은 법정 승인조건을 설계·운영에 반영", "폐수배출시설 설치제한 고시와 별도 중첩 확인"],
+    sourceId: "src-water-supply-act-current", article: "제7조의2", citationSummary: "상수원보호구역의 상류 또는 취수시설 상·하류의 대통령령상 지역에서는 공장설립이 제한되며, 공장설립 승인지역에서 환경부령상 요건을 충족하는 공장만 시장·군수·구청장의 승인을 받을 수 있다.",
+    condition: supplementalPermitCondition("water-supply-factory-restriction-zone-review"), requiredInputs: supplementalPermitRequiredInputs("water-supply-factory-restriction-zone-review"),
+    explanation: "정확한 필지와 공장·수질 조건을 대조한 결과 수도법상 공장설립 제한·승인지역 검토가 필요한 것으로 확인되었습니다.",
+    reviewNote: "시·군명, 업종명 또는 상수원 인접이라는 이유만으로 자동 판정하지 않습니다. 취수시설 종류·유하거리와 시행령 제14조의2·제14조의3 도면, 공장 정의, 승인 가능 공장·특정수질유해물질 요건을 확인합니다. AI 데이터센터에는 공장 절차를 자동 적용하지 않습니다.", verified: true,
+    variability: ["취수시설·유하거리", "제한·승인지역 도면", "공장·수질요건", "기존공장·변경 이력"],
+  },
+  {
+    id: "water-discharge-facility-restriction-zone-review",
+    name: "폐수배출시설 설치제한지역 입지 확인",
+    aliases: ["물환경보전법 배출시설 설치제한", "한강·임진강 폐수시설 입지제한"],
+    description: "물환경보전법과 한강·임진강 등 유역별 고시가 지정한 정확한 지역에서 특정수질유해물질 기준을 충족하는 폐수배출시설은 설치가 제한될 수 있습니다. 필지·공정·물질과 고시상 예외를 폐수배출시설 허가 또는 통합환경허가 전에 확인하는 입지 게이트입니다.",
+    outcome: "폐수배출시설 설치제한 고시지역·대상시설·예외 확인",
+    stage: "SITE_REVIEW", actionType: "REVIEW", domain: "입지·수질", lane: "CENTRAL_OR_REGIONAL_OFFICE",
+    applicant: "설치제한 고시지역에서 폐수배출시설을 계획하는 사업자", authority: "기후에너지환경부·관할 유역환경청 및 시·도",
+    consultations: ["관할 유역환경청", "시·군·구 수질·공장설립 부서", "통합환경허가 기관(해당 시)"],
+    submissions: ["필지별 유역 고시 별표·도면", "폐수배출 공정흐름과 최대 폐수량", "특정수질유해물질 종류·농도", "전량 위탁·재이용·공공처리 유입계획", "기존허가·증설 이력과 고시상 예외자료"],
+    followUp: ["입지제한·예외 확인 후 폐수배출시설 또는 통합환경허가 경로 확정", "예외조건을 허가도서·운영조건에 반영", "고시 개정과 필지별 경계 재확인"],
+    sourceId: "src-water-act-current-20260219", article: "제33조", citationSummary: "기후에너지환경부장관은 취수시설·특별대책지역과 그 상류 등 법정 범위에서 사람의 건강·환경에 중대한 위해가 예상되는 배출시설의 설치를 제한할 수 있고 유역별 고시가 지역·시설·예외를 구체화한다.",
+    condition: supplementalPermitCondition("water-discharge-facility-restriction-zone-review"), requiredInputs: supplementalPermitRequiredInputs("water-discharge-facility-restriction-zone-review"),
+    explanation: "필지별 유역 고시와 특정수질유해물질·예외조건을 대조한 결과 폐수배출시설 설치제한 입지검토가 필요한 것으로 확인되었습니다.",
+    reviewNote: "경기도·한강수계 또는 업종명만으로 자동 적용하지 않습니다. 한강·임진강 등 적용 고시의 현행 별표에 있는 읍·면·동·리·유역 경계, 시행규칙 별표 13의2 기준과 고시별 예외를 직접 확인합니다. 팔당 특별대책지역 절차와 법적 근거·범위가 다른 별도 게이트입니다.", verified: true,
+    variability: ["유역별 고시·필지 경계", "특정수질유해물질 기준", "전량처리·기존시설 예외", "고시 개정"],
+  },
+  {
+    id: "han-river-riparian-zone-factory-location-review",
+    name: "한강수계 수변구역 공장 입지제한 확인",
+    aliases: ["수변구역 공장 설치제한", "한강수계 수변구역 입지검토"],
+    description: "한강수계 수변구역에서는 공장의 신규 설치와 공장으로의 용도변경이 원칙적으로 금지됩니다. 시행령·시행규칙이 정한 제한 업종, 특정수질유해물질 무사용·미발생, 1일 최대 오수량 등 좁은 예외를 모두 충족하는지 공장설립·토지계약 전에 확인하는 입지 게이트입니다.",
+    outcome: "수변구역 공장 설치제한과 법정 예외 해당 여부 확인",
+    stage: "SITE_REVIEW", actionType: "REVIEW", domain: "입지·한강수계", lane: "CENTRAL_OR_REGIONAL_OFFICE",
+    applicant: "수변구역에서 공장 설치·용도변경을 검토하는 사업자", authority: "관할 시·군·구 및 한강유역환경청",
+    consultations: ["기후에너지환경부·한강유역환경청", "관할 공장설립·수질 부서", "상수원 관리기관"],
+    submissions: ["필지별 수변구역 지정도", "KSIC 세세분류와 생산공정", "특정수질유해물질 사용·발생 검토서", "1일 최대 오수량과 처리계획"],
+    followUp: ["입지 가능성 확인 후 공장설립·개발행위 절차 진행", "법정 예외조건을 설계·운영조건으로 유지"],
+    sourceId: "src-han-river-watershed-act-current", article: "제5조", citationSummary: "한강수계 수변구역에서는 공장 설치가 원칙적으로 금지되며 대통령령으로 정한 제한적 시설만 예외가 인정된다.",
+    condition: supplementalPermitCondition("han-river-riparian-zone-factory-location-review"), requiredInputs: supplementalPermitRequiredInputs("han-river-riparian-zone-factory-location-review"),
+    explanation: "정확한 필지가 한강수계 수변구역이고 공장 설치제한·예외를 검토해야 하는 것으로 확인되어 선행 입지게이트를 포함합니다.",
+    reviewNote: "시·군명이나 업종명만으로 구역·예외를 자동 판정하지 않습니다. 현행 지정도, 시행령 별표 1의 제한 제조업, 특정수질유해물질과 1일 최대 오수 20㎥ 이하 등 모든 예외요건을 필지·공정자료로 대조합니다.", verified: true,
+    statutoryPeriod: "입지제한·예외 확인에 관한 전국 공통 처리기간 없음", durationEvidence: "INSUFFICIENT_DATA", durationSourceId: "src-han-river-watershed-act-current", durationArticle: "제5조", durationCitationSummary: "수변구역 공장 설치제한과 예외요건은 정하지만 필지·시설 확인을 끝내는 별도 전국 공통 처리기간은 두지 않는다.", variability: ["필지별 지정도", "KSIC 세세분류", "특정수질유해물질", "최대 오수량"],
+  },
+  {
+    id: "paldang-special-measures-zone-wastewater-location-review",
+    name: "팔당 특별대책지역 폐수배출시설 입지제한 확인",
+    aliases: ["팔당 Ⅰ·Ⅱ권역 폐수시설 입지검토", "특별대책지역 배출시설 제한"],
+    description: "팔당호 특별대책지역의 필지별 Ⅰ·Ⅱ권역에서는 일정 규모 이상 폐수배출시설과 특정수질유해물질 배출시설의 입지가 원칙적으로 제한됩니다. 좁은 처리·전량유입·기존시설 예외를 폐수배출시설 허가 전에 확인하는 입지 게이트입니다.",
+    outcome: "팔당 특별대책지역 권역·배출시설 입지제한 및 예외 확인",
+    stage: "SITE_REVIEW", actionType: "REVIEW", domain: "입지·팔당수계", lane: "CENTRAL_OR_REGIONAL_OFFICE",
+    applicant: "특별대책지역에서 폐수배출시설을 설치·변경하려는 사업자", authority: "관할 시·군 및 한강유역환경청",
+    consultations: ["기후에너지환경부·한강유역환경청", "관할 수질·공장설립 부서", "공공하수도 관리청"],
+    submissions: ["필지별 특별대책지역 Ⅰ·Ⅱ권역 도면", "1일 최대 폐수량과 수질", "특정수질유해물질 종류·농도", "방류·공공하수 전량유입 계획", "기존 허가일·증설 이력"],
+    followUp: ["입지 가능성 확인 후 폐수배출시설 허가·신고 진행", "예외조건과 방류·유입 조건을 설계·허가서에 반영"],
+    sourceId: "src-paldang-special-measures-notice-current", article: "제6조 및 별표 2", citationSummary: "팔당호 특별대책지역은 권역별로 일정 규모 이상 폐수배출시설과 특정수질유해물질 배출시설의 입지를 제한하고 열거된 예외만 허용한다.",
+    condition: supplementalPermitCondition("paldang-special-measures-zone-wastewater-location-review"), requiredInputs: supplementalPermitRequiredInputs("paldang-special-measures-zone-wastewater-location-review"),
+    explanation: "정확한 필지가 팔당 특별대책지역 Ⅰ·Ⅱ권역의 폐수배출시설 입지제한 검토대상으로 확인되어 선행 입지게이트를 포함합니다.",
+    reviewNote: "경기도 또는 시·군 전체로 자동 판정하지 않습니다. 현행 고시 별표 2의 읍·면·동·리 단위 권역, 1일 폐수 200㎥ 기준, 특정수질유해물질, BOD 처리·공공하수 유입과 기존허가 예외를 각각 확인합니다.", verified: true,
+    statutoryPeriod: "입지제한·예외 확인에 관한 전국 공통 처리기간 없음", durationEvidence: "INSUFFICIENT_DATA", durationSourceId: "src-paldang-special-measures-notice-current", durationArticle: "제6조 및 별표 2", durationCitationSummary: "특별대책지역의 폐수배출시설 입지제한과 예외는 정하지만 입지확인을 끝내는 별도 전국 공통 처리기간은 두지 않는다.", variability: ["필지별 Ⅰ·Ⅱ권역", "폐수량·수질", "특정수질유해물질", "기존시설·전량유입 예외"],
+  },
+  {
+    id: "han-river-water-pollution-load-allocation",
+    name: "한강수계 오염부하량 할당·허가제한 확인",
+    aliases: ["수질오염총량 개발부하량 협의", "사업장 오염부하량 할당"],
+    description: "한강수계 오염총량관리 시행계획이 적용되는 개발사업·시설은 관할 시·군의 개발부하량 또는 사업장별 오염부하량 할당 가능 여부를 확인해야 합니다. 할당량을 초과한 지역에서는 건축·통합환경·폐수시설 허가가 제한될 수 있으므로 독립 승인으로 과장하지 않고 선행 협의·확인으로 관리합니다.",
+    outcome: "개발부하량·사업장 오염부하량 할당 가능 여부와 허가제한 확인",
+    stage: "SITE_REVIEW", actionType: "CONSULTATION", domain: "환경·수질총량", lane: "CITY_COUNTY_DISTRICT",
+    applicant: "오염총량관리지역에서 개발·배출시설을 계획하는 사업자", authority: "관할 시장·군수 및 시·도 오염총량 담당부서",
+    consultations: ["한강유역환경청", "관할 인허가 부서", "공공하수도·수질총량 부서"],
+    submissions: ["시·군 오염총량 시행계획 적용 확인", "개발 전후 오염부하량 산정", "일일 오수·폐수량과 처리계획", "개발부하량·사업장 할당 확보자료"],
+    followUp: ["할당량과 삭감계획을 개발·배출시설 허가조건에 반영", "연도별 시행계획·잔여량 변경 재확인"],
+    sourceId: "src-han-river-watershed-act-current", article: "제8조의4·제8조의7", citationSummary: "오염총량관리 시행계획은 시설별 오염부하량을 할당할 수 있고, 할당량을 초과한 지역에서는 건축·통합환경·폐수배출시설 등의 허가·승인을 제한할 수 있다.",
+    condition: supplementalPermitCondition("han-river-water-pollution-load-allocation"), requiredInputs: supplementalPermitRequiredInputs("han-river-water-pollution-load-allocation"),
+    explanation: "관할 시·군 시행계획상 개발부하량·사업장 할당 확인이 필요한 것으로 검토되어 관련 허가 전 수질총량 협의 경로를 포함합니다.",
+    reviewNote: "한강수계 소재만으로 자동 적용하지 않습니다. 관할 시·군의 현행 시행계획, 시설별 할당대상, 일일 오수·폐수량, 개발부하량 잔여량을 확인하며 이를 별도 인허가나 자동 승인으로 표현하지 않습니다.", verified: true,
+    statutoryPeriod: "개발부하량·사업장 할당 확인에 관한 전국 공통 처리기간 없음", durationEvidence: "INSUFFICIENT_DATA", durationSourceId: "src-han-river-watershed-act-current", durationArticle: "제8조의4·제8조의7", durationCitationSummary: "오염부하량 할당과 초과지역 허가제한 근거는 두지만 사업별 할당 확인의 전국 공통 완료기한은 별도로 정하지 않는다.", variability: ["시·군 시행계획", "잔여 개발부하량", "오수·폐수량", "삭감계획"],
+  },
+  {
+    id: "road-occupation-traffic-flow-plan-review",
+    name: "도로점용공사장 교통소통대책 제출·검토",
+    aliases: ["도로점용 교통소통대책", "도로점용공사장 교통대책"],
+    description: "서울·인천·경기에서 전력·통신·상하수도·가스 관로 또는 진입시설 공사로 도로를 점용하고 각 조례의 공사 종류·기간·범위 기준에 해당하면 착공 전에 교통소통대책을 제출해 검토받는 지역 추가절차입니다.",
+    outcome: "도로점용공사장 교통소통대책 검토결과",
+    stage: "PRE_CONSTRUCTION", actionType: "REVIEW", domain: "도로·지역교통", lane: "CITY_COUNTY_DISTRICT",
+    applicant: "조례상 대상 도로점용공사의 시행자", authority: "관할 도로관리청 또는 시장·군수·구청장",
+    consultations: ["관할 경찰관서", "교통·도로관리 부서", "대중교통·지하매설물 관계기관"],
+    submissions: ["도로점용허가·공사계획", "차로 점용구간·기간", "단계별 교통처리계획", "보행자·대중교통·공사장 안전대책"],
+    followUp: ["검토의견을 도로점용허가와 공사계획에 반영", "공사단계 변경 시 재협의·변경대책 확인"],
+    sourceId: "src-road-act-20260603", article: "제61조", citationSummary: "도로구역에서 공작물·시설을 설치하거나 그 밖의 목적으로 도로를 점용하려면 도로관리청의 허가를 받아야 하며, 수도권 지역 교통소통대책은 관할 조례를 별도로 확인해야 한다.",
+    condition: supplementalPermitCondition("road-occupation-traffic-flow-plan-review"), requiredInputs: supplementalPermitRequiredInputs("road-occupation-traffic-flow-plan-review"),
+    explanation: "수도권에서 계획한 도로점용공사가 관할 조례상 교통소통대책 제출대상으로 확인되어 착공 전 검토절차를 포함합니다.",
+    reviewNote: "도로점용이 있다는 이유만으로 자동 적용하지 않습니다. 서울·인천·경기의 현행 조례와 관할 도로관리청 기준에서 공사 종류·차로 점용·기간·범위를 확인한 결과만 입력하며, 전국 공통 처리기간을 만들지 않습니다.", verified: true,
+    statutoryPeriod: "지역 조례·관할기관별 검토일정이 달라 전국 공통 처리기간을 설정하지 않음", durationEvidence: "INSUFFICIENT_DATA", durationSourceId: "src-road-act-20260603", durationArticle: "제61조", durationCitationSummary: "도로점용허가의 전국 공통 근거와 별도로 시·도 조례상 교통소통대책 검토의 전국 공통 총기간은 정해져 있지 않아 관할기관 일정을 확인해야 한다.", variability: ["관할 조례", "점용 차로·기간", "경찰 협의", "교통처리계획 보완"],
+  },
+  {
     id: "development-activity-permit", name: "개발행위허가", aliases: ["토지형질변경허가"],
     description: "건축물·공작물을 설치하거나 토지 형질을 변경하는 경우 용도지역, 기반시설, 환경·경관 기준을 종합 심사하는 절차입니다. 산업단지 입주계약으로 공장설립승인이 의제되어도 공장건축의 개발행위허가는 자동 면제되지 않습니다.", outcome: "개발행위허가서 또는 건축허가에서의 의제 협의결과",
     stage: "PLAN_AND_OCCUPANCY", domain: "입지·토지", lane: "CITY_COUNTY_DISTRICT", applicant: "사업자 또는 토지사용권자", authority: "관할 시·군·구 개발행위허가 부서",
@@ -488,7 +896,7 @@ const permitSeeds: PermitSeed[] = [
         { all: [{ eq: { path: "industrialComplex.inside", value: false } }, BUILDING_WORK] },
         { all: [{ eq: { path: "industrialComplex.inside", value: true } }, INDUSTRIAL_COMPLEX_FACTORY_BUILDING_WORK] },
       ],
-    }, requiredInputs: ["industrialComplex.inside", "building.action", "site.developmentAreaM2"], explanation: "건축·개발행위가 있으므로 개발행위허가를 로드맵에 포함합니다. 산업단지 입주계약 완료만으로는 제외하지 않으며, 건축허가에서 의제하려면 관련 서류 제출과 관계부서 협의를 확인해야 합니다.", reviewNote: "대법원 2021두33883 판결에 따라 산업단지 입주계약의 공장설립승인 의제와 건축·개발행위허가는 구분합니다. 용도지역·개발면적·경사도·조례 및 건축허가 의제서류·협의결과를 확인해야 합니다.", verified: true, days: [15, 15, 30], statutoryPeriod: "정부24 전국 공통 안내 기준 총 15일; 보완·협의기간은 별도", durationEvidence: "OFFICIAL_SERVICE_STANDARD", variability: ["용도지역", "도시계획위원회 심의", "관계부서 협의"], deemedBy: ["building-permit"],
+    }, requiredInputs: ["industrialComplex.inside", "building.action"], explanation: "건축·개발행위가 있으므로 개발행위허가를 로드맵에 포함합니다. 산업단지 입주계약 완료만으로는 제외하지 않으며, 건축허가에서 의제하려면 관련 서류 제출과 관계부서 협의를 확인해야 합니다.", reviewNote: "대법원 2021두33883 판결에 따라 산업단지 입주계약의 공장설립승인 의제와 건축·개발행위허가는 구분합니다. 용도지역·개발면적·경사도·조례 및 건축허가 의제서류·협의결과를 확인해야 합니다.", verified: true, days: [15, 15, 30], statutoryPeriod: "정부24 전국 공통 안내 기준 총 15일; 보완·협의기간은 별도", durationEvidence: "OFFICIAL_SERVICE_STANDARD", variability: ["용도지역", "도시계획위원회 심의", "관계부서 협의"], deemedBy: ["building-permit"],
   },
   {
     id: "development-activity-completion-inspection", name: "개발행위 준공검사", aliases: ["토지형질변경 준공검사"],
@@ -508,14 +916,14 @@ const permitSeeds: PermitSeed[] = [
     stage: "SITE_REVIEW", domain: "입지·농지", lane: "CITY_COUNTY_DISTRICT", applicant: "농지를 전용하려는 사업자", authority: "면적·농업진흥지역에 따른 시·군·구, 시·도 또는 농림축산식품부",
     consultations: ["농지관리 부서", "개발행위·공장설립 승인부서"], submissions: ["사업계획서", "토지 권원자료", "지형도·피해방지계획", "전용면적 산출도"], followUp: ["농지보전부담금 납부", "허가목적 외 사용·면적 변경 시 변경허가 검토"],
     sourceId: "src-farmland-act-20260616", article: "제34조", citationSummary: "농지를 전용하려는 자는 법정 예외를 제외하고 농림축산식품부장관의 허가 또는 의제협의를 받아야 한다.",
-    condition: { eq: { path: "site.landCategory", value: "FARMLAND" } }, requiredInputs: ["site.developmentAreaM2"], explanation: "입력한 부지 현황이 농지이므로 전용허가와 입지제한을 검토합니다.", reviewNote: "농업진흥지역 여부, 현황농지, 전용면적과 오염시설 제한을 필지별로 확인해야 합니다.", verified: true, days: [10, 20, 30], statutoryPeriod: "정부24 안내 기준 농업진흥지역·면적에 따라 10일·20일·30일", durationEvidence: "OFFICIAL_SERVICE_STANDARD", variability: ["농업진흥지역", "전용면적", "관계기관 의제협의"], deemedBy: ["factory-establishment-approval", "development-activity-permit"],
+    condition: { eq: { path: "site.landCategory", value: "FARMLAND" } }, requiredInputs: [], explanation: "입력한 부지 현황이 농지이므로 전용허가와 입지제한을 검토합니다.", reviewNote: "농업진흥지역 여부, 현황농지, 전용면적과 오염시설 제한을 필지별로 확인해야 합니다.", verified: true, days: [10, 20, 30], statutoryPeriod: "정부24 안내 기준 농업진흥지역·면적에 따라 10일·20일·30일", durationEvidence: "OFFICIAL_SERVICE_STANDARD", variability: ["농업진흥지역", "전용면적", "관계기관 의제협의"], deemedBy: ["factory-establishment-approval", "development-activity-permit"],
   },
   {
     id: "forestland-conversion-permit", name: "산지전용허가", description: "산지를 공장·도로·부대시설 용지로 전용하기 전 보전산지 여부, 면적, 재해·복구대책을 심사받는 절차입니다.", outcome: "산지전용허가서",
     stage: "SITE_REVIEW", domain: "입지·산지", lane: "CITY_COUNTY_DISTRICT", applicant: "산지를 전용하려는 사업자", authority: "산림청장·시도지사·시장·군수·구청장 중 법정 권한자",
     consultations: ["산림부서", "재해·개발행위 관계부서"], submissions: ["경계·현황도", "토지 권원과 사업계획", "산림조사서", "토사유출·재해방지·복구계획"], followUp: ["복구비 예치", "복구설계 승인·복구준공검사 대상 확인"],
     sourceId: "src-forestland-act-current", article: "제14조", citationSummary: "산지전용을 하려는 자는 산지 종류와 면적에 따른 법정 권한자의 허가를 받아야 한다.",
-    condition: { eq: { path: "site.landCategory", value: "FOREST" } }, requiredInputs: ["site.developmentAreaM2"], explanation: "입력한 부지 현황이 산지이므로 전용허가와 복구의무를 검토합니다.", reviewNote: "보전산지·산지전용제한지역·면적과 재해방지 기준 확인 전에는 확정할 수 없습니다.", variability: ["보전산지 여부", "전용면적", "산지전용타당성조사"], deemedBy: ["factory-establishment-approval", "development-activity-permit"],
+    condition: { eq: { path: "site.landCategory", value: "FOREST" } }, requiredInputs: [], explanation: "입력한 부지 현황이 산지이므로 전용허가와 복구의무를 검토합니다.", reviewNote: "보전산지·산지전용제한지역·면적과 재해방지 기준 확인 전에는 확정할 수 없습니다.", variability: ["보전산지 여부", "전용면적", "산지전용타당성조사"], deemedBy: ["factory-establishment-approval", "development-activity-permit"],
   },
   {
     id: "forestland-restoration-design-approval", name: "산지 복구설계서 승인", description: "산지전용허가 등에 따라 훼손된 비탈면·잔여 산지의 복구공사를 하기 전에 복구범위·공법·공정과 재해방지계획을 승인받는 절차입니다.", outcome: "산지 복구설계서 승인서",
@@ -599,14 +1007,23 @@ const permitSeeds: PermitSeed[] = [
     stage: "PLAN_AND_OCCUPANCY", actionType: "CONSULTATION", domain: "환경영향평가", lane: "CENTRAL_OR_REGIONAL_OFFICE", applicant: "사업자(승인기관을 통해 협의)", authority: "기후에너지환경부장관 또는 관할 지방환경관서",
     consultations: ["사업 승인기관", "관할 지자체", "주민·전문검토기관"], submissions: ["평가준비서", "평가서 초안·주민의견 수렴결과", "환경영향평가서", "저감·사후환경관리계획"], followUp: ["승인 전 협의내용 반영", "사전공사 금지와 사후환경영향조사"],
     sourceId: "src-eia-act-current", article: "제22조·제29조·제34조", citationSummary: "대통령령상 대상사업은 환경영향평가를 실시하고 사업 승인 전에 협의를 완료하며 협의 전 공사를 해서는 안 된다.",
-    condition: { eq: { path: "environment.environmentalAssessmentType", value: "ENVIRONMENTAL" } }, requiredInputs: ["site.developmentAreaM2"], explanation: "환경영향평가 대상으로 입력되어 사업 승인 전 평가·협의 절차를 포함합니다.", reviewNote: "업종 자체가 아니라 사업유형·개발면적·입지와 시행령 별표 3 판정을 전제로 합니다.", verified: true, days: [45, 45, 60], statutoryPeriod: "협의 45일, 부득이한 경우 60일; 보완·전문위원회·공휴일 등 제외", durationEvidence: "STATUTE", variability: ["주민의견", "보완", "전문위원회 검토"],
+    condition: { eq: { path: "environment.environmentalAssessmentType", value: "ENVIRONMENTAL" } }, requiredInputs: [], explanation: "환경영향평가 대상으로 입력되어 사업 승인 전 평가·협의 절차를 포함합니다.", reviewNote: "업종 자체가 아니라 사업유형·개발면적·입지와 시행령 별표 3 판정을 전제로 합니다.", verified: true, days: [45, 45, 60], statutoryPeriod: "협의 45일, 부득이한 경우 60일; 보완·전문위원회·공휴일 등 제외", durationEvidence: "STATUTE", variability: ["주민의견", "보완", "전문위원회 검토"],
   },
   {
     id: "small-environmental-impact-assessment", name: "소규모 환경영향평가", description: "보전용도지역의 일정 규모 개발사업이 본 환경영향평가 대상은 아니지만 입지·환경영향 검토가 필요한 경우 진행하는 협의입니다.", outcome: "소규모 환경영향평가 협의내용 통보",
     stage: "PLAN_AND_OCCUPANCY", actionType: "CONSULTATION", domain: "환경영향평가", lane: "CENTRAL_OR_REGIONAL_OFFICE", applicant: "사업자 또는 사업 승인기관", authority: "관할 지방환경관서",
     consultations: ["사업 승인기관", "관할 지자체 환경부서"], submissions: ["사업계획·입지 현황", "환경현황 조사", "영향예측·저감방안", "도면·개발면적 산출"], followUp: ["승인 전 협의내용 반영", "협의내용 이행관리"],
     sourceId: "src-eia-act-current", article: "제43조·제44조", citationSummary: "보전이 필요한 지역에서 대통령령상 개발사업을 하려는 자는 승인 전에 소규모 환경영향평가 협의를 해야 한다.",
-    condition: { eq: { path: "environment.environmentalAssessmentType", value: "SMALL" } }, requiredInputs: ["site.developmentAreaM2"], explanation: "소규모 환경영향평가 대상으로 입력되어 개발·건축 승인 전 협의를 포함합니다.", reviewNote: "용도지역·사업종류·개발면적과 시행령 별표 4 판정을 전제로 합니다.", verified: true, days: [20, 30, 40], statutoryPeriod: "원칙 30일(연장 40일), 일정 사업은 20일(연장 30일); 보완기간 등 제외", durationEvidence: "STATUTE", variability: ["입지 민감도", "보완", "현지조사"],
+    condition: { eq: { path: "environment.environmentalAssessmentType", value: "SMALL" } }, requiredInputs: [], explanation: "소규모 환경영향평가 대상으로 입력되어 개발·건축 승인 전 협의를 포함합니다.", reviewNote: "용도지역·사업종류·개발면적과 시행령 별표 4 판정을 전제로 합니다.", verified: true, days: [20, 30, 40], statutoryPeriod: "원칙 30일(연장 40일), 일정 사업은 20일(연장 30일); 보완기간 등 제외", durationEvidence: "STATUTE", variability: ["입지 민감도", "보완", "현지조사"],
+  },
+  {
+    id: "local-environmental-impact-assessment", name: "시·도 조례 환경영향평가", aliases: ["지역환경영향평가", "지방환경영향평가"],
+    description: "국가 환경영향평가 대상 규모에는 미달하더라도 환경영향평가법 제42조와 시·도 조례가 정한 사업 종류·규모에 해당하면 사업 승인 전에 평가서 작성, 주민의견 수렴과 시·도 협의를 진행하는 절차입니다.", outcome: "시·도 조례 환경영향평가 협의내용 통보",
+    stage: "PLAN_AND_OCCUPANCY", actionType: "CONSULTATION", domain: "환경영향평가·자치법규", lane: "PROVINCE", applicant: "사업자(승인기관을 통해 협의)", authority: "관할 시·도 환경영향평가 협의부서",
+    consultations: ["사업 승인기관", "관할 시·군·구", "주민·환경영향평가협의회"], submissions: ["조례 별표 대상판정 자료", "평가준비서·평가항목 결정자료", "평가서 초안·주민의견 수렴결과", "환경영향평가서와 저감방안"], followUp: ["사업 승인 전 협의내용 반영", "시·도 조례상 협의내용 이행·사후관리"],
+    sourceId: "src-eia-act-current", article: "제42조", citationSummary: "시·도는 국가 환경영향평가 대상에 해당하지 않는 사업 중 지역 특성을 고려해 조례로 정한 사업에 환경영향평가를 실시하게 할 수 있다.",
+    condition: { eq: { path: "environment.localEnvironmentalAssessmentRequired", value: true } }, requiredInputs: ["location.province", "environment.localEnvironmentalAssessmentRequired"], explanation: "선택한 시·도의 현행 조례상 환경영향평가 대상으로 확인되어 사업 승인 전 지역 평가·협의 절차를 포함합니다.", reviewNote: "서울·인천·경기를 포함한 시·도별 조례의 대상사업·규모·제외·중복평가 규정과 승인기관·협의기관을 대조한 결과를 입력해야 합니다. 국가 환경영향평가·소규모 환경영향평가와 서로 다른 사업범위에는 함께 적용될 수 있으나, 같은 사업범위의 중복·면제는 승인기관과 협의기관에 확인합니다.", verified: true,
+    statutoryPeriod: "환경영향평가법은 시·도 조례 평가의 전국 공통 처리기간을 정하지 않으므로 해당 조례와 협의기관 일정 확인 필요", durationEvidence: "INSUFFICIENT_DATA", durationSourceId: "src-eia-act-current", durationArticle: "제42조", durationCitationSummary: "법은 시·도가 조례로 지역 환경영향평가를 정하도록 위임하지만 전국 공통 협의 총기간은 정하지 않는다.", variability: ["시·도 조례 별표", "평가항목 결정", "주민의견 수렴", "보완·전문검토"],
   },
   {
     id: "integrated-environmental-permit", name: "환경오염시설 통합허가", description: "시행령상 대상 업종의 대기·수질 1·2종 등 대형 사업장이 개별 배출시설 허가를 통합환경관리계획으로 묶어 설치·운영 허가받는 절차입니다.", outcome: "배출시설등 설치·운영 통합허가서",
@@ -1749,6 +2166,287 @@ export const expandedCitations: LegalCitation[] = [
   },
 ];
 
+expandedCitations.push(
+  {
+    id: "cit-exp-capital-region-factory-restriction-review-planning-act",
+    sourceId: "src-capital-region-planning-act-current",
+    article: "제6조·제18조",
+    paragraph: null,
+    subparagraph: null,
+    item: null,
+    role: "APPLICABILITY",
+    sourceVersion: "시행 2026-06-02",
+    summary: "수도권을 과밀억제권역·성장관리권역·자연보전권역으로 구분하고, 공장 등의 과도한 집중을 막기 위해 종류·규모별 총량규제를 둘 수 있다.",
+  },
+  {
+    id: "cit-exp-capital-region-factory-restriction-review-planning-decree",
+    sourceId: "src-capital-region-planning-decree-current",
+    article: "제2조·제3조·제9조·제21조부터 제23조까지 및 별표 1",
+    paragraph: null,
+    subparagraph: null,
+    item: null,
+    role: "APPLICABILITY",
+    sourceVersion: "시행 2025-10-01",
+    summary: "수도권은 서울·인천·경기이며, 500㎡ 이상 공장의 신축·증축·용도변경 면적을 공장총량으로 관리하고 시·도와 시·군·구별 배정계획·집행을 거치도록 한다.",
+  },
+  {
+    id: "cit-exp-capital-region-factory-restriction-review-industrial-cluster-decree",
+    sourceId: "src-industrial-cluster-decree-current",
+    article: "제26조부터 제27조의3까지 및 별표 1의2·별표 2·별표 3",
+    paragraph: null,
+    subparagraph: null,
+    item: null,
+    role: "APPLICABILITY",
+    sourceVersion: "현행 시행령 · 확인 2026-08-24",
+    summary: "수도권 권역별 공장 신설·증설 허용 범위를 공장 종류, 기업규모, 기존공장 여부와 입지 유형에 따라 구분하므로 개별 예외를 확인하기 전에는 허용·불허를 단정할 수 없다.",
+  },
+  {
+    id: "cit-exp-capital-region-factory-restriction-review-total-notice",
+    sourceId: "src-capital-region-factory-total-notice-2024-2026",
+    article: "고시 본문·별표",
+    paragraph: null,
+    subparagraph: null,
+    item: null,
+    role: "APPLICABILITY",
+    sourceVersion: "국토교통부고시 제2024-176호 · 시행 2024-04-09 · 2026-12-31까지",
+    summary: "2024년부터 2026년까지의 수도권 공장건축 총허용량을 정한 고시이므로 실제 배정 가능 여부는 해당 연도 시·도·시군별 집행공고와 잔여량을 다시 확인해야 한다.",
+  },
+);
+
+expandedCitations.push(
+  {
+    id: "cit-exp-capital-region-large-scale-development-review-decree",
+    sourceId: "src-capital-region-planning-decree-current",
+    article: "제4조",
+    paragraph: null,
+    subparagraph: null,
+    item: null,
+    role: "APPLICABILITY",
+    sourceVersion: "시행 2025-10-01",
+    summary: "공업용지조성사업은 면적 30만㎡ 이상을 수도권 대규모 개발사업으로 정하고, 동일 목적의 분할·연접 사업면적을 합산하도록 한다.",
+  },
+  {
+    id: "cit-exp-development-restriction-zone-action-permit-decree",
+    sourceId: "src-development-restriction-zone-decree-current",
+    article: "제20조",
+    paragraph: null,
+    subparagraph: null,
+    item: null,
+    role: "APPLICABILITY",
+    sourceVersion: `현행본 검토 ${REVIEW_DATE}`,
+    summary: "일정 규모 이상의 개발제한구역 행위허가는 14일 이상 주민 열람, 관계 행정기관 협의와 도시계획위원회 심의를 거친다.",
+  },
+  {
+    id: "cit-exp-airport-obstacle-limitation-consultation-rule",
+    sourceId: "src-airport-facilities-rule-current",
+    article: "제22조·제27조",
+    paragraph: null,
+    subparagraph: null,
+    item: null,
+    role: "APPLICABILITY",
+    sourceVersion: `현행본 검토 ${REVIEW_DATE}`,
+    summary: "장애물 제한표면 관련 법정 협의대상 시설과 항공학적 검토 신청·결정 통보 절차를 규정한다.",
+  },
+  {
+    id: "cit-exp-education-environment-protection-zone-review-rule",
+    sourceId: "src-education-environment-rule-current",
+    article: "제4조",
+    paragraph: null,
+    subparagraph: null,
+    item: null,
+    role: "APPLICABILITY",
+    sourceVersion: sourceVersion("src-education-environment-rule-current"),
+    summary: "교육환경보호구역 금지행위·시설 제외 신청에 필요한 신청서, 주변약도, 건축설계도서와 행정정보 공동이용 확인자료를 정한다.",
+  },
+  {
+    id: "cit-exp-railway-protection-zone-action-report-decree",
+    sourceId: "src-railway-safety-decree-current",
+    article: "제46조",
+    paragraph: null,
+    subparagraph: null,
+    item: null,
+    role: "APPLICABILITY",
+    sourceVersion: sourceVersion("src-railway-safety-decree-current"),
+    summary: "행위신고를 받은 행정청이 철도시설관리자의 의견을 듣고 필요한 경우 30일 이내 안전조치·행위 금지 또는 제한을 명할 수 있도록 하며, 이 기한은 전체 완료기간이 아니다.",
+  },
+  {
+    id: "cit-exp-building-safety-impact-assessment-decree",
+    sourceId: "src-building-act-enforcement-decree-20260728",
+    article: "제10조의3",
+    paragraph: null,
+    subparagraph: null,
+    item: null,
+    role: "APPLICABILITY",
+    sourceVersion: sourceVersion("src-building-act-enforcement-decree-20260728"),
+    summary: "안전영향평가 대상을 초고층 건축물 또는 하나의 건축물 연면적 10만㎡ 이상이면서 16층 이상인 주요 건축물 등으로 구체화한다.",
+  },
+  {
+    id: "cit-exp-fire-performance-based-design-review-decree",
+    sourceId: "src-fire-facilities-decree-current",
+    article: "제9조",
+    paragraph: null,
+    subparagraph: null,
+    item: null,
+    role: "APPLICABILITY",
+    sourceVersion: sourceVersion("src-fire-facilities-decree-current"),
+    summary: "성능위주설계를 해야 하는 신축 특정소방대상물을 용도·연면적·높이·층수와 지하연계 복합건축물 여부 등으로 구체화한다.",
+  },
+  {
+    id: "cit-exp-fire-performance-based-design-review-rule",
+    sourceId: "src-fire-facilities-enforcement-rule-current",
+    article: "제4조·제7조",
+    paragraph: null,
+    subparagraph: null,
+    item: null,
+    role: "APPLICABILITY",
+    sourceVersion: sourceVersion("src-fire-facilities-enforcement-rule-current"),
+    summary: "건축위원회 심의 전 사전검토와 건축허가 신청 전 성능위주설계 신고의 절차·도서 및 검토평가 분기를 정한다.",
+  },
+  {
+    id: "cit-exp-water-supply-factory-restriction-zone-review-decree",
+    sourceId: "src-water-supply-decree-current",
+    article: "제14조의2·제14조의3",
+    paragraph: null,
+    subparagraph: null,
+    item: null,
+    role: "APPLICABILITY",
+    sourceVersion: sourceVersion("src-water-supply-decree-current"),
+    summary: "상수원보호구역 밖 공장설립 제한지역의 취수시설·유하거리 기준과 공장설립 승인지역 지정·승인에 필요한 범위를 구체화한다.",
+  },
+  {
+    id: "cit-exp-water-discharge-facility-restriction-zone-review-decree",
+    sourceId: "src-water-environment-decree-current",
+    article: "제32조",
+    paragraph: null,
+    subparagraph: null,
+    item: null,
+    role: "APPLICABILITY",
+    sourceVersion: sourceVersion("src-water-environment-decree-current"),
+    summary: "폐수배출시설 설치제한지역의 법정 범위와 제한시설 지정에 필요한 위해성·수질영향 기준을 구체화한다.",
+  },
+  {
+    id: "cit-exp-water-discharge-facility-restriction-zone-review-han",
+    sourceId: "src-han-river-wastewater-restriction-notice-current",
+    article: "제1조부터 제3조까지 및 별표",
+    paragraph: null,
+    subparagraph: null,
+    item: null,
+    role: "APPLICABILITY",
+    sourceVersion: sourceVersion("src-han-river-wastewater-restriction-notice-current"),
+    summary: "한강유역의 설치제한 대상 지역·시설과 특정수질유해물질 기준 및 열거된 예외를 필지·시설별로 확인하도록 정한다.",
+  },
+  {
+    id: "cit-exp-water-discharge-facility-restriction-zone-review-imjin",
+    sourceId: "src-imjin-river-wastewater-restriction-notice-current",
+    article: "제1조부터 제3조까지 및 별표",
+    paragraph: null,
+    subparagraph: null,
+    item: null,
+    role: "APPLICABILITY",
+    sourceVersion: sourceVersion("src-imjin-river-wastewater-restriction-notice-current"),
+    summary: "임진강유역의 설치제한 대상 지역·시설과 특정수질유해물질 기준 및 열거된 예외를 필지·시설별로 확인하도록 정한다.",
+  },
+  {
+    id: "cit-exp-han-river-riparian-zone-factory-location-review-decree",
+    sourceId: "src-han-river-watershed-decree-current",
+    article: "제3조의3 및 별표 1",
+    paragraph: null,
+    subparagraph: null,
+    item: null,
+    role: "APPLICABILITY",
+    sourceVersion: `현행본 검토 ${REVIEW_DATE}`,
+    summary: "수변구역 공장 설치금지의 제한적 예외 대상 제조업과 시설 범위를 정한다.",
+  },
+  {
+    id: "cit-exp-han-river-riparian-zone-factory-location-review-rule",
+    sourceId: "src-han-river-watershed-rule-current",
+    article: "제5조의2",
+    paragraph: null,
+    subparagraph: null,
+    item: null,
+    role: "APPLICABILITY",
+    sourceVersion: `현행본 검토 ${REVIEW_DATE}`,
+    summary: "수변구역 예외 공장의 특정수질유해물질 무사용·미발생과 1일 최대 오수량 등 세부요건을 정한다.",
+  },
+  {
+    id: "cit-exp-han-river-water-pollution-load-allocation-rule",
+    sourceId: "src-han-river-watershed-rule-current",
+    article: "제8조의12",
+    paragraph: null,
+    subparagraph: null,
+    item: null,
+    role: "APPLICABILITY",
+    sourceVersion: `현행본 검토 ${REVIEW_DATE}`,
+    summary: "오염부하량 할당대상 시설과 할당·배출량 지정에 필요한 세부사항을 규정한다.",
+  },
+  {
+    id: "cit-exp-local-environmental-impact-assessment-seoul",
+    sourceId: "src-seoul-local-eia-ordinance-20250519",
+    article: "제4조·제13조·제15조 및 별표 1",
+    paragraph: null,
+    subparagraph: null,
+    item: null,
+    role: "APPLICABILITY",
+    sourceVersion: "시행 2025-05-19",
+    summary: "서울은 연면적 합계 10만㎡ 이상 건축과 조례 별표의 산업입지 등 대상사업에 지역 환경영향평가 절차를 둔다.",
+  },
+  {
+    id: "cit-exp-local-environmental-impact-assessment-incheon",
+    sourceId: "src-incheon-local-eia-ordinance-20140526",
+    article: "제2조부터 제4조까지 및 별표 1",
+    paragraph: null,
+    subparagraph: null,
+    item: null,
+    role: "APPLICABILITY",
+    sourceVersion: "시행 2014-05-26 · 확인 2026-08-24",
+    summary: "인천은 공장설립 사업면적 7만5천㎡ 이상 15만㎡ 미만 등 별표의 사업에 지역 환경영향평가를 적용하고, 같은 공장용지에 기존 평가가 이루어진 경우 등 제외조건을 둔다.",
+  },
+  {
+    id: "cit-exp-local-environmental-impact-assessment-gyeonggi",
+    sourceId: "src-gyeonggi-local-eia-ordinance-20251110",
+    article: "제6조·제13조·제15조 및 별표 1",
+    paragraph: null,
+    subparagraph: null,
+    item: null,
+    role: "APPLICABILITY",
+    sourceVersion: "시행 2025-11-10",
+    summary: "경기는 연면적 합계 10만㎡ 이상 건축물 등 별표 대상사업에 지역 환경영향평가를 적용하고 협의 요청·결과 통보 절차를 둔다.",
+  },
+  {
+    id: "cit-exp-road-occupation-traffic-flow-plan-review-seoul",
+    sourceId: "src-seoul-road-occupation-traffic-ordinance-current",
+    article: "제3조·제4조",
+    paragraph: null,
+    subparagraph: null,
+    item: null,
+    role: "APPLICABILITY",
+    sourceVersion: `ELIS 현행 상세 원문 확인 ${REVIEW_DATE}`,
+    summary: "서울은 조례상 도로를 1개 차로 이상 점용하는 일정 공사에 교통소통대책을 적용하고, 도로점용허가 신청 전에 대책을 제출하도록 한다.",
+  },
+  {
+    id: "cit-exp-road-occupation-traffic-flow-plan-review-incheon",
+    sourceId: "src-incheon-road-occupation-traffic-ordinance-current",
+    article: "제3조·제4조·제9조",
+    paragraph: null,
+    subparagraph: null,
+    item: null,
+    role: "APPLICABILITY",
+    sourceVersion: `ELIS 현행 상세 원문 확인 ${REVIEW_DATE}`,
+    summary: "인천은 시장이 관리하는 폭 20미터 초과 도로의 조례상 대상 점용공사에 교통소통대책을 적용하고, 도로점용허가 신청 전에 대책을 제출해 위원회 검토를 받도록 한다.",
+  },
+  {
+    id: "cit-exp-road-occupation-traffic-flow-plan-review-gyeonggi",
+    sourceId: "src-gyeonggi-road-occupation-traffic-ordinance-current",
+    article: "제4조·제5조·제14조",
+    paragraph: null,
+    subparagraph: null,
+    item: null,
+    role: "APPLICABILITY",
+    sourceVersion: `ELIS 현행 상세 원문 확인 ${REVIEW_DATE}`,
+    summary: "경기는 도지사가 관리하는 도로의 조례상 대상 점용공사에 교통소통대책을 적용하고, 허가 신청 전에 작성한 대책을 도로점용허가 신청서와 함께 제출하도록 하며 일부 권한을 시장·군수에게 위임한다.",
+  },
+);
+
 export const expandedRules: ApplicabilityRule[] = permitSeeds.map((seed) => ({
   id: `rule-exp-${seed.id}`,
   version: VERSION,
@@ -1767,6 +2465,104 @@ export const expandedRules: ApplicabilityRule[] = permitSeeds.map((seed) => ({
   reviewActor: internallyReviewedExpandedProcedureIds.has(seed.id) ? "Internal official-source review" : "AI-assisted official-source review",
   note: seed.reviewNote,
 }));
+
+const regionalRuleSeed = (procedureId: string) => {
+  const seed = permitSeeds.find((item) => item.id === procedureId);
+  if (!seed) throw new Error(`지역 규칙 대상 절차 없음: ${procedureId}`);
+  return seed;
+};
+
+const regionalRule = ({
+  procedureId,
+  regionId,
+  province,
+  citationId,
+  effectiveFrom,
+  explanation,
+}: {
+  procedureId: string;
+  regionId: "seoul" | "incheon" | "gyeonggi";
+  province: "서울특별시" | "인천광역시" | "경기도";
+  citationId: string;
+  effectiveFrom: string;
+  explanation: string;
+}): ApplicabilityRule => {
+  const seed = regionalRuleSeed(procedureId);
+  return {
+    id: `rule-exp-${procedureId}-${regionId}`,
+    version: VERSION,
+    procedureId,
+    effect: "INCLUDE",
+    effectiveFrom,
+    effectiveTo: null,
+    jurisdiction: {
+      nationwide: false,
+      provinces: [province],
+      cities: [],
+      industrialComplexIds: [],
+    },
+    condition: seed.condition,
+    requiredInputs: seed.requiredInputs,
+    missingPolicy: "INDETERMINATE",
+    citationIds: [citationId],
+    explanationTemplate: explanation,
+    priority: 200,
+    status: "INTERNAL_REVIEWED",
+    reviewActor: "Internal official-source review",
+    note: `${province} 현행 자치법규의 대상·제외·제출시점을 실제 사업조건과 대조한 경우에만 적용합니다.`,
+  };
+};
+
+expandedRules.push(
+  regionalRule({
+    procedureId: "local-environmental-impact-assessment",
+    regionId: "seoul",
+    province: "서울특별시",
+    citationId: "cit-exp-local-environmental-impact-assessment-seoul",
+    effectiveFrom: "2025-05-19",
+    explanation: "서울특별시 조례의 사업유형·규모와 제외요건을 확인한 지역 환경영향평가 대상입니다.",
+  }),
+  regionalRule({
+    procedureId: "local-environmental-impact-assessment",
+    regionId: "incheon",
+    province: "인천광역시",
+    citationId: "cit-exp-local-environmental-impact-assessment-incheon",
+    effectiveFrom: "2014-05-26",
+    explanation: "인천광역시 조례의 공장설립 사업면적과 같은 공장용지의 기존 평가 제외요건을 확인한 지역 환경영향평가 대상입니다.",
+  }),
+  regionalRule({
+    procedureId: "local-environmental-impact-assessment",
+    regionId: "gyeonggi",
+    province: "경기도",
+    citationId: "cit-exp-local-environmental-impact-assessment-gyeonggi",
+    effectiveFrom: "2025-11-10",
+    explanation: "경기도 조례의 사업유형·규모와 제외요건을 확인한 지역 환경영향평가 대상입니다.",
+  }),
+  regionalRule({
+    procedureId: "road-occupation-traffic-flow-plan-review",
+    regionId: "seoul",
+    province: "서울특별시",
+    citationId: "cit-exp-road-occupation-traffic-flow-plan-review-seoul",
+    effectiveFrom: "2026-01-01",
+    explanation: "서울특별시 조례상 대상 도로점용공사로 확인되어 도로점용허가 신청 전에 교통소통대책을 제출해야 합니다.",
+  }),
+  regionalRule({
+    procedureId: "road-occupation-traffic-flow-plan-review",
+    regionId: "incheon",
+    province: "인천광역시",
+    citationId: "cit-exp-road-occupation-traffic-flow-plan-review-incheon",
+    effectiveFrom: "2026-01-01",
+    explanation: "인천광역시 조례상 대상 도로점용공사로 확인되어 도로점용허가 신청 전에 교통소통대책을 제출해야 합니다.",
+  }),
+  regionalRule({
+    procedureId: "road-occupation-traffic-flow-plan-review",
+    regionId: "gyeonggi",
+    province: "경기도",
+    citationId: "cit-exp-road-occupation-traffic-flow-plan-review-gyeonggi",
+    effectiveFrom: "2026-01-01",
+    explanation: "경기도 조례상 대상 도로점용공사로 확인되어 허가 신청 전에 교통소통대책을 작성하고 도로점용허가 신청서와 함께 제출해야 합니다.",
+  }),
+);
 
 expandedRules.push(
   {
@@ -1831,6 +2627,62 @@ const additionalRuleIdsByProcedure: Record<string, string[]> = {
   ],
   "marine-use-consultation": [
     "rule-exp-marine-consultation-impact-assessment-exclusion",
+  ],
+  "local-environmental-impact-assessment": [
+    "rule-exp-local-environmental-impact-assessment-seoul",
+    "rule-exp-local-environmental-impact-assessment-incheon",
+    "rule-exp-local-environmental-impact-assessment-gyeonggi",
+  ],
+  "road-occupation-traffic-flow-plan-review": [
+    "rule-exp-road-occupation-traffic-flow-plan-review-seoul",
+    "rule-exp-road-occupation-traffic-flow-plan-review-incheon",
+    "rule-exp-road-occupation-traffic-flow-plan-review-gyeonggi",
+  ],
+};
+
+const additionalCitationIdsByProcedure: Record<string, string[]> = {
+  "capital-region-factory-restriction-review": [
+    "cit-exp-capital-region-factory-restriction-review-planning-act",
+    "cit-exp-capital-region-factory-restriction-review-planning-decree",
+    "cit-exp-capital-region-factory-restriction-review-industrial-cluster-decree",
+    "cit-exp-capital-region-factory-restriction-review-total-notice",
+  ],
+  "capital-region-large-scale-development-review": [
+    "cit-exp-capital-region-large-scale-development-review-decree",
+  ],
+  "development-restriction-zone-action-permit": [
+    "cit-exp-development-restriction-zone-action-permit-decree",
+  ],
+  "airport-obstacle-limitation-consultation": [
+    "cit-exp-airport-obstacle-limitation-consultation-rule",
+  ],
+  "education-environment-protection-zone-review": [
+    "cit-exp-education-environment-protection-zone-review-rule",
+  ],
+  "railway-protection-zone-action-report": [
+    "cit-exp-railway-protection-zone-action-report-decree",
+  ],
+  "building-safety-impact-assessment": [
+    "cit-exp-building-safety-impact-assessment-decree",
+  ],
+  "fire-performance-based-design-review": [
+    "cit-exp-fire-performance-based-design-review-decree",
+    "cit-exp-fire-performance-based-design-review-rule",
+  ],
+  "water-supply-factory-restriction-zone-review": [
+    "cit-exp-water-supply-factory-restriction-zone-review-decree",
+  ],
+  "water-discharge-facility-restriction-zone-review": [
+    "cit-exp-water-discharge-facility-restriction-zone-review-decree",
+    "cit-exp-water-discharge-facility-restriction-zone-review-han",
+    "cit-exp-water-discharge-facility-restriction-zone-review-imjin",
+  ],
+  "han-river-riparian-zone-factory-location-review": [
+    "cit-exp-han-river-riparian-zone-factory-location-review-decree",
+    "cit-exp-han-river-riparian-zone-factory-location-review-rule",
+  ],
+  "han-river-water-pollution-load-allocation": [
+    "cit-exp-han-river-water-pollution-load-allocation-rule",
   ],
 };
 
@@ -1902,6 +2754,22 @@ const durationReferencePeriodsByProcedure: Partial<Record<
   NonNullable<DurationEstimate["referencePeriods"]>
 >> = {
   ...immediateDurationReferencePeriodsByProcedure,
+  "railway-protection-zone-action-report": [
+    {
+      id: "ref-railway-protection-zone-safety-order-deadline",
+      kind: "PROCESS_MILESTONE",
+      label: "철도보호지구 안전조치등 명령기한",
+      range: { min: null, base: null, max: 30, unit: "CALENDAR_DAY" },
+      jurisdiction: null,
+      startsWhen: "국토교통부장관 또는 시·도지사가 행위신고·변경신고를 받은 날",
+      includes: ["RESULT_NOTICE"],
+      citationIds: ["cit-exp-railway-protection-zone-action-report-official-duration"],
+      sampleSize: null,
+      observedFrom: null,
+      observedTo: null,
+      note: "30일은 안전조치등이 필요할 때 명령하는 기한이며 신고수리·자동승인·전체 협의 완료기간이 아닙니다.",
+    },
+  ],
   "information-communication-supervisor-assignment-report": [
     {
       id: "ref-information-communication-supervisor-assignment-report-deadline",
@@ -3581,6 +4449,7 @@ export const expandedProcedures: Procedure[] = permitSeeds.map((seed) => ({
       ? [`cit-exp-${seed.id}-official-duration`]
       : []),
     ...(durationReferenceCitationIdsByProcedure[seed.id] ?? []),
+    ...(additionalCitationIdsByProcedure[seed.id] ?? []),
   ],
   durationId: `duration-exp-${seed.id}`,
   verificationStatus: internallyReviewedExpandedProcedureIds.has(seed.id)
@@ -3698,6 +4567,26 @@ const startEdge = (
 });
 
 export const expandedEdges: ProcedureEdge[] = [
+  edge("edge-exp-capital-region-review-to-factory-approval", "capital-region-factory-restriction-review", "factory-establishment-approval", "rule-exp-capital-region-factory-restriction-review", "권역별 허용 예외와 최신 공장건축 총허용량을 확인한 뒤 공장설립 승인 가능 여부와 신청도서를 확정합니다."),
+  edge("edge-exp-greenbelt-review-to-development", "development-restriction-zone-action-permit", "development-activity-permit", "rule-exp-development-restriction-zone-action-permit", "개발제한구역에서 계획한 시설·행위가 허용되는지 확인하고 필요한 행위허가 조건을 후속 개발·건축 인허가에 반영합니다."),
+  edge("edge-exp-airport-obstacle-review-to-building", "airport-obstacle-limitation-consultation", "building-permit", "rule-exp-airport-obstacle-limitation-consultation", "장애물 제한표면 협의·항공학적 검토 결과를 건축허가 도서와 최고높이 계획에 반영합니다."),
+  edge("edge-exp-education-zone-review-to-building", "education-environment-protection-zone-review", "building-permit", "rule-exp-education-environment-protection-zone-review", "교육환경보호구역 저촉과 금지시설·상대보호구역 제외 인정 가능 여부를 확인한 뒤 그 결과를 건축허가 도서와 입지계획에 반영합니다."),
+  edge("edge-exp-education-zone-review-to-factory-approval", "education-environment-protection-zone-review", "factory-establishment-approval", "rule-exp-education-environment-protection-zone-review", "교육환경보호구역 입지검토 결과를 공장설립 승인 가능성 및 사업계획에 반영합니다.", "PRACTICAL"),
+  edge("edge-exp-railway-protection-report-to-start", "railway-protection-zone-action-report", "construction-start-report", "rule-exp-railway-protection-zone-action-report", "철도보호지구 행위신고 후 명령된 안전조치·공법·계측조건을 갖추고 해당 철도 인접공사를 착수합니다. 화면의 건축공사 착공은 전용 공사 이정표가 없는 경우를 위한 대리 이정표이며, 전체 건축공사의 법정 선행관계로 단정하지 않습니다.", "PRACTICAL"),
+  edge("edge-exp-building-safety-impact-to-building", "building-safety-impact-assessment", "building-permit", "rule-exp-building-safety-impact-assessment", "안전영향평가 결과를 건축위원회 심의로 확정하고 반영한 뒤 건축허가를 진행합니다."),
+  edge("edge-exp-fire-performance-design-to-building", "fire-performance-based-design-review", "building-permit", "rule-exp-fire-performance-based-design-review", "성능위주설계 사전검토·검토평가 결과와 신고도서를 건축허가·소방동의 설계에 반영합니다."),
+  edge("edge-exp-water-supply-factory-restriction-to-factory-approval", "water-supply-factory-restriction-zone-review", "factory-establishment-approval", "rule-exp-water-supply-factory-restriction-zone-review", "공장설립 제한·승인지역과 승인 가능 공장·예외요건을 필지·시설별로 확인한 뒤 공장설립 승인 경로를 확정합니다."),
+  edge("edge-exp-water-discharge-restriction-to-water-permit", "water-discharge-facility-restriction-zone-review", "water-discharge-installation-permit", "rule-exp-water-discharge-facility-restriction-zone-review", "고시상 설치제한지역·대상시설·특정수질유해물질과 예외를 확인한 뒤 폐수배출시설 허가·신고 가능성을 확정합니다."),
+  edge("edge-exp-water-discharge-restriction-to-integrated-permit", "water-discharge-facility-restriction-zone-review", "integrated-environmental-permit", "rule-exp-water-discharge-facility-restriction-zone-review", "고시상 폐수배출시설 설치제한과 예외를 먼저 확인하고 통합환경허가의 수질 배출계획·입지 가능성에 반영합니다."),
+  edge("edge-exp-riparian-review-to-factory-approval", "han-river-riparian-zone-factory-location-review", "factory-establishment-approval", "rule-exp-han-river-riparian-zone-factory-location-review", "수변구역 공장 설치제한과 예외요건을 확인한 뒤 공장설립 승인 가능 여부를 검토합니다."),
+  edge("edge-exp-paldang-review-to-water-permit", "paldang-special-measures-zone-wastewater-location-review", "water-discharge-installation-permit", "rule-exp-paldang-special-measures-zone-wastewater-location-review", "팔당 특별대책지역의 입지제한·예외를 먼저 확인한 뒤 폐수배출시설 허가·신고 경로를 확정합니다."),
+  edge("edge-exp-han-load-allocation-to-water-permit", "han-river-water-pollution-load-allocation", "water-discharge-installation-permit", "rule-exp-han-river-water-pollution-load-allocation", "개발부하량·사업장 오염부하량 할당 가능 여부를 확인한 뒤 폐수배출시설 허가·신고와 처리계획을 확정합니다."),
+  edge("edge-exp-han-load-allocation-to-integrated-permit", "han-river-water-pollution-load-allocation", "integrated-environmental-permit", "rule-exp-han-river-water-pollution-load-allocation", "오염부하량 할당과 허가제한 가능성을 확인한 뒤 통합환경허가의 수질 배출계획과 허가조건을 확정합니다."),
+  edge("edge-exp-han-load-allocation-to-building", "han-river-water-pollution-load-allocation", "building-permit", "rule-exp-han-river-water-pollution-load-allocation", "오염총량 시행계획상 개발부하량 확보 여부를 확인한 뒤 건축허가 가능 여부와 오수·폐수 처리계획을 확정합니다."),
+  startEdge("edge-exp-seoul-traffic-flow-plan-to-road-occupation", "road-occupation-traffic-flow-plan-review", "road-occupation-permit", "rule-exp-road-occupation-traffic-flow-plan-review-seoul", "서울은 교통소통대책을 도로점용허가 신청 전에 제출해야 합니다. 결재 완료까지의 선행 여부는 관할 검토일정에서 별도 확인합니다."),
+  startEdge("edge-exp-incheon-traffic-flow-plan-to-road-occupation", "road-occupation-traffic-flow-plan-review", "road-occupation-permit", "rule-exp-road-occupation-traffic-flow-plan-review-incheon", "인천은 교통소통대책을 도로점용허가 신청 전에 제출해야 합니다. 위원회 검토 완료까지의 선행 여부는 관할 검토일정에서 별도 확인합니다."),
+  startEdge("edge-exp-gyeonggi-traffic-flow-plan-to-road-occupation", "road-occupation-traffic-flow-plan-review", "road-occupation-permit", "rule-exp-road-occupation-traffic-flow-plan-review-gyeonggi", "경기는 교통소통대책을 허가 신청 전에 작성하고 도로점용허가 신청서와 함께 제출합니다."),
+  edge("edge-exp-traffic-flow-plan-to-start", "road-occupation-traffic-flow-plan-review", "construction-start-report", "rule-exp-road-occupation-traffic-flow-plan-review", "교통소통대책 검토의견을 반영한 뒤 해당 도로점용공사와 연계된 공사를 착수합니다.", "PRACTICAL"),
   edge("edge-exp-farmland-to-development", "farmland-conversion-permit", "development-activity-permit", "rule-exp-farmland-conversion-permit", "농지전용 협의·허가를 개발행위 또는 상위 의제절차와 조율합니다.", "PRACTICAL"),
   edge("edge-exp-forest-to-development", "forestland-conversion-permit", "development-activity-permit", "rule-exp-forestland-conversion-permit", "산지전용 협의·허가를 개발행위 또는 상위 의제절차와 조율합니다.", "PRACTICAL"),
   edge("edge-exp-forest-to-restoration-design", "forestland-conversion-permit", "forestland-restoration-design-approval", "rule-exp-forestland-restoration-design-approval", "산지전용허가 조건과 복구범위를 기준으로 복구설계서를 작성해 승인받습니다."),
@@ -3705,6 +4594,9 @@ export const expandedEdges: ProcedureEdge[] = [
   edge("edge-exp-start-to-restoration-completion-inspection", "construction-start-report", "forestland-restoration-completion-inspection", "rule-exp-forestland-restoration-completion-inspection", "본 공사와 병행해 산지 복구공사를 완료하고 준공검사를 받습니다.", "PRACTICAL"),
   edge("edge-exp-eia-to-development", "environmental-impact-assessment", "development-activity-permit", "rule-exp-environmental-impact-assessment", "환경영향평가 협의내용을 사업·개발 승인 전에 반영합니다."),
   edge("edge-exp-small-eia-to-development", "small-environmental-impact-assessment", "development-activity-permit", "rule-exp-small-environmental-impact-assessment", "소규모 환경영향평가 협의내용을 개발 승인 전에 반영합니다."),
+  edge("edge-exp-local-eia-to-development", "local-environmental-impact-assessment", "development-activity-permit", "rule-exp-local-environmental-impact-assessment", "시·도 조례 환경영향평가 협의내용을 개발·사업 승인 전에 반영합니다."),
+  edge("edge-exp-local-eia-to-building", "local-environmental-impact-assessment", "building-permit", "rule-exp-local-environmental-impact-assessment", "건축사업이 조례 평가대상인 경우 협의내용을 건축허가 전에 반영합니다."),
+  edge("edge-exp-local-eia-to-factory-approval", "local-environmental-impact-assessment", "factory-establishment-approval", "rule-exp-local-environmental-impact-assessment", "공장설립 사업이 조례 평가대상인 경우 협의내용을 공장설립 승인 전에 반영합니다."),
   edge("edge-exp-development-to-building", "development-activity-permit", "building-permit", "rule-exp-development-activity-permit", "개발행위허가를 건축허가에서 의제하는지 확인하고 미의제 시 선행 완료합니다.", "PRACTICAL"),
   edge("edge-exp-development-to-completion-inspection", "development-activity-permit", "development-activity-completion-inspection", "rule-exp-development-activity-completion-inspection", "허가도서에 따라 개발공사를 완료한 뒤 준공검사를 신청합니다."),
   edge("edge-exp-start-to-development-completion-inspection", "construction-start-report", "development-activity-completion-inspection", "rule-exp-development-activity-completion-inspection", "토지형질변경·공작물 공사를 완료한 뒤 사용 전에 준공검사를 받습니다.", "PRACTICAL"),

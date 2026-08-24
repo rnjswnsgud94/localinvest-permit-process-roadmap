@@ -1,8 +1,8 @@
 {
-  "checkedAt": "2026-08-23T08:31:32.727Z",
+  "checkedAt": "2026-08-23T17:59:42.455Z",
   "source": "행정안전부 자치법규정보시스템(ELIS) 관할별 현행 자치법규 목록",
-  "jurisdictionCount": 173,
-  "coveredJurisdictionCount": 172,
+  "jurisdictionCount": 243,
+  "coveredJurisdictionCount": 243,
   "records": [
     {
       "provinceName": "강원특별자치도",
@@ -1805,6 +1805,3454 @@
       "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=42000039007002&histNo=011"
     },
     {
+      "provinceName": "강원특별자치도",
+      "jurisdictionName": "강원특별자치도",
+      "level": "PROVINCE",
+      "name": "강원특별자치도 환경영향평가 조례",
+      "amendmentDate": "2023-06-09",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=42000043004004&histNo=011"
+    },
+    {
+      "provinceName": "강원특별자치도",
+      "jurisdictionName": "강원특별자치도",
+      "level": "PROVINCE",
+      "name": "강원특별자치도 환경영향평가 조례 시행규칙",
+      "amendmentDate": "2023-06-09",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=42000043004005&histNo=007"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "가평군",
+      "level": "MUNICIPALITY",
+      "name": "가평군 건축 조례",
+      "amendmentDate": "2026-04-20",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41820131256020&histNo=025"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "가평군",
+      "level": "MUNICIPALITY",
+      "name": "가평군 건축 조례 시행규칙",
+      "amendmentDate": "2026-03-18",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41820131256007&histNo=004"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "가평군",
+      "level": "MUNICIPALITY",
+      "name": "가평군 경관 조례",
+      "amendmentDate": "2026-04-20",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41820113287004&histNo=003"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "가평군",
+      "level": "MUNICIPALITY",
+      "name": "가평군 군계획 조례",
+      "amendmentDate": "2026-04-20",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41820113227034&histNo=032"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "가평군",
+      "level": "MUNICIPALITY",
+      "name": "가평군 군계획 조례 시행규칙",
+      "amendmentDate": "2024-09-19",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41820113227021&histNo=005"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "가평군",
+      "level": "MUNICIPALITY",
+      "name": "가평군 상수도원인자부담금 산정 징수 등에 관한 조례",
+      "amendmentDate": "2021-12-27",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41820116349009&histNo=004"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "가평군",
+      "level": "MUNICIPALITY",
+      "name": "가평군 상수도원인자부담금 산정·징수 등에 관한 조례 시행규칙",
+      "amendmentDate": "2016-01-13",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41820116349010&histNo=002"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "가평군",
+      "level": "MUNICIPALITY",
+      "name": "가평군 수도급수 조례",
+      "amendmentDate": "2026-04-20",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41820116349001&histNo=017"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "가평군",
+      "level": "MUNICIPALITY",
+      "name": "가평군 수도급수 조례 시행규칙",
+      "amendmentDate": "2026-04-20",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41820116349002&histNo=008"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "가평군",
+      "level": "MUNICIPALITY",
+      "name": "가평군 주차장 설치 및 관리 조례",
+      "amendmentDate": "2025-05-19",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41820130319002&histNo=018"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "가평군",
+      "level": "MUNICIPALITY",
+      "name": "가평군 하수도 사용 조례",
+      "amendmentDate": "2022-04-13",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41820125348001&histNo=011"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "가평군",
+      "level": "MUNICIPALITY",
+      "name": "가평군 하수도 사용 조례 시행규칙",
+      "amendmentDate": "2022-06-22",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41820125348002&histNo=006"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "가평군",
+      "level": "MUNICIPALITY",
+      "name": "가평군 향토문화재 보호 조례",
+      "amendmentDate": "2026-04-20",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41820106350002&histNo=005"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "고양시",
+      "level": "MUNICIPALITY",
+      "name": "고양시 건축 조례",
+      "amendmentDate": "2025-01-10",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41470113293002&histNo=036"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "고양시",
+      "level": "MUNICIPALITY",
+      "name": "고양시 경관 조례",
+      "amendmentDate": "2025-11-14",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41470154000010&histNo=009"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "고양시",
+      "level": "MUNICIPALITY",
+      "name": "고양시 도시계획 조례",
+      "amendmentDate": "2025-11-14",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41470113223006&histNo=044"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "고양시",
+      "level": "MUNICIPALITY",
+      "name": "고양시 상수도 원인자부담금 산정ㆍ징수 등에 관한 조례",
+      "amendmentDate": "2023-11-10",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41470117235003&histNo=010"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "고양시",
+      "level": "MUNICIPALITY",
+      "name": "고양시 수도급수 조례",
+      "amendmentDate": "2025-03-11",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41470117234009&histNo=043"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "고양시",
+      "level": "MUNICIPALITY",
+      "name": "고양시 수도급수 조례 시행규칙",
+      "amendmentDate": "2025-03-18",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41470117234002&histNo=025"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "고양시",
+      "level": "MUNICIPALITY",
+      "name": "고양시 주차장 설치 및 관리 조례",
+      "amendmentDate": "2026-07-10",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41470156323003&histNo=043"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "고양시",
+      "level": "MUNICIPALITY",
+      "name": "고양시 주차장 설치 및 관리 조례 시행규칙",
+      "amendmentDate": "2019-10-18",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41470156323013&histNo=001"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "고양시",
+      "level": "MUNICIPALITY",
+      "name": "고양시 하수도 사용 조례",
+      "amendmentDate": "2025-12-30",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41470117236001&histNo=025"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "고양시",
+      "level": "MUNICIPALITY",
+      "name": "고양시 하수도 사용 조례 시행규칙",
+      "amendmentDate": "2025-12-30",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41470117236004&histNo=009"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "고양시",
+      "level": "MUNICIPALITY",
+      "name": "고양시 향토유산 보호 조례",
+      "amendmentDate": "2024-05-17",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41470110214054&histNo=011"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "과천시",
+      "level": "MUNICIPALITY",
+      "name": "과천시 건축 조례",
+      "amendmentDate": "2024-05-03",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41290108000026&histNo=024"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "과천시",
+      "level": "MUNICIPALITY",
+      "name": "과천시 건축 조례 시행규칙",
+      "amendmentDate": "2023-08-10",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41290108000027&histNo=010"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "과천시",
+      "level": "MUNICIPALITY",
+      "name": "과천시 경관 조례",
+      "amendmentDate": "2017-12-29",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41290106000012&histNo=002"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "과천시",
+      "level": "MUNICIPALITY",
+      "name": "과천시 도시계획 조례",
+      "amendmentDate": "2025-10-10",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41290106000001&histNo=019"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "과천시",
+      "level": "MUNICIPALITY",
+      "name": "과천시 상수도 급수 조례",
+      "amendmentDate": "2021-12-27",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41290122000001&histNo=020"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "과천시",
+      "level": "MUNICIPALITY",
+      "name": "과천시 상수도 급수 조례 시행규칙",
+      "amendmentDate": "2024-03-22",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41290122000019&histNo=013"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "과천시",
+      "level": "MUNICIPALITY",
+      "name": "과천시 상수도 원인자부담금 산정·징수 등에 관한 조례",
+      "amendmentDate": "2016-07-01",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41290122000010&histNo=005"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "과천시",
+      "level": "MUNICIPALITY",
+      "name": "과천시 상수도 원인자부담금 산정·징수 등에 관한 조례 시행규칙",
+      "amendmentDate": "2014-03-18",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41290122000014&histNo=002"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "과천시",
+      "level": "MUNICIPALITY",
+      "name": "과천시 주차장 조례",
+      "amendmentDate": "2026-08-13",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41290109000012&histNo=025"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "과천시",
+      "level": "MUNICIPALITY",
+      "name": "과천시 하수도 사용 조례",
+      "amendmentDate": "2024-03-22",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41290123000001&histNo=020"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "과천시",
+      "level": "MUNICIPALITY",
+      "name": "과천시 하수도 사용 조례 시행규칙",
+      "amendmentDate": "2024-05-13",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41290123000002&histNo=012"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "과천시",
+      "level": "MUNICIPALITY",
+      "name": "과천시 향토유산 보호 조례",
+      "amendmentDate": "2024-12-27",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41290113000004&histNo=009"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "광명시",
+      "level": "MUNICIPALITY",
+      "name": "광명시 건축 조례",
+      "amendmentDate": "2026-08-14",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41210108335001&histNo=029"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "광명시",
+      "level": "MUNICIPALITY",
+      "name": "광명시 건축조례 시행규칙",
+      "amendmentDate": "2018-07-31",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41210108335002&histNo=007"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "광명시",
+      "level": "MUNICIPALITY",
+      "name": "광명시 경관 조례",
+      "amendmentDate": "2026-08-14",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41210108214053&histNo=011"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "광명시",
+      "level": "MUNICIPALITY",
+      "name": "광명시 도시계획 조례",
+      "amendmentDate": "2026-08-05",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41210108214046&histNo=041"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "광명시",
+      "level": "MUNICIPALITY",
+      "name": "광명시 수도급수 조례",
+      "amendmentDate": "2024-04-05",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41210111294004&histNo=030"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "광명시",
+      "level": "MUNICIPALITY",
+      "name": "광명시 수도급수 조례 시행규칙",
+      "amendmentDate": "2024-06-14",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41210111294005&histNo=015"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "광명시",
+      "level": "MUNICIPALITY",
+      "name": "광명시 주차장 설치 및 관리 조례",
+      "amendmentDate": "2026-08-14",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41210107334001&histNo=040"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "광명시",
+      "level": "MUNICIPALITY",
+      "name": "광명시 하수도 사용 조례",
+      "amendmentDate": "2023-12-28",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41210111213009&histNo=026"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "광명시",
+      "level": "MUNICIPALITY",
+      "name": "광명시 하수도 사용 조례 시행규칙",
+      "amendmentDate": "2023-11-29",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41210111213010&histNo=009"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "광명시",
+      "level": "MUNICIPALITY",
+      "name": "광명시 향토유산 보호 조례",
+      "amendmentDate": "2024-12-23",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41210105287018&histNo=009"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "광주시",
+      "level": "MUNICIPALITY",
+      "name": "광주시 건축 조례",
+      "amendmentDate": "2025-04-15",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41610128000002&histNo=024"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "광주시",
+      "level": "MUNICIPALITY",
+      "name": "광주시 건축 조례 시행규칙",
+      "amendmentDate": "2021-09-24",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41610128000003&histNo=006"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "광주시",
+      "level": "MUNICIPALITY",
+      "name": "광주시 경관 조례",
+      "amendmentDate": "2025-12-18",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41610128000023&histNo=008"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "광주시",
+      "level": "MUNICIPALITY",
+      "name": "광주시 경관 조례 시행규칙",
+      "amendmentDate": "2015-09-30",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41610128000024&histNo=002"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "광주시",
+      "level": "MUNICIPALITY",
+      "name": "광주시 도시계획 조례",
+      "amendmentDate": "2026-04-15",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41610126000002&histNo=027"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "광주시",
+      "level": "MUNICIPALITY",
+      "name": "광주시 수도 급수 조례",
+      "amendmentDate": "2025-12-18",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41610131203004&histNo=016"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "광주시",
+      "level": "MUNICIPALITY",
+      "name": "광주시 수도 급수 조례 시행규칙",
+      "amendmentDate": "2026-03-30",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41610131203005&histNo=008"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "광주시",
+      "level": "MUNICIPALITY",
+      "name": "광주시 주차장 설치 및 관리 조례",
+      "amendmentDate": "2026-04-15",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41610172000003&histNo=020"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "광주시",
+      "level": "MUNICIPALITY",
+      "name": "광주시 하수도 사용 조례",
+      "amendmentDate": "2025-05-19",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41610131203019&histNo=020"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "광주시",
+      "level": "MUNICIPALITY",
+      "name": "광주시 하수도 사용 조례 시행규칙",
+      "amendmentDate": "2021-09-24",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41610131203020&histNo=007"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "광주시",
+      "level": "MUNICIPALITY",
+      "name": "광주시 향토문화유산 보호 조례",
+      "amendmentDate": "2024-12-16",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41610152000011&histNo=005"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "구리시",
+      "level": "MUNICIPALITY",
+      "name": "구리시 건축 조례",
+      "amendmentDate": "2024-06-21",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41310119322001&histNo=018"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "구리시",
+      "level": "MUNICIPALITY",
+      "name": "구리시 건축 조례 시행규칙",
+      "amendmentDate": "2024-04-30",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41310119322002&histNo=007"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "구리시",
+      "level": "MUNICIPALITY",
+      "name": "구리시 경관 조례",
+      "amendmentDate": "2026-04-08",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41310116407001&histNo=009"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "구리시",
+      "level": "MUNICIPALITY",
+      "name": "구리시 경관 조례 시행규칙",
+      "amendmentDate": "2026-03-27",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41310116407002&histNo=004"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "구리시",
+      "level": "MUNICIPALITY",
+      "name": "구리시 대기 및 수질환경 관련법규 위반업소 공개에 관한 조례",
+      "amendmentDate": "2018-12-24",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41310136339001&histNo=003"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "구리시",
+      "level": "MUNICIPALITY",
+      "name": "구리시 도시계획 조례",
+      "amendmentDate": "2025-12-02",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41310116310001&histNo=020"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "구리시",
+      "level": "MUNICIPALITY",
+      "name": "구리시 상수도 원인자부담금 산정·징수 등에 관한 조례",
+      "amendmentDate": "2018-04-30",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41310139349001&histNo=004"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "구리시",
+      "level": "MUNICIPALITY",
+      "name": "구리시 수도급수 조례",
+      "amendmentDate": "2025-11-05",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41310139347024&histNo=017"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "구리시",
+      "level": "MUNICIPALITY",
+      "name": "구리시 수도급수 조례 시행규칙",
+      "amendmentDate": "2025-12-22",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41310139347013&histNo=010"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "구리시",
+      "level": "MUNICIPALITY",
+      "name": "구리시 주차장 조례",
+      "amendmentDate": "2026-04-06",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41310118395010&histNo=027"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "구리시",
+      "level": "MUNICIPALITY",
+      "name": "구리시 주차장 조례 시행규칙",
+      "amendmentDate": "2021-10-29",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41310118395003&histNo=003"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "구리시",
+      "level": "MUNICIPALITY",
+      "name": "구리시 하수도 사용 조례",
+      "amendmentDate": "2025-07-03",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41310140351022&histNo=020"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "구리시",
+      "level": "MUNICIPALITY",
+      "name": "구리시 하수도 사용 조례 시행규칙",
+      "amendmentDate": "2020-10-15",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41310140351002&histNo=005"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "구리시",
+      "level": "MUNICIPALITY",
+      "name": "구리시 향토유산 보호 조례",
+      "amendmentDate": "2024-05-03",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41310112224005&histNo=003"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "군포시",
+      "level": "MUNICIPALITY",
+      "name": "군포시 건축 조례",
+      "amendmentDate": "2025-03-17",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41410128278001&histNo=028"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "군포시",
+      "level": "MUNICIPALITY",
+      "name": "군포시 건축 조례 시행규칙",
+      "amendmentDate": "2016-05-16",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41410128278002&histNo=008"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "군포시",
+      "level": "MUNICIPALITY",
+      "name": "군포시 경관 조례",
+      "amendmentDate": "2025-12-10",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41410128274001&histNo=005"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "군포시",
+      "level": "MUNICIPALITY",
+      "name": "군포시 대기 및 수질환경 관련법규 위반사업장 공개에 관한 조례",
+      "amendmentDate": "2023-05-01",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41410129280001&histNo=003"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "군포시",
+      "level": "MUNICIPALITY",
+      "name": "군포시 도시계획 조례",
+      "amendmentDate": "2025-10-10",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41410128274004&histNo=027"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "군포시",
+      "level": "MUNICIPALITY",
+      "name": "군포시 도시교통 정비지역 내의 교통영향평가 대상사업 및 시설규모 적용지역 지정에 관한 조례",
+      "amendmentDate": "2018-10-08",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41410129282005&histNo=002"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "군포시",
+      "level": "MUNICIPALITY",
+      "name": "군포시 수도급수 조례",
+      "amendmentDate": "2026-01-07",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41410109228005&histNo=042"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "군포시",
+      "level": "MUNICIPALITY",
+      "name": "군포시 수도급수 조례 시행규칙",
+      "amendmentDate": "2026-01-07",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41410109228006&histNo=013"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "군포시",
+      "level": "MUNICIPALITY",
+      "name": "군포시 수도시설 원인자 부담금 산정ㆍ징수 등에 관한 조례 시행규칙",
+      "amendmentDate": "2016-12-30",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41410109228009&histNo=004"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "군포시",
+      "level": "MUNICIPALITY",
+      "name": "군포시 수도시설 원인자부담금 산정·징수 등에 관한 조례",
+      "amendmentDate": "2020-09-29",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41410109228008&histNo=004"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "군포시",
+      "level": "MUNICIPALITY",
+      "name": "군포시 주차장 설치 및 관리 조례",
+      "amendmentDate": "2024-12-10",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41410129283004&histNo=030"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "군포시",
+      "level": "MUNICIPALITY",
+      "name": "군포시 주차장 설치 및 관리 조례 시행규칙",
+      "amendmentDate": "2024-12-10",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41410129283005&histNo=005"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "군포시",
+      "level": "MUNICIPALITY",
+      "name": "군포시 하수도 사용 조례",
+      "amendmentDate": "2024-01-08",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41410109229016&histNo=023"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "군포시",
+      "level": "MUNICIPALITY",
+      "name": "군포시 하수도 사용 조례 시행규칙",
+      "amendmentDate": "2021-09-30",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41410109229007&histNo=008"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "군포시",
+      "level": "MUNICIPALITY",
+      "name": "군포시 향토유산 보호 및 관리 조례",
+      "amendmentDate": "2025-12-10",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41410126268029&histNo=001"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "김포시",
+      "level": "MUNICIPALITY",
+      "name": "김포시 건축조례",
+      "amendmentDate": "2024-10-23",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41870142386002&histNo=031"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "김포시",
+      "level": "MUNICIPALITY",
+      "name": "김포시 건축조례 시행규칙",
+      "amendmentDate": "2021-07-30",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41870142386003&histNo=011"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "김포시",
+      "level": "MUNICIPALITY",
+      "name": "김포시 경관 조례",
+      "amendmentDate": "2026-04-15",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41870125444002&histNo=011"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "김포시",
+      "level": "MUNICIPALITY",
+      "name": "김포시 도시계획 조례",
+      "amendmentDate": "2025-05-12",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41870124264096&histNo=041"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "김포시",
+      "level": "MUNICIPALITY",
+      "name": "김포시 상수도 원인자부담금 산정·징수등에 관한 조례",
+      "amendmentDate": "2023-05-03",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41870130291076&histNo=006"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "김포시",
+      "level": "MUNICIPALITY",
+      "name": "김포시 상수도 원인자부담금 산정·징수등에 관한 조례 시행규칙",
+      "amendmentDate": "2023-05-03",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41870130291077&histNo=006"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "김포시",
+      "level": "MUNICIPALITY",
+      "name": "김포시 수도급수 조례",
+      "amendmentDate": "2025-11-14",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41870130289076&histNo=029"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "김포시",
+      "level": "MUNICIPALITY",
+      "name": "김포시 수도급수 조례 시행규칙",
+      "amendmentDate": "2025-11-14",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41870130289077&histNo=019"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "김포시",
+      "level": "MUNICIPALITY",
+      "name": "김포시 일반산업단지 공공폐수처리시설 운영 및 비용부담 조례",
+      "amendmentDate": "2026-08-14",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41870164422002&histNo=008"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "김포시",
+      "level": "MUNICIPALITY",
+      "name": "김포시 일반산업단지 공공폐수처리시설 운영 및 비용부담 조례 시행규칙",
+      "amendmentDate": "2022-11-30",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41870164422003&histNo=001"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "김포시",
+      "level": "MUNICIPALITY",
+      "name": "김포시 주차장 조례",
+      "amendmentDate": "2025-04-09",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41870121375048&histNo=022"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "김포시",
+      "level": "MUNICIPALITY",
+      "name": "김포시 하수도 사용 조례",
+      "amendmentDate": "2024-07-18",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41870130292004&histNo=021"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "김포시",
+      "level": "MUNICIPALITY",
+      "name": "김포시 하수도 사용 조례 시행규칙",
+      "amendmentDate": "2023-06-14",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41870130292005&histNo=007"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "김포시",
+      "level": "MUNICIPALITY",
+      "name": "김포시 향토유산 보호 및 활용 조례",
+      "amendmentDate": "2024-10-23",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41870113238027&histNo=012"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "남양주시",
+      "level": "MUNICIPALITY",
+      "name": "남양주시 건축 조례",
+      "amendmentDate": "2026-05-15",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41360106312001&histNo=024"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "남양주시",
+      "level": "MUNICIPALITY",
+      "name": "남양주시 건축 조례 시행규칙",
+      "amendmentDate": "2025-05-01",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41360106312002&histNo=004"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "남양주시",
+      "level": "MUNICIPALITY",
+      "name": "남양주시 경관 조례",
+      "amendmentDate": "2025-10-14",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41360124425003&histNo=006"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "남양주시",
+      "level": "MUNICIPALITY",
+      "name": "남양주시 경관 조례 시행규칙",
+      "amendmentDate": "2018-10-11",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41360124425006&histNo=003"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "남양주시",
+      "level": "MUNICIPALITY",
+      "name": "남양주시 도시계획 조례",
+      "amendmentDate": "2025-12-29",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41360106229001&histNo=034"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "남양주시",
+      "level": "MUNICIPALITY",
+      "name": "남양주시 상수도원인자부담금 산정·징수 등에 관한 조례",
+      "amendmentDate": "2023-09-26",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41360109356009&histNo=006"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "남양주시",
+      "level": "MUNICIPALITY",
+      "name": "남양주시 상수도원인자부담금 산정·징수 등에 관한 조례 시행규칙",
+      "amendmentDate": "2022-05-19",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41360109356010&histNo=004"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "남양주시",
+      "level": "MUNICIPALITY",
+      "name": "남양주시 수도급수 조례",
+      "amendmentDate": "2025-04-03",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41360109356002&histNo=022"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "남양주시",
+      "level": "MUNICIPALITY",
+      "name": "남양주시 수도급수 조례 시행규칙",
+      "amendmentDate": "2025-09-11",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41360109356003&histNo=012"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "남양주시",
+      "level": "MUNICIPALITY",
+      "name": "남양주시 주차장 조례",
+      "amendmentDate": "2026-02-26",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41360107408008&histNo=028"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "남양주시",
+      "level": "MUNICIPALITY",
+      "name": "남양주시 주차장 조례 시행규칙",
+      "amendmentDate": "2026-04-16",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41360107408010&histNo=005"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "남양주시",
+      "level": "MUNICIPALITY",
+      "name": "남양주시 하수도사용 조례",
+      "amendmentDate": "2026-05-15",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41360109357003&histNo=023"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "남양주시",
+      "level": "MUNICIPALITY",
+      "name": "남양주시 하수도사용 조례 시행규칙",
+      "amendmentDate": "2025-06-19",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41360109357004&histNo=010"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "남양주시",
+      "level": "MUNICIPALITY",
+      "name": "남양주시 향토유산 보호 및 관리 조례",
+      "amendmentDate": "2024-07-04",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41360122323044&histNo=004"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "동두천시",
+      "level": "MUNICIPALITY",
+      "name": "동두천시 건축 조례",
+      "amendmentDate": "2026-05-06",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41250116285001&histNo=027"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "동두천시",
+      "level": "MUNICIPALITY",
+      "name": "동두천시 경관 조례",
+      "amendmentDate": "2026-05-06",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41250115235009&histNo=007"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "동두천시",
+      "level": "MUNICIPALITY",
+      "name": "동두천시 도시계획 조례",
+      "amendmentDate": "2026-05-06",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41250115235004&histNo=031"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "동두천시",
+      "level": "MUNICIPALITY",
+      "name": "동두천시 상수도원인자부담금 산정 · 징수 등에 관한 조례",
+      "amendmentDate": "2017-01-31",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41250120240028&histNo=006"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "동두천시",
+      "level": "MUNICIPALITY",
+      "name": "동두천시 상수도원인자부담금 산정 · 징수 등에 관한 조례 시행규칙",
+      "amendmentDate": "2018-01-08",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41250120240029&histNo=005"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "동두천시",
+      "level": "MUNICIPALITY",
+      "name": "동두천시 수도 급수 조례",
+      "amendmentDate": "2025-06-30",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41250120240018&histNo=015"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "동두천시",
+      "level": "MUNICIPALITY",
+      "name": "동두천시 수도 급수 조례 시행규칙",
+      "amendmentDate": "2025-06-30",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41250120240019&histNo=012"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "동두천시",
+      "level": "MUNICIPALITY",
+      "name": "동두천시 주차장 설치 및 관리 조례",
+      "amendmentDate": "2026-05-06",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41250112277002&histNo=018"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "동두천시",
+      "level": "MUNICIPALITY",
+      "name": "동두천시 주차장 설치 및 관리조례 시행규칙",
+      "amendmentDate": "2016-03-14",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41250112277003&histNo=002"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "동두천시",
+      "level": "MUNICIPALITY",
+      "name": "동두천시 하수도 사용 조례",
+      "amendmentDate": "2023-12-31",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41250120240012&histNo=015"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "동두천시",
+      "level": "MUNICIPALITY",
+      "name": "동두천시 하수도 사용 조례 시행규칙",
+      "amendmentDate": "2022-01-12",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41250120240038&histNo=006"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "동두천시",
+      "level": "MUNICIPALITY",
+      "name": "동두천시 향토유산 보호 조례",
+      "amendmentDate": "2025-12-31",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41250106306002&histNo=011"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "부천시",
+      "level": "MUNICIPALITY",
+      "name": "부천시 건축 조례",
+      "amendmentDate": "2026-07-06",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41190142514009&histNo=056"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "부천시",
+      "level": "MUNICIPALITY",
+      "name": "부천시 건축 조례 시행규칙",
+      "amendmentDate": "2026-06-01",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41190142514010&histNo=009"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "부천시",
+      "level": "MUNICIPALITY",
+      "name": "부천시 경관 조례",
+      "amendmentDate": "2025-10-02",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41190142514006&histNo=011"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "부천시",
+      "level": "MUNICIPALITY",
+      "name": "부천시 경관 조례 시행규칙",
+      "amendmentDate": "2025-08-25",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41190142514007&histNo=003"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "부천시",
+      "level": "MUNICIPALITY",
+      "name": "부천시 공업용수도 급수 조례",
+      "amendmentDate": "2013-08-05",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41190145491006&histNo=010"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "부천시",
+      "level": "MUNICIPALITY",
+      "name": "부천시 근현대문화유산의 보존 및 활용에 관한 조례",
+      "amendmentDate": "2024-04-08",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41190139456051&histNo=001"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "부천시",
+      "level": "MUNICIPALITY",
+      "name": "부천시 도시계획 조례",
+      "amendmentDate": "2026-07-06",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41190141469005&histNo=031"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "부천시",
+      "level": "MUNICIPALITY",
+      "name": "부천시 도시계획 조례 시행규칙",
+      "amendmentDate": "2019-03-11",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41190141469006&histNo=004"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "부천시",
+      "level": "MUNICIPALITY",
+      "name": "부천시 상수도원인자부담금 산정·징수 등에 관한 조례",
+      "amendmentDate": "2025-08-08",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41190145491003&histNo=004"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "부천시",
+      "level": "MUNICIPALITY",
+      "name": "부천시 상수도원인자부담금 산정·징수 등에 관한 조례 시행규칙",
+      "amendmentDate": "2026-06-01",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41190145491004&histNo=004"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "부천시",
+      "level": "MUNICIPALITY",
+      "name": "부천시 수도급수 조례",
+      "amendmentDate": "2025-06-30",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41190145490004&histNo=073"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "부천시",
+      "level": "MUNICIPALITY",
+      "name": "부천시 수도급수 조례 시행규칙",
+      "amendmentDate": "2025-08-25",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41190145490005&histNo=034"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "부천시",
+      "level": "MUNICIPALITY",
+      "name": "부천시 주차장 설치 및 관리 조례",
+      "amendmentDate": "2026-05-18",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41190143482002&histNo=061"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "부천시",
+      "level": "MUNICIPALITY",
+      "name": "부천시 주차장 설치 및 관리 조례 시행규칙",
+      "amendmentDate": "2026-04-27",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41190143482003&histNo=008"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "부천시",
+      "level": "MUNICIPALITY",
+      "name": "부천시 하수도 사용 조례",
+      "amendmentDate": "2024-06-28",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41190145493008&histNo=027"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "부천시",
+      "level": "MUNICIPALITY",
+      "name": "부천시 하수도 사용 조례 시행규칙",
+      "amendmentDate": "2022-03-21",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41190145493009&histNo=014"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "부천시",
+      "level": "MUNICIPALITY",
+      "name": "부천시 향토유산 보호 조례",
+      "amendmentDate": "2024-06-03",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41190139456020&histNo=006"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "성남시",
+      "level": "MUNICIPALITY",
+      "name": "성남시 건축 조례",
+      "amendmentDate": "2025-03-10",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41130108227001&histNo=024"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "성남시",
+      "level": "MUNICIPALITY",
+      "name": "성남시 경관 조례",
+      "amendmentDate": "2019-04-01",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41130108227008&histNo=004"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "성남시",
+      "level": "MUNICIPALITY",
+      "name": "성남시 경관 조례 시행규칙",
+      "amendmentDate": "2025-05-26",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41130108227009&histNo=004"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "성남시",
+      "level": "MUNICIPALITY",
+      "name": "성남시 도시계획 조례",
+      "amendmentDate": "2026-02-24",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41130108223002&histNo=043"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "성남시",
+      "level": "MUNICIPALITY",
+      "name": "성남시 도시계획 조례 시행규칙",
+      "amendmentDate": "2018-06-29",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41130108223003&histNo=005"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "성남시",
+      "level": "MUNICIPALITY",
+      "name": "성남시 상수도원인자부담금 산정·징수 등에 관한 조례",
+      "amendmentDate": "2017-10-11",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41130114237004&histNo=002"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "성남시",
+      "level": "MUNICIPALITY",
+      "name": "성남시 수도급수 조례",
+      "amendmentDate": "2026-02-24",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41130114236024&histNo=021"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "성남시",
+      "level": "MUNICIPALITY",
+      "name": "성남시 수도급수 조례 시행규칙",
+      "amendmentDate": "2025-12-29",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41130114237020&histNo=013"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "성남시",
+      "level": "MUNICIPALITY",
+      "name": "성남시 주차장 설치 및 관리 조례 시행규칙",
+      "amendmentDate": "2010-05-10",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41130109269002&histNo=001"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "성남시",
+      "level": "MUNICIPALITY",
+      "name": "성남시 하수도사용 조례",
+      "amendmentDate": "2026-02-24",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41130114239009&histNo=018"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "성남시",
+      "level": "MUNICIPALITY",
+      "name": "성남시 하수도사용 조례 시행규칙",
+      "amendmentDate": "2022-09-26",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41130114239010&histNo=005"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "성남시",
+      "level": "MUNICIPALITY",
+      "name": "성남시 향토유산 보호 조례",
+      "amendmentDate": "2024-10-23",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41130106214025&histNo=003"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "수원시",
+      "level": "MUNICIPALITY",
+      "name": "수원시 건축 조례",
+      "amendmentDate": "2026-03-31",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41110137406006&histNo=035"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "수원시",
+      "level": "MUNICIPALITY",
+      "name": "수원시 경관 조례",
+      "amendmentDate": "2023-07-12",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41110172416007&histNo=005"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "수원시",
+      "level": "MUNICIPALITY",
+      "name": "수원시 경관 조례 시행규칙",
+      "amendmentDate": "2019-05-20",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41110172416008&histNo=003"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "수원시",
+      "level": "MUNICIPALITY",
+      "name": "수원시 교통영향평가심의위원회 구성 및 운영에 관한 조례",
+      "amendmentDate": "2026-02-26",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41110134450031&histNo=001"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "수원시",
+      "level": "MUNICIPALITY",
+      "name": "수원시 도시계획 조례",
+      "amendmentDate": "2025-12-31",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41110137330002&histNo=045"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "수원시",
+      "level": "MUNICIPALITY",
+      "name": "수원시 상수도 원인자부담금 등 산정ㆍ징수 조례",
+      "amendmentDate": "2026-04-28",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41110139337010&histNo=006"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "수원시",
+      "level": "MUNICIPALITY",
+      "name": "수원시 상수도 원인자부담금 등 산정ㆍ징수 조례 시행규칙",
+      "amendmentDate": "2026-04-28",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41110139337011&histNo=005"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "수원시",
+      "level": "MUNICIPALITY",
+      "name": "수원시 수도급수 조례",
+      "amendmentDate": "2025-11-13",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41110139337006&histNo=026"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "수원시",
+      "level": "MUNICIPALITY",
+      "name": "수원시 수도급수 조례 시행규칙",
+      "amendmentDate": "2025-11-13",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41110139337007&histNo=009"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "수원시",
+      "level": "MUNICIPALITY",
+      "name": "수원시 주차장 조례",
+      "amendmentDate": "2025-07-10",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41110134322027&histNo=031"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "수원시",
+      "level": "MUNICIPALITY",
+      "name": "수원시 주차장 조례 시행규칙",
+      "amendmentDate": "2024-11-14",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41110134322028&histNo=006"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "수원시",
+      "level": "MUNICIPALITY",
+      "name": "수원시 하수도 사용 조례",
+      "amendmentDate": "2024-07-16",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41110136329003&histNo=023"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "수원시",
+      "level": "MUNICIPALITY",
+      "name": "수원시 하수도 사용 조례 시행규칙",
+      "amendmentDate": "2025-12-31",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41110136329004&histNo=010"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "수원시",
+      "level": "MUNICIPALITY",
+      "name": "수원시 향토유산 보호 조례",
+      "amendmentDate": "2024-05-17",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41110133418009&histNo=005"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "시흥시",
+      "level": "MUNICIPALITY",
+      "name": "시흥시 건축 조례",
+      "amendmentDate": "2026-05-07",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41390208592001&histNo=028"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "시흥시",
+      "level": "MUNICIPALITY",
+      "name": "시흥시 건축 조례 시행규칙",
+      "amendmentDate": "2020-08-21",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41390208592002&histNo=005"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "시흥시",
+      "level": "MUNICIPALITY",
+      "name": "시흥시 경관 조례",
+      "amendmentDate": "2025-10-02",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41390148390001&histNo=008"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "시흥시",
+      "level": "MUNICIPALITY",
+      "name": "시흥시 도시계획 조례",
+      "amendmentDate": "2026-08-20",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41390120387028&histNo=026"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "시흥시",
+      "level": "MUNICIPALITY",
+      "name": "시흥시 도시계획 조례 시행규칙",
+      "amendmentDate": "2024-05-30",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41390120387029&histNo=007"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "시흥시",
+      "level": "MUNICIPALITY",
+      "name": "시흥시 상수도 원인자부담금 징수 조례",
+      "amendmentDate": "2024-12-19",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41390229678005&histNo=006"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "시흥시",
+      "level": "MUNICIPALITY",
+      "name": "시흥시 상수도 원인자부담금 징수 조례 시행규칙",
+      "amendmentDate": "2022-07-07",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41390229678006&histNo=003"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "시흥시",
+      "level": "MUNICIPALITY",
+      "name": "시흥시 수도급수 조례",
+      "amendmentDate": "2024-06-13",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41390229678002&histNo=017"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "시흥시",
+      "level": "MUNICIPALITY",
+      "name": "시흥시 수도급수 조례 시행규칙",
+      "amendmentDate": "2016-11-14",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41390229678003&histNo=009"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "시흥시",
+      "level": "MUNICIPALITY",
+      "name": "시흥시 주차장 설치 및 관리 조례",
+      "amendmentDate": "2026-05-07",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41390121486003&histNo=026"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "시흥시",
+      "level": "MUNICIPALITY",
+      "name": "시흥시 주차장 설치 및 관리 조례 시행규칙",
+      "amendmentDate": "2025-06-26",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41390121486004&histNo=004"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "시흥시",
+      "level": "MUNICIPALITY",
+      "name": "시흥시 하수도 사용 조례",
+      "amendmentDate": "2026-05-07",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41390230682001&histNo=015"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "시흥시",
+      "level": "MUNICIPALITY",
+      "name": "시흥시 하수도 사용 조례 시행규칙",
+      "amendmentDate": "2018-08-14",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41390230682002&histNo=007"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "시흥시",
+      "level": "MUNICIPALITY",
+      "name": "시흥시 향토유산 보호 조례",
+      "amendmentDate": "2023-05-11",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41390112246021&histNo=003"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "시흥시",
+      "level": "MUNICIPALITY",
+      "name": "시흥시 향토유산 보호 조례 시행규칙",
+      "amendmentDate": "2023-07-14",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41390112246044&histNo=002"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "안산시",
+      "level": "MUNICIPALITY",
+      "name": "안산시 건축 조례",
+      "amendmentDate": "2026-04-29",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41270116297001&histNo=022"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "안산시",
+      "level": "MUNICIPALITY",
+      "name": "안산시 건축 조례 시행규칙",
+      "amendmentDate": "2011-05-26",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41270116297002&histNo=003"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "안산시",
+      "level": "MUNICIPALITY",
+      "name": "안산시 경관 조례",
+      "amendmentDate": "2021-11-10",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41270116297023&histNo=011"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "안산시",
+      "level": "MUNICIPALITY",
+      "name": "안산시 도시계획 조례",
+      "amendmentDate": "2025-09-19",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41270116295018&histNo=029"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "안산시",
+      "level": "MUNICIPALITY",
+      "name": "안산시 상수도원인자부담금 산정·징수 등에 관한 조례",
+      "amendmentDate": "2026-04-29",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41270112268004&histNo=010"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "안산시",
+      "level": "MUNICIPALITY",
+      "name": "안산시 수도 급수 조례",
+      "amendmentDate": "2026-04-29",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41270112267016&histNo=022"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "안산시",
+      "level": "MUNICIPALITY",
+      "name": "안산시 수도 급수 조례 시행규칙",
+      "amendmentDate": "2025-08-13",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41270112268018&histNo=015"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "안산시",
+      "level": "MUNICIPALITY",
+      "name": "안산시 주차장 조례",
+      "amendmentDate": "2026-04-29",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41270125351003&histNo=028"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "안산시",
+      "level": "MUNICIPALITY",
+      "name": "안산시 하수도 사용 조례",
+      "amendmentDate": "2025-11-17",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41270112270019&histNo=013"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "안산시",
+      "level": "MUNICIPALITY",
+      "name": "안산시 하수도 사용 조례 시행규칙",
+      "amendmentDate": "2020-01-29",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41270112270004&histNo=005"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "안산시",
+      "level": "MUNICIPALITY",
+      "name": "안산시 향토유산 보호 조례",
+      "amendmentDate": "2024-11-06",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41270115260010&histNo=004"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "안성시",
+      "level": "MUNICIPALITY",
+      "name": "안성 제1·2산업단지 공공폐수처리시설 운영 및 비용부담 조례",
+      "amendmentDate": "2026-03-13",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41860134273005&histNo=012"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "안성시",
+      "level": "MUNICIPALITY",
+      "name": "안성 제1·2산업단지 공공폐수처리시설 운영 및 비용부담 조례 시행규칙",
+      "amendmentDate": "2022-07-01",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41860134273006&histNo=004"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "안성시",
+      "level": "MUNICIPALITY",
+      "name": "안성시 건축 조례",
+      "amendmentDate": "2026-03-13",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41860134271004&histNo=021"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "안성시",
+      "level": "MUNICIPALITY",
+      "name": "안성시 건축 조례 시행규칙",
+      "amendmentDate": "2020-09-04",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41860134271001&histNo=003"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "안성시",
+      "level": "MUNICIPALITY",
+      "name": "안성시 경관 조례",
+      "amendmentDate": "2026-04-10",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41860133266010&histNo=004"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "안성시",
+      "level": "MUNICIPALITY",
+      "name": "안성시 경관 조례 시행규칙",
+      "amendmentDate": "2017-03-03",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41860133266011&histNo=004"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "안성시",
+      "level": "MUNICIPALITY",
+      "name": "안성시 도시계획 조례",
+      "amendmentDate": "2026-04-10",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41860133266001&histNo=037"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "안성시",
+      "level": "MUNICIPALITY",
+      "name": "안성시 수도급수 조례",
+      "amendmentDate": "2024-07-12",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41860134276002&histNo=021"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "안성시",
+      "level": "MUNICIPALITY",
+      "name": "안성시 수도급수 조례 시행규칙",
+      "amendmentDate": "2023-12-08",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41860134276003&histNo=018"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "안성시",
+      "level": "MUNICIPALITY",
+      "name": "안성시 수도시설의 원인자부담금 징수 조례",
+      "amendmentDate": "2026-03-13",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41860134276010&histNo=006"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "안성시",
+      "level": "MUNICIPALITY",
+      "name": "안성시 수도시설의 원인자부담금 징수 조례 시행규칙",
+      "amendmentDate": "2022-07-01",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41860134276011&histNo=005"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "안성시",
+      "level": "MUNICIPALITY",
+      "name": "안성시 주차장 설치 및 관리조례",
+      "amendmentDate": "2026-03-13",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41860133270002&histNo=018"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "안성시",
+      "level": "MUNICIPALITY",
+      "name": "안성시 하수도 사용 조례",
+      "amendmentDate": "2024-03-15",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41860134277001&histNo=015"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "안성시",
+      "level": "MUNICIPALITY",
+      "name": "안성시 하수도 사용 조례 시행규칙",
+      "amendmentDate": "2022-12-16",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41860134277002&histNo=008"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "안성시",
+      "level": "MUNICIPALITY",
+      "name": "안성시 향토유산 보호조례",
+      "amendmentDate": "2025-05-16",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41860133265016&histNo=003"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "안양시",
+      "level": "MUNICIPALITY",
+      "name": "안양시 건축 조례",
+      "amendmentDate": "2024-12-31",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41170108223020&histNo=021"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "안양시",
+      "level": "MUNICIPALITY",
+      "name": "안양시 건축 조례 시행규칙",
+      "amendmentDate": "2022-07-04",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41170108223035&histNo=009"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "안양시",
+      "level": "MUNICIPALITY",
+      "name": "안양시 경관 조례",
+      "amendmentDate": "2025-05-16",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41170108223025&histNo=008"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "안양시",
+      "level": "MUNICIPALITY",
+      "name": "안양시 경관 조례 시행규칙",
+      "amendmentDate": "2019-02-01",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41170108223026&histNo=002"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "안양시",
+      "level": "MUNICIPALITY",
+      "name": "안양시 도시계획 조례",
+      "amendmentDate": "2026-03-31",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41170108220016&histNo=018"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "안양시",
+      "level": "MUNICIPALITY",
+      "name": "안양시 도시계획 조례 시행규칙",
+      "amendmentDate": "2026-03-31",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41170108220017&histNo=011"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "안양시",
+      "level": "MUNICIPALITY",
+      "name": "안양시 상수도원인자부담금 산정·징수 등에 관한 조례",
+      "amendmentDate": "2025-10-13",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41170111232003&histNo=003"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "안양시",
+      "level": "MUNICIPALITY",
+      "name": "안양시 수도급수 조례",
+      "amendmentDate": "2025-05-16",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41170111231006&histNo=015"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "안양시",
+      "level": "MUNICIPALITY",
+      "name": "안양시 수도급수 조례 시행규칙",
+      "amendmentDate": "2026-08-18",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41170111231007&histNo=008"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "안양시",
+      "level": "MUNICIPALITY",
+      "name": "안양시 주차장 설치 및 관리 조례",
+      "amendmentDate": "2025-12-31",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41170112236012&histNo=022"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "안양시",
+      "level": "MUNICIPALITY",
+      "name": "안양시 주차장 설치 및 관리 조례 시행규칙",
+      "amendmentDate": "2015-12-18",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41170112236013&histNo=003"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "안양시",
+      "level": "MUNICIPALITY",
+      "name": "안양시 하수도 조례",
+      "amendmentDate": "2023-10-10",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41170111234003&histNo=009"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "안양시",
+      "level": "MUNICIPALITY",
+      "name": "안양시 하수도 조례 시행규칙",
+      "amendmentDate": "2020-07-15",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41170111234004&histNo=005"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "안양시",
+      "level": "MUNICIPALITY",
+      "name": "안양시 향토유산 보호 조례",
+      "amendmentDate": "2024-05-31",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41170107219001&histNo=006"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "양주시",
+      "level": "MUNICIPALITY",
+      "name": "양주시 건축 조례",
+      "amendmentDate": "2026-04-27",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41630106348001&histNo=024"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "양주시",
+      "level": "MUNICIPALITY",
+      "name": "양주시 건축조례 시행규칙",
+      "amendmentDate": "2014-06-30",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41630106348002&histNo=005"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "양주시",
+      "level": "MUNICIPALITY",
+      "name": "양주시 경관 조례",
+      "amendmentDate": "2024-12-09",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41630106215051&histNo=009"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "양주시",
+      "level": "MUNICIPALITY",
+      "name": "양주시 도시계획 조례",
+      "amendmentDate": "2025-11-24",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41630106215070&histNo=030"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "양주시",
+      "level": "MUNICIPALITY",
+      "name": "양주시 수도급수 조례",
+      "amendmentDate": "2026-05-26",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41630108211002&histNo=028"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "양주시",
+      "level": "MUNICIPALITY",
+      "name": "양주시 수도급수 조례 시행규칙",
+      "amendmentDate": "2026-05-26",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41630108211061&histNo=022"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "양주시",
+      "level": "MUNICIPALITY",
+      "name": "양주시 수도시설의 원인자부담금 산정 · 징수 등에 관한 조례",
+      "amendmentDate": "2023-12-26",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41630108211004&histNo=007"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "양주시",
+      "level": "MUNICIPALITY",
+      "name": "양주시 수도시설의 원인자부담금 산정·징수 등에 관한 조례 시행규칙",
+      "amendmentDate": "2014-06-30",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41630108211005&histNo=006"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "양주시",
+      "level": "MUNICIPALITY",
+      "name": "양주시 일반산업단지 공공폐수처리시설 운영 및 비용부담 조례",
+      "amendmentDate": "2018-06-25",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41630105342006&histNo=003"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "양주시",
+      "level": "MUNICIPALITY",
+      "name": "양주시 일반산업단지 공공폐수처리시설 운영 및 비용부담 조례 시행규칙",
+      "amendmentDate": "2021-08-02",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41630105342007&histNo=004"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "양주시",
+      "level": "MUNICIPALITY",
+      "name": "양주시 주차장 조례",
+      "amendmentDate": "2026-02-02",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41630136317009&histNo=019"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "양주시",
+      "level": "MUNICIPALITY",
+      "name": "양주시 주차장 조례 시행규칙",
+      "amendmentDate": "2015-11-09",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41630136317011&histNo=001"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "양주시",
+      "level": "MUNICIPALITY",
+      "name": "양주시 하수도 사용 조례",
+      "amendmentDate": "2025-01-20",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41630108312008&histNo=017"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "양주시",
+      "level": "MUNICIPALITY",
+      "name": "양주시 하수도 사용 조례 시행규칙",
+      "amendmentDate": "2025-01-20",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41630108312004&histNo=010"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "양주시",
+      "level": "MUNICIPALITY",
+      "name": "양주시 향토유산 보호 조례",
+      "amendmentDate": "2025-11-03",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41630154352020&histNo=007"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "양평군",
+      "level": "MUNICIPALITY",
+      "name": "양평군 건축 조례",
+      "amendmentDate": "2025-11-17",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41830141305002&histNo=015"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "양평군",
+      "level": "MUNICIPALITY",
+      "name": "양평군 경관 조례",
+      "amendmentDate": "2018-11-05",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41830141298025&histNo=004"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "양평군",
+      "level": "MUNICIPALITY",
+      "name": "양평군 경관 조례 시행규칙",
+      "amendmentDate": "2024-06-26",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41830141298026&histNo=007"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "양평군",
+      "level": "MUNICIPALITY",
+      "name": "양평군 대기환경보전법 및 물환경보전법 위반업소 공개에 관한 조례",
+      "amendmentDate": "2018-04-16",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41830149306011&histNo=003"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "양평군",
+      "level": "MUNICIPALITY",
+      "name": "양평군 도시계획 조례",
+      "amendmentDate": "2024-12-26",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41830141298001&histNo=020"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "양평군",
+      "level": "MUNICIPALITY",
+      "name": "양평군 상수도 조례",
+      "amendmentDate": "2025-11-17",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41830118228026&histNo=012"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "양평군",
+      "level": "MUNICIPALITY",
+      "name": "양평군 상수도 조례 시행규칙",
+      "amendmentDate": "2025-10-13",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41830118228027&histNo=005"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "양평군",
+      "level": "MUNICIPALITY",
+      "name": "양평군 주차장 조례",
+      "amendmentDate": "2025-11-17",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41830141304001&histNo=014"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "양평군",
+      "level": "MUNICIPALITY",
+      "name": "양평군 주차장 조례 시행규칙",
+      "amendmentDate": "2018-08-10",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41830141304020&histNo=001"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "양평군",
+      "level": "MUNICIPALITY",
+      "name": "양평군 하수도 조례",
+      "amendmentDate": "2026-08-24",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41830118263018&histNo=015"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "양평군",
+      "level": "MUNICIPALITY",
+      "name": "양평군 하수도 조례 시행규칙",
+      "amendmentDate": "2026-08-24",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41830118263002&histNo=007"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "여주시",
+      "level": "MUNICIPALITY",
+      "name": "여주시 건축 조례",
+      "amendmentDate": "2026-04-13",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41670137344003&histNo=016"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "여주시",
+      "level": "MUNICIPALITY",
+      "name": "여주시 건축 조례 시행규칙",
+      "amendmentDate": "2021-12-17",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41670137344001&histNo=004"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "여주시",
+      "level": "MUNICIPALITY",
+      "name": "여주시 경관 조례",
+      "amendmentDate": "2024-12-18",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41670137344015&histNo=006"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "여주시",
+      "level": "MUNICIPALITY",
+      "name": "여주시 도시계획 조례",
+      "amendmentDate": "2025-12-22",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41670137341015&histNo=034"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "여주시",
+      "level": "MUNICIPALITY",
+      "name": "여주시 수도급수 조례",
+      "amendmentDate": "2024-04-02",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41670149283015&histNo=014"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "여주시",
+      "level": "MUNICIPALITY",
+      "name": "여주시 수도급수 조례 시행규칙",
+      "amendmentDate": "2026-04-15",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41670149283002&histNo=012"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "여주시",
+      "level": "MUNICIPALITY",
+      "name": "여주시 수도시설의 원인자부담금 산정·징수 조례",
+      "amendmentDate": "2023-06-26",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41670149283010&histNo=004"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "여주시",
+      "level": "MUNICIPALITY",
+      "name": "여주시 수도시설의 원인자부담금 산정·징수 조례 시행규칙",
+      "amendmentDate": "2019-11-08",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41670149283004&histNo=004"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "여주시",
+      "level": "MUNICIPALITY",
+      "name": "여주시 주차장 조례",
+      "amendmentDate": "2025-06-30",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41670154346009&histNo=024"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "여주시",
+      "level": "MUNICIPALITY",
+      "name": "여주시 주차장 조례 시행규칙",
+      "amendmentDate": "2019-11-08",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41670154346002&histNo=002"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "여주시",
+      "level": "MUNICIPALITY",
+      "name": "여주시 하수도사용 조례",
+      "amendmentDate": "2023-12-21",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41670149284005&histNo=012"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "여주시",
+      "level": "MUNICIPALITY",
+      "name": "여주시 하수도사용 조례 시행규칙",
+      "amendmentDate": "2024-03-14",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41670149284002&histNo=007"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "여주시",
+      "level": "MUNICIPALITY",
+      "name": "여주시 향토유산 보호 조례",
+      "amendmentDate": "2024-04-02",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41670156320008&histNo=003"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "연천군",
+      "level": "MUNICIPALITY",
+      "name": "연천군 건축조례",
+      "amendmentDate": "2024-05-02",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41800131377001&histNo=016"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "연천군",
+      "level": "MUNICIPALITY",
+      "name": "연천군 경관 조례",
+      "amendmentDate": "2023-07-13",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41800131291010&histNo=003"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "연천군",
+      "level": "MUNICIPALITY",
+      "name": "연천군 경관 조례 시행규칙",
+      "amendmentDate": "2022-05-13",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41800131291012&histNo=001"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "연천군",
+      "level": "MUNICIPALITY",
+      "name": "연천군 공공폐수처리시설 운영 및 사용료의 부과ㆍ징수 조례",
+      "amendmentDate": "2021-04-08",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41800119319028&histNo=003"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "연천군",
+      "level": "MUNICIPALITY",
+      "name": "연천군 공공폐수처리시설 운영 및 사용료의부과·징수 조례 시행규칙",
+      "amendmentDate": "2021-06-29",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41800119319029&histNo=005"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "연천군",
+      "level": "MUNICIPALITY",
+      "name": "연천군 군계획조례",
+      "amendmentDate": "2026-04-16",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41800115247047&histNo=025"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "연천군",
+      "level": "MUNICIPALITY",
+      "name": "연천군 백학일반산업단지 폐수종말처리시설 운영관리 업무처리지침",
+      "amendmentDate": "2012-01-27",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41800119319036&histNo=001"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "연천군",
+      "level": "MUNICIPALITY",
+      "name": "연천군 수도급수 조례",
+      "amendmentDate": "2024-12-19",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41800119320025&histNo=011"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "연천군",
+      "level": "MUNICIPALITY",
+      "name": "연천군 수도급수 조례 시행규칙",
+      "amendmentDate": "2022-04-19",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41800119341001&histNo=010"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "연천군",
+      "level": "MUNICIPALITY",
+      "name": "연천군 하수도 사용조례",
+      "amendmentDate": "2024-12-19",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41800119319026&histNo=014"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "연천군",
+      "level": "MUNICIPALITY",
+      "name": "연천군 하수도 사용조례 시행규칙",
+      "amendmentDate": "2024-12-19",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41800119319027&histNo=005"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "연천군",
+      "level": "MUNICIPALITY",
+      "name": "연천군 향토유산 보호 및 활용 조례",
+      "amendmentDate": "2024-02-29",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41800109316002&histNo=008"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "연천군",
+      "level": "MUNICIPALITY",
+      "name": "연천군군계획조례시행규칙",
+      "amendmentDate": "2021-09-16",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41800115247004&histNo=005"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "오산시",
+      "level": "MUNICIPALITY",
+      "name": "오산시 건축 조례",
+      "amendmentDate": "2025-11-20",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41370120519001&histNo=017"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "오산시",
+      "level": "MUNICIPALITY",
+      "name": "오산시 경관 조례",
+      "amendmentDate": "2016-07-19",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41370120488007&histNo=004"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "오산시",
+      "level": "MUNICIPALITY",
+      "name": "오산시 도시계획 조례",
+      "amendmentDate": "2026-05-06",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41370118421004&histNo=024"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "오산시",
+      "level": "MUNICIPALITY",
+      "name": "오산시 상수도 원인자부담금 산정·징수 조례",
+      "amendmentDate": "2011-12-28",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41370111456026&histNo=002"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "오산시",
+      "level": "MUNICIPALITY",
+      "name": "오산시 상수도 원인자부담금 산정·징수 조례 시행규칙",
+      "amendmentDate": "2021-11-05",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41370111456020&histNo=004"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "오산시",
+      "level": "MUNICIPALITY",
+      "name": "오산시 수도 급수 조례",
+      "amendmentDate": "2025-11-20",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41370111456021&histNo=013"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "오산시",
+      "level": "MUNICIPALITY",
+      "name": "오산시 수도 급수 조례 시행규칙",
+      "amendmentDate": "2026-01-20",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41370111456023&histNo=012"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "오산시",
+      "level": "MUNICIPALITY",
+      "name": "오산시 주차장 조례",
+      "amendmentDate": "2026-05-06",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41370183429002&histNo=016"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "오산시",
+      "level": "MUNICIPALITY",
+      "name": "오산시 주차장 조례 시행규칙",
+      "amendmentDate": "2017-08-11",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41370183429003&histNo=003"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "오산시",
+      "level": "MUNICIPALITY",
+      "name": "오산시 하수도 사용 조례",
+      "amendmentDate": "2025-02-28",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41370111457007&histNo=011"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "오산시",
+      "level": "MUNICIPALITY",
+      "name": "오산시 하수도 사용 조례 시행규칙",
+      "amendmentDate": "2025-02-28",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41370111457008&histNo=003"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "오산시",
+      "level": "MUNICIPALITY",
+      "name": "오산시 향토문화재 보호 조례",
+      "amendmentDate": "2020-12-11",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41370160382023&histNo=006"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "용인시",
+      "level": "MUNICIPALITY",
+      "name": "용인시 건축 조례",
+      "amendmentDate": "2025-06-30",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41490130226020&histNo=040"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "용인시",
+      "level": "MUNICIPALITY",
+      "name": "용인시 건축 조례 시행규칙",
+      "amendmentDate": "2022-02-28",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41490130226004&histNo=012"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "용인시",
+      "level": "MUNICIPALITY",
+      "name": "용인시 경관 조례",
+      "amendmentDate": "2026-04-24",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41490134000007&histNo=011"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "용인시",
+      "level": "MUNICIPALITY",
+      "name": "용인시 경관 조례 시행규칙",
+      "amendmentDate": "2014-07-07",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41490134000008&histNo=002"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "용인시",
+      "level": "MUNICIPALITY",
+      "name": "용인시 대기 및 수질환경 관련법규 위반사업장 공개에 관한 조례",
+      "amendmentDate": "2018-01-12",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41490146332009&histNo=003"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "용인시",
+      "level": "MUNICIPALITY",
+      "name": "용인시 도시계획 조례",
+      "amendmentDate": "2025-12-31",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41490109224034&histNo=053"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "용인시",
+      "level": "MUNICIPALITY",
+      "name": "용인시 상수도 원인자부담금 산정ㆍ징수 조례",
+      "amendmentDate": "2025-06-30",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41490112237045&histNo=008"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "용인시",
+      "level": "MUNICIPALITY",
+      "name": "용인시 상수도 원인자부담금 산정ㆍ징수 조례 시행규칙",
+      "amendmentDate": "2022-04-13",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41490112237008&histNo=008"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "용인시",
+      "level": "MUNICIPALITY",
+      "name": "용인시 수도 급수 조례",
+      "amendmentDate": "2026-04-24",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41490112237022&histNo=031"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "용인시",
+      "level": "MUNICIPALITY",
+      "name": "용인시 수도 급수 조례 시행규칙",
+      "amendmentDate": "2025-12-26",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41490112237023&histNo=023"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "용인시",
+      "level": "MUNICIPALITY",
+      "name": "용인시 일반산업단지 공공폐수처리시설 운영 및 비용부담에 관한 조례",
+      "amendmentDate": "2023-09-27",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41490146332052&histNo=002"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "용인시",
+      "level": "MUNICIPALITY",
+      "name": "용인시 주차장 설치 및 관리 조례",
+      "amendmentDate": "2026-08-12",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41490110280019&histNo=037"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "용인시",
+      "level": "MUNICIPALITY",
+      "name": "용인시 주차장 설치 및 관리 조례 시행규칙",
+      "amendmentDate": "2017-11-06",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41490110280012&histNo=001"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "용인시",
+      "level": "MUNICIPALITY",
+      "name": "용인시 하수도 사용 조례",
+      "amendmentDate": "2024-09-25",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41490112261006&histNo=019"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "용인시",
+      "level": "MUNICIPALITY",
+      "name": "용인시 하수도 사용 조례 시행규칙",
+      "amendmentDate": "2022-08-16",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41490112261007&histNo=011"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "용인시",
+      "level": "MUNICIPALITY",
+      "name": "용인시 향토유산 보호 및 활용 조례",
+      "amendmentDate": "2024-05-10",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41490129264017&histNo=010"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "용인시",
+      "level": "MUNICIPALITY",
+      "name": "용인시 향토유산 보호 및 활용 조례 시행규칙",
+      "amendmentDate": "2024-05-10",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41490129264022&histNo=004"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "의왕시",
+      "level": "MUNICIPALITY",
+      "name": "의왕시 건축 조례",
+      "amendmentDate": "2023-12-20",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41430117271003&histNo=017"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "의왕시",
+      "level": "MUNICIPALITY",
+      "name": "의왕시 건축 조례 시행규칙",
+      "amendmentDate": "2021-09-15",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41430117271004&histNo=008"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "의왕시",
+      "level": "MUNICIPALITY",
+      "name": "의왕시 경관 조례",
+      "amendmentDate": "2024-01-31",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41430136306009&histNo=006"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "의왕시",
+      "level": "MUNICIPALITY",
+      "name": "의왕시 경관 조례 시행규칙",
+      "amendmentDate": "2019-11-28",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41430136306010&histNo=003"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "의왕시",
+      "level": "MUNICIPALITY",
+      "name": "의왕시 도시계획 조례",
+      "amendmentDate": "2024-12-30",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41430115263019&histNo=015"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "의왕시",
+      "level": "MUNICIPALITY",
+      "name": "의왕시 도시계획 조례 시행규칙",
+      "amendmentDate": "2017-02-01",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41430115263020&histNo=002"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "의왕시",
+      "level": "MUNICIPALITY",
+      "name": "의왕시 상수도 원인자부담금 산정ㆍ징수 등에 관한 조례 시행규칙",
+      "amendmentDate": "2019-11-28",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41430122295003&histNo=004"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "의왕시",
+      "level": "MUNICIPALITY",
+      "name": "의왕시 상수도원인자부담금 산정ㆍ징수 등에 관한 조례",
+      "amendmentDate": "2018-05-15",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41430122295002&histNo=003"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "의왕시",
+      "level": "MUNICIPALITY",
+      "name": "의왕시 수도급수 조례",
+      "amendmentDate": "2025-03-17",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41430122294001&histNo=011"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "의왕시",
+      "level": "MUNICIPALITY",
+      "name": "의왕시 수도급수 조례 시행규칙",
+      "amendmentDate": "2026-02-12",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41430122294028&histNo=014"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "의왕시",
+      "level": "MUNICIPALITY",
+      "name": "의왕시 주차장설치 및 관리 조례",
+      "amendmentDate": "2026-05-07",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41430119280001&histNo=025"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "의왕시",
+      "level": "MUNICIPALITY",
+      "name": "의왕시 주차장설치 및 관리 조례 시행규칙",
+      "amendmentDate": "2016-02-26",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41430119280002&histNo=003"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "의왕시",
+      "level": "MUNICIPALITY",
+      "name": "의왕시 하수도 사용 조례",
+      "amendmentDate": "2025-12-24",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41430141297002&histNo=015"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "의왕시",
+      "level": "MUNICIPALITY",
+      "name": "의왕시 하수도 사용 조례 시행규칙",
+      "amendmentDate": "2025-12-24",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41430141297003&histNo=011"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "의왕시",
+      "level": "MUNICIPALITY",
+      "name": "의왕시 향토유산 보호 조례",
+      "amendmentDate": "2024-10-01",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41430107230003&histNo=005"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "의정부시",
+      "level": "MUNICIPALITY",
+      "name": "의정부시 건축 조례",
+      "amendmentDate": "2026-08-19",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41150108222019&histNo=036"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "의정부시",
+      "level": "MUNICIPALITY",
+      "name": "의정부시 건축 조례 시행규칙",
+      "amendmentDate": "2023-05-08",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41150108222004&histNo=009"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "의정부시",
+      "level": "MUNICIPALITY",
+      "name": "의정부시 경관 조례",
+      "amendmentDate": "2025-11-25",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41150130254006&histNo=008"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "의정부시",
+      "level": "MUNICIPALITY",
+      "name": "의정부시 경관 조례 시행규칙",
+      "amendmentDate": "2023-05-08",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41150130254001&histNo=004"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "의정부시",
+      "level": "MUNICIPALITY",
+      "name": "의정부시 교통영향평가심의위원회 운영 규정",
+      "amendmentDate": "2026-08-18",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41150109224028&histNo=001"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "의정부시",
+      "level": "MUNICIPALITY",
+      "name": "의정부시 대기 및 수질환경 보전법규 위반업소 공개에 관한 조례",
+      "amendmentDate": "2024-12-30",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41150126241002&histNo=005"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "의정부시",
+      "level": "MUNICIPALITY",
+      "name": "의정부시 도시계획 조례",
+      "amendmentDate": "2025-09-25",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41150108220018&histNo=030"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "의정부시",
+      "level": "MUNICIPALITY",
+      "name": "의정부시 도시계획 조례 시행규칙",
+      "amendmentDate": "2024-12-09",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41150108220002&histNo=007"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "의정부시",
+      "level": "MUNICIPALITY",
+      "name": "의정부시 상수도 원인자부담금 산정·징수등에 관한 조례",
+      "amendmentDate": "2024-12-30",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41150111238002&histNo=008"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "의정부시",
+      "level": "MUNICIPALITY",
+      "name": "의정부시 상수도 원인자부담금 산정·징수등에 관한 조례 시행규칙",
+      "amendmentDate": "2023-02-13",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41150111238003&histNo=005"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "의정부시",
+      "level": "MUNICIPALITY",
+      "name": "의정부시 수도 급수 조례",
+      "amendmentDate": "2024-12-30",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41150111238004&histNo=023"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "의정부시",
+      "level": "MUNICIPALITY",
+      "name": "의정부시 수도 급수 조례 시행규칙",
+      "amendmentDate": "2025-04-17",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41150111238005&histNo=012"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "의정부시",
+      "level": "MUNICIPALITY",
+      "name": "의정부시 주차장 설치 및 관리 조례",
+      "amendmentDate": "2026-01-09",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41150109225004&histNo=033"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "의정부시",
+      "level": "MUNICIPALITY",
+      "name": "의정부시 주차장 설치 및 관리 조례 시행규칙",
+      "amendmentDate": "2025-12-11",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41150109225005&histNo=008"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "의정부시",
+      "level": "MUNICIPALITY",
+      "name": "의정부시 하수도 사용 조례",
+      "amendmentDate": "2023-12-29",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41150111239012&histNo=024"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "의정부시",
+      "level": "MUNICIPALITY",
+      "name": "의정부시 하수도 사용 조례 시행규칙",
+      "amendmentDate": "2026-07-30",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41150111239003&histNo=015"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "의정부시",
+      "level": "MUNICIPALITY",
+      "name": "의정부시 향토문화유산 보호 조례",
+      "amendmentDate": "2024-12-30",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41150123216006&histNo=011"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "이천시",
+      "level": "MUNICIPALITY",
+      "name": "이천시 건축 조례",
+      "amendmentDate": "2025-11-07",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41530162397003&histNo=027"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "이천시",
+      "level": "MUNICIPALITY",
+      "name": "이천시 건축 조례 시행규칙",
+      "amendmentDate": "2017-03-07",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41530162397005&histNo=003"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "이천시",
+      "level": "MUNICIPALITY",
+      "name": "이천시 경관 조례",
+      "amendmentDate": "2024-09-30",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41530166402011&histNo=008"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "이천시",
+      "level": "MUNICIPALITY",
+      "name": "이천시 경관 조례 시행규칙",
+      "amendmentDate": "2015-04-14",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41530166402003&histNo=001"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "이천시",
+      "level": "MUNICIPALITY",
+      "name": "이천시 도시계획 조례",
+      "amendmentDate": "2026-02-27",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41530162393005&histNo=041"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "이천시",
+      "level": "MUNICIPALITY",
+      "name": "이천시 도시계획 조례 시행규칙",
+      "amendmentDate": "2015-08-10",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41530162393007&histNo=006"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "이천시",
+      "level": "MUNICIPALITY",
+      "name": "이천시 상수도 원인자부담금 산정·징수 등에 관한 조례",
+      "amendmentDate": "2023-07-05",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41530165404013&histNo=004"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "이천시",
+      "level": "MUNICIPALITY",
+      "name": "이천시 상수도 원인자부담금 산정·징수 등에 관한 조례 시행규칙",
+      "amendmentDate": "2023-07-05",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41530165404012&histNo=008"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "이천시",
+      "level": "MUNICIPALITY",
+      "name": "이천시 수도급수 조례",
+      "amendmentDate": "2026-04-17",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41530165404001&histNo=017"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "이천시",
+      "level": "MUNICIPALITY",
+      "name": "이천시 수도급수 조례 시행규칙",
+      "amendmentDate": "2025-11-07",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41530165404002&histNo=014"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "이천시",
+      "level": "MUNICIPALITY",
+      "name": "이천시 주차장 설치 및 관리 조례",
+      "amendmentDate": "2025-05-16",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41530160400004&histNo=028"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "이천시",
+      "level": "MUNICIPALITY",
+      "name": "이천시 주차장 설치 및 관리조례 시행규칙",
+      "amendmentDate": "2025-05-16",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41530160400013&histNo=010"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "이천시",
+      "level": "MUNICIPALITY",
+      "name": "이천시 하수도 사용 조례",
+      "amendmentDate": "2026-04-17",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41530165405004&histNo=014"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "이천시",
+      "level": "MUNICIPALITY",
+      "name": "이천시 하수도 사용 조례 시행규칙",
+      "amendmentDate": "2025-12-26",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41530165405005&histNo=007"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "이천시",
+      "level": "MUNICIPALITY",
+      "name": "이천시 향토유산 보호 조례",
+      "amendmentDate": "2024-07-01",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41530110391005&histNo=006"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "파주시",
+      "level": "MUNICIPALITY",
+      "name": "파주시 건축 조례",
+      "amendmentDate": "2025-03-20",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41510121279003&histNo=036"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "파주시",
+      "level": "MUNICIPALITY",
+      "name": "파주시 건축 조례 시행규칙",
+      "amendmentDate": "2022-09-30",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41510121279004&histNo=008"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "파주시",
+      "level": "MUNICIPALITY",
+      "name": "파주시 경관 조례",
+      "amendmentDate": "2022-02-11",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41510109216008&histNo=006"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "파주시",
+      "level": "MUNICIPALITY",
+      "name": "파주시 공공폐수처리시설 운영 및 비용부담 조례",
+      "amendmentDate": "2023-11-01",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41510113244026&histNo=009"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "파주시",
+      "level": "MUNICIPALITY",
+      "name": "파주시 공공폐수처리시설 운영 및 비용부담 조례 시행규칙",
+      "amendmentDate": "2022-04-01",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41510113244027&histNo=009"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "파주시",
+      "level": "MUNICIPALITY",
+      "name": "파주시 도시계획 조례",
+      "amendmentDate": "2025-03-20",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41510109216003&histNo=043"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "파주시",
+      "level": "MUNICIPALITY",
+      "name": "파주시 상수도 원인자부담금 조례",
+      "amendmentDate": "2017-03-31",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41510113247011&histNo=006"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "파주시",
+      "level": "MUNICIPALITY",
+      "name": "파주시 수도급수 조례",
+      "amendmentDate": "2026-02-12",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41510113247003&histNo=030"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "파주시",
+      "level": "MUNICIPALITY",
+      "name": "파주시 수도급수 조례 시행규칙",
+      "amendmentDate": "2025-12-26",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41510113247006&histNo=015"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "파주시",
+      "level": "MUNICIPALITY",
+      "name": "파주시 주차장 설치 및 관리 조례",
+      "amendmentDate": "2025-11-11",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41510110249005&histNo=032"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "파주시",
+      "level": "MUNICIPALITY",
+      "name": "파주시 하수도 사용 조례",
+      "amendmentDate": "2025-12-26",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41510113248003&histNo=015"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "파주시",
+      "level": "MUNICIPALITY",
+      "name": "파주시 하수도 사용 조례 시행규칙",
+      "amendmentDate": "2025-12-26",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41510113248002&histNo=013"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "파주시",
+      "level": "MUNICIPALITY",
+      "name": "파주시 향토유산 보호 조례",
+      "amendmentDate": "2024-11-07",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41510108224002&histNo=008"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "평택시",
+      "level": "MUNICIPALITY",
+      "name": "평택시 건축 조례",
+      "amendmentDate": "2026-08-14",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41220107227001&histNo=026"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "평택시",
+      "level": "MUNICIPALITY",
+      "name": "평택시 건축 조례 시행규칙",
+      "amendmentDate": "2018-12-18",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41220107227027&histNo=005"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "평택시",
+      "level": "MUNICIPALITY",
+      "name": "평택시 경관 조례",
+      "amendmentDate": "2022-11-17",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41220107223017&histNo=008"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "평택시",
+      "level": "MUNICIPALITY",
+      "name": "평택시 도시계획 조례",
+      "amendmentDate": "2026-04-15",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41220107223004&histNo=032"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "평택시",
+      "level": "MUNICIPALITY",
+      "name": "평택시 산업단지 공공폐수처리시설 운영 및 비용부담 조례",
+      "amendmentDate": "2022-03-02",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41220106315008&histNo=005"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "평택시",
+      "level": "MUNICIPALITY",
+      "name": "평택시 산업단지 공공폐수처리시설 운영 및 비용부담조례 시행규칙",
+      "amendmentDate": "2022-05-13",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41220106315009&histNo=002"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "평택시",
+      "level": "MUNICIPALITY",
+      "name": "평택시 상수도원인자부담금 산정·징수 등에 관한 조례",
+      "amendmentDate": "2022-12-20",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41220111236039&histNo=006"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "평택시",
+      "level": "MUNICIPALITY",
+      "name": "평택시 상수도원인자부담금 산정·징수 등에 관한 조례 시행규칙",
+      "amendmentDate": "2012-08-10",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41220111236040&histNo=001"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "평택시",
+      "level": "MUNICIPALITY",
+      "name": "평택시 수도급수 조례",
+      "amendmentDate": "2023-08-03",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41220111235032&histNo=012"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "평택시",
+      "level": "MUNICIPALITY",
+      "name": "평택시 수도급수 조례 시행규칙",
+      "amendmentDate": "2026-05-13",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41220111235034&histNo=013"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "평택시",
+      "level": "MUNICIPALITY",
+      "name": "평택시 주차장 설치 및 관리 조례",
+      "amendmentDate": "2025-12-29",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41220110233044&histNo=027"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "평택시",
+      "level": "MUNICIPALITY",
+      "name": "평택시 주차장 설치 및 관리 조례 시행규칙",
+      "amendmentDate": "2014-07-23",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41220110233003&histNo=002"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "평택시",
+      "level": "MUNICIPALITY",
+      "name": "평택시 하수도 사용 조례",
+      "amendmentDate": "2026-03-03",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41220111237001&histNo=019"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "평택시",
+      "level": "MUNICIPALITY",
+      "name": "평택시 하수도 사용 조례 시행규칙",
+      "amendmentDate": "2025-07-31",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41220111237002&histNo=010"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "평택시",
+      "level": "MUNICIPALITY",
+      "name": "평택시 향토유산 보호 조례",
+      "amendmentDate": "2025-12-29",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41220136309020&histNo=007"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "포천시",
+      "level": "MUNICIPALITY",
+      "name": "포천시 건축 조례",
+      "amendmentDate": "2025-12-22",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41650189000014&histNo=031"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "포천시",
+      "level": "MUNICIPALITY",
+      "name": "포천시 건축 조례 시행규칙",
+      "amendmentDate": "2026-01-05",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41650189000021&histNo=008"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "포천시",
+      "level": "MUNICIPALITY",
+      "name": "포천시 경관 조례",
+      "amendmentDate": "2023-11-24",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41650204000018&histNo=008"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "포천시",
+      "level": "MUNICIPALITY",
+      "name": "포천시 경관 조례 시행규칙",
+      "amendmentDate": "2017-02-01",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41650204000010&histNo=001"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "포천시",
+      "level": "MUNICIPALITY",
+      "name": "포천시 도시계획 조례",
+      "amendmentDate": "2026-08-14",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41650204000005&histNo=037"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "포천시",
+      "level": "MUNICIPALITY",
+      "name": "포천시 도시계획 조례 시행규칙",
+      "amendmentDate": "2016-05-18",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41650204000006&histNo=007"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "포천시",
+      "level": "MUNICIPALITY",
+      "name": "포천시 상수도 원인자부담금 산정 및 징수 조례",
+      "amendmentDate": "2026-08-14",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41650120000017&histNo=002"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "포천시",
+      "level": "MUNICIPALITY",
+      "name": "포천시 상수도 원인자부담금 산정 및 징수조례 시행규칙",
+      "amendmentDate": "2023-03-29",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41650120000020&histNo=002"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "포천시",
+      "level": "MUNICIPALITY",
+      "name": "포천시 수도 급수 조례",
+      "amendmentDate": "2025-04-16",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41650120000006&histNo=018"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "포천시",
+      "level": "MUNICIPALITY",
+      "name": "포천시 수도 급수 조례 시행규칙",
+      "amendmentDate": "2025-10-17",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41650120000041&histNo=016"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "포천시",
+      "level": "MUNICIPALITY",
+      "name": "포천시 일반산업단지 공공폐수처리시설 운영 및 비용부담 조례",
+      "amendmentDate": "2025-12-22",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41650200000010&histNo=003"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "포천시",
+      "level": "MUNICIPALITY",
+      "name": "포천시 주차장 설치 및 관리 조례",
+      "amendmentDate": "2025-12-22",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41650118000003&histNo=016"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "포천시",
+      "level": "MUNICIPALITY",
+      "name": "포천시 하수도 사용 조례",
+      "amendmentDate": "2025-04-16",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41650211000002&histNo=018"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "포천시",
+      "level": "MUNICIPALITY",
+      "name": "포천시 하수도 사용 조례 시행규칙",
+      "amendmentDate": "2026-08-14",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41650211000003&histNo=011"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "하남시",
+      "level": "MUNICIPALITY",
+      "name": "하남시 건축 조례",
+      "amendmentDate": "2025-10-02",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41450115256001&histNo=030"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "하남시",
+      "level": "MUNICIPALITY",
+      "name": "하남시 경관 조례",
+      "amendmentDate": "2025-02-28",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41450114255040&histNo=006"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "하남시",
+      "level": "MUNICIPALITY",
+      "name": "하남시 도시계획 조례",
+      "amendmentDate": "2025-08-11",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41450114253017&histNo=024"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "하남시",
+      "level": "MUNICIPALITY",
+      "name": "하남시 상수도원인자부담금 산정·징수 등에 관한 조례",
+      "amendmentDate": "2018-10-22",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41450125289004&histNo=003"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "하남시",
+      "level": "MUNICIPALITY",
+      "name": "하남시 상수도원인자부담금 산정ㆍ징수 등에 관한 조례 시행규칙",
+      "amendmentDate": "2018-10-22",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41450125289005&histNo=003"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "하남시",
+      "level": "MUNICIPALITY",
+      "name": "하남시 수도 급수 조례",
+      "amendmentDate": "2026-04-14",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41450125288028&histNo=018"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "하남시",
+      "level": "MUNICIPALITY",
+      "name": "하남시 수도 급수 조례 시행규칙",
+      "amendmentDate": "2026-04-29",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41450125289002&histNo=010"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "하남시",
+      "level": "MUNICIPALITY",
+      "name": "하남시 주차장 조례",
+      "amendmentDate": "2023-08-04",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41450118270001&histNo=018"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "하남시",
+      "level": "MUNICIPALITY",
+      "name": "하남시 주차장 조례 시행규칙",
+      "amendmentDate": "2023-08-04",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41450118270002&histNo=004"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "하남시",
+      "level": "MUNICIPALITY",
+      "name": "하남시 하수도 사용 조례",
+      "amendmentDate": "2024-03-12",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41450129286006&histNo=015"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "하남시",
+      "level": "MUNICIPALITY",
+      "name": "하남시 하수도 사용 조례 시행규칙",
+      "amendmentDate": "2026-03-19",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41450129286007&histNo=007"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "화성시",
+      "level": "MUNICIPALITY",
+      "name": "화성시 건축 조례",
+      "amendmentDate": "2025-09-30",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41750145318010&histNo=030"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "화성시",
+      "level": "MUNICIPALITY",
+      "name": "화성시 경관 조례",
+      "amendmentDate": "2024-06-17",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41750110369004&histNo=011"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "화성시",
+      "level": "MUNICIPALITY",
+      "name": "화성시 도시계획 조례",
+      "amendmentDate": "2026-03-10",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41750110235040&histNo=050"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "화성시",
+      "level": "MUNICIPALITY",
+      "name": "화성시 상수도원인자부담금 산정 및 부과·징수 등에 관한 조례",
+      "amendmentDate": "2019-11-15",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41750114286031&histNo=011"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "화성시",
+      "level": "MUNICIPALITY",
+      "name": "화성시 상수도원인자부담금 산정 및 부과·징수 등에 관한 조례 시행규칙",
+      "amendmentDate": "2025-12-26",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41750114286032&histNo=008"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "화성시",
+      "level": "MUNICIPALITY",
+      "name": "화성시 수도 급수 조례",
+      "amendmentDate": "2025-04-08",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41750114247039&histNo=022"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "화성시",
+      "level": "MUNICIPALITY",
+      "name": "화성시 수도 급수 조례 시행규칙",
+      "amendmentDate": "2023-06-28",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41750114247040&histNo=014"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "화성시",
+      "level": "MUNICIPALITY",
+      "name": "화성시 일반산업단지 공공폐수처리시설 운영 및 비용부담 조례",
+      "amendmentDate": "2023-11-15",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41750146273002&histNo=007"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "화성시",
+      "level": "MUNICIPALITY",
+      "name": "화성시 일반산업단지 공공폐수처리시설 운영 및 비용부담 조례 시행규칙",
+      "amendmentDate": "2024-05-16",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41750146273003&histNo=008"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "화성시",
+      "level": "MUNICIPALITY",
+      "name": "화성시 주차장 설치 및 관리 조례",
+      "amendmentDate": "2026-07-08",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41750111305015&histNo=041"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "화성시",
+      "level": "MUNICIPALITY",
+      "name": "화성시 하수도 사용 조례",
+      "amendmentDate": "2025-04-08",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41750114248036&histNo=021"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "화성시",
+      "level": "MUNICIPALITY",
+      "name": "화성시 하수도 사용 조례 시행규칙",
+      "amendmentDate": "2019-11-26",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41750114248035&histNo=009"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "화성시",
+      "level": "MUNICIPALITY",
+      "name": "화성시 향토유산 보호 조례",
+      "amendmentDate": "2025-08-06",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41750107304023&histNo=009"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "화성시",
+      "level": "MUNICIPALITY",
+      "name": "화성시 향토유산 보호 조례 시행규칙",
+      "amendmentDate": "2025-08-06",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41750107304033&histNo=001"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "경기도",
+      "level": "PROVINCE",
+      "name": "경기도 건축 조례",
+      "amendmentDate": "2025-09-26",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41000016012058&histNo=033"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "경기도",
+      "level": "PROVINCE",
+      "name": "경기도 건축 조례 시행규칙",
+      "amendmentDate": "2026-07-24",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41000016012022&histNo=011"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "경기도",
+      "level": "PROVINCE",
+      "name": "경기도 경관 조례",
+      "amendmentDate": "2024-05-16",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41000016012025&histNo=009"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "경기도",
+      "level": "PROVINCE",
+      "name": "경기도 교통영향평가 대상사업 및 범위에 관한 조례",
+      "amendmentDate": "2022-04-21",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41000033001052&histNo=001"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "경기도",
+      "level": "PROVINCE",
+      "name": "경기도 도시계획 조례",
+      "amendmentDate": "2026-06-29",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41000016002015&histNo=017"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "경기도",
+      "level": "PROVINCE",
+      "name": "경기도 도시계획 조례 시행규칙",
+      "amendmentDate": "2025-06-09",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41000016002022&histNo=016"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "경기도",
+      "level": "PROVINCE",
+      "name": "경기도 문화유산과 자연유산의 보존 및 활용에 관한 조례",
+      "amendmentDate": "2026-03-04",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41000007008042&histNo=043"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "경기도",
+      "level": "PROVINCE",
+      "name": "경기도 문화유산과 자연유산의 보존 및 활용에 관한 조례 시행규칙",
+      "amendmentDate": "2026-07-24",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41000007008017&histNo=023"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "경기도",
+      "level": "PROVINCE",
+      "name": "경기도 종교문화유산의 보존 및 활용에 관한 조례",
+      "amendmentDate": "2025-10-10",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41000007011003&histNo=002"
+    },
+    {
+      "provinceName": "경기도",
+      "jurisdictionName": "경기도",
+      "level": "PROVINCE",
+      "name": "경기도 환경영향평가 조례",
+      "amendmentDate": "2025-11-10",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41000041001028&histNo=003"
+    },
+    {
       "provinceName": "경상남도",
       "jurisdictionName": "거제시",
       "level": "MUNICIPALITY",
@@ -3539,6 +6987,22 @@
       "name": "경상남도 자연유산의 보존 및 활용에 관한 조례",
       "amendmentDate": "2025-02-04",
       "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=48000026004031&histNo=001"
+    },
+    {
+      "provinceName": "경상남도",
+      "jurisdictionName": "경상남도",
+      "level": "PROVINCE",
+      "name": "경상남도 환경영향평가 조례",
+      "amendmentDate": "2025-02-04",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=48000008001081&histNo=014"
+    },
+    {
+      "provinceName": "경상남도",
+      "jurisdictionName": "경상남도",
+      "level": "PROVINCE",
+      "name": "경상남도 환경영향평가 조례 시행규칙",
+      "amendmentDate": "2025-03-06",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=48000008001055&histNo=007"
     },
     {
       "provinceName": "경상북도",
@@ -5989,6 +9453,14 @@
       "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=27000010003026&histNo=011"
     },
     {
+      "provinceName": "대구광역시",
+      "jurisdictionName": "대구광역시",
+      "level": "PROVINCE",
+      "name": "대구광역시 환경영향평가 조례",
+      "amendmentDate": "2026-05-11",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=27000010001050&histNo=002"
+    },
+    {
       "provinceName": "대전광역시",
       "jurisdictionName": "대덕구",
       "level": "MUNICIPALITY",
@@ -6307,6 +9779,14 @@
       "name": "대전광역시 하수도 사용 조례 시행규칙",
       "amendmentDate": "2023-03-10",
       "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=30000009002012&histNo=022"
+    },
+    {
+      "provinceName": "대전광역시",
+      "jurisdictionName": "대전광역시",
+      "level": "PROVINCE",
+      "name": "대전광역시 환경영향평가조례",
+      "amendmentDate": "2026-04-10",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=30000009001002&histNo=008"
     },
     {
       "provinceName": "부산광역시",
@@ -6933,6 +10413,774 @@
       "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=26000020016006&histNo=020"
     },
     {
+      "provinceName": "부산광역시",
+      "jurisdictionName": "부산광역시",
+      "level": "PROVINCE",
+      "name": "부산광역시 환경영향평가 조례",
+      "amendmentDate": "2024-06-26",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=26000020006031&histNo=016"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "강남구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 강남구 도시계획 조례",
+      "amendmentDate": "2021-04-30",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11680106214002&histNo=009"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "강남구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 강남구 주차장 설치 및 관리 조례",
+      "amendmentDate": "2026-07-16",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11680107220001&histNo=023"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "강동구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 강동구 경관 조례",
+      "amendmentDate": "2024-07-10",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11740105221021&histNo=004"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "강동구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 강동구 도시계획 조례",
+      "amendmentDate": "2026-01-14",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11740105220001&histNo=006"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "강동구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 강동구 문화유산 보존 및 활용에 관한 조례",
+      "amendmentDate": "2024-11-13",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11740114204038&histNo=001"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "강동구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 강동구 주차장 설치 및 관리 조례",
+      "amendmentDate": "2024-07-10",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11740106233001&histNo=021"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "강북구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 강북구 도시계획 조례",
+      "amendmentDate": "2023-09-22",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11300106216001&histNo=007"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "강북구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 강북구 주차장 설치 및 관리 조례",
+      "amendmentDate": "2025-08-01",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11300107222003&histNo=034"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "강북구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 강북구 향토유산 보호 조례",
+      "amendmentDate": "2024-05-17",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11300111203018&histNo=002"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "강서구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 강서구 도시계획 조례",
+      "amendmentDate": "2025-11-12",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11500110256003&histNo=012"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "강서구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 강서구 주차장 설치 및 관리 조례",
+      "amendmentDate": "2025-10-01",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11500106227017&histNo=023"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "강서구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 강서구 주차장 설치 및 관리 조례 시행규칙",
+      "amendmentDate": "2025-08-20",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11500106227018&histNo=011"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "관악구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 관악구 경관 조례",
+      "amendmentDate": "2023-07-06",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11620106220013&histNo=001"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "관악구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 관악구 도시계획 조례",
+      "amendmentDate": "2023-12-28",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11620106220002&histNo=006"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "관악구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 관악구 주차장 설치 및 관리 조례",
+      "amendmentDate": "2025-12-30",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11620107238002&histNo=019"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "관악구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 관악구 주차장 설치 및 관리 조례 시행규칙",
+      "amendmentDate": "2023-12-28",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11620107238003&histNo=004"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "광진구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 광진구 도시계획 조례",
+      "amendmentDate": "2025-12-29",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11215114264001&histNo=008"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "광진구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 광진구 주차장 설치 및 관리 조례",
+      "amendmentDate": "2026-02-27",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11215106253002&histNo=032"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "광진구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 광진구 주차장 설치 및 관리 조례 시행규칙",
+      "amendmentDate": "2023-06-16",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11215106253003&histNo=005"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "구로구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 구로구 도시계획 조례",
+      "amendmentDate": "2018-02-22",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11530116272001&histNo=004"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "구로구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 구로구 주차장 설치 및 관리 조례",
+      "amendmentDate": "2025-09-25",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11530107231017&histNo=018"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "금천구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 금천구 도시계획 조례",
+      "amendmentDate": "2021-05-13",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11545105214018&histNo=006"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "금천구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 금천구 문화유산 보존 및 활용에 관한 조례",
+      "amendmentDate": "2024-07-18",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11545110245033&histNo=001"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "금천구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 금천구 주차장 설치 및 관리 조례",
+      "amendmentDate": "2026-02-26",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11545106218002&histNo=024"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "금천구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 금천구 주차장 설치 및 관리조례 시행규칙",
+      "amendmentDate": "2022-11-22",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11545106218003&histNo=003"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "노원구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 노원구 도시계획 조례",
+      "amendmentDate": "2024-11-07",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11350106226002&histNo=011"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "노원구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 노원구 주차장 설치 및 관리 조례",
+      "amendmentDate": "2024-12-30",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11350107260001&histNo=032"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "노원구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 노원구 주차장 설치 및 관리 조례 시행규칙",
+      "amendmentDate": "2015-11-12",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11350107260003&histNo=008"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "노원구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 노원구 향토유산 보호 조례",
+      "amendmentDate": "2024-09-26",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11350103256044&histNo=003"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "도봉구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 도봉구 도시계획 조례",
+      "amendmentDate": "2018-12-27",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11320106214003&histNo=005"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "도봉구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 도봉구 주차장 설치 및 관리 조례",
+      "amendmentDate": "2025-05-15",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11320107220002&histNo=014"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "도봉구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 도봉구 주차장 설치 및 관리 조례 시행규칙",
+      "amendmentDate": "2014-12-31",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11320107220003&histNo=002"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "동대문구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 동대문구 도시계획 조례",
+      "amendmentDate": "2018-07-12",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11230108221005&histNo=003"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "동대문구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 동대문구 주차장 설치 및 관리 조례",
+      "amendmentDate": "2026-01-08",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11230112231002&histNo=035"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "동대문구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 동대문구 주차장 설치 및 관리 조례 시행규칙",
+      "amendmentDate": "2024-08-29",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11230112279002&histNo=005"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "동작구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 동작구 도시계획 조례",
+      "amendmentDate": "2023-09-27",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11590121264001&histNo=010"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "동작구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 동작구 도시계획 조례 시행규칙",
+      "amendmentDate": "2019-07-04",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11590121264002&histNo=002"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "동작구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 동작구 문화유산 보존 및 활용에 관한 조례",
+      "amendmentDate": "2023-12-07",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11590123277016&histNo=001"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "동작구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 동작구 주차장 설치 및 관리 조례",
+      "amendmentDate": "2025-07-10",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11590120289001&histNo=034"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "동작구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 동작구 주차장 설치 및 관리 조례 시행규칙",
+      "amendmentDate": "2024-05-23",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11590120289002&histNo=018"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "마포구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 마포구 도시계획 조례",
+      "amendmentDate": "2020-02-27",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11440105216001&histNo=006"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "마포구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 마포구 주차장 설치 및 관리 조례",
+      "amendmentDate": "2025-11-06",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11440106222006&histNo=033"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "서대문구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 서대문구 도시계획 조례",
+      "amendmentDate": "2022-12-30",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11410111221003&histNo=008"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "서대문구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 서대문구 주차장 설치 및 관리 조례",
+      "amendmentDate": "2025-10-20",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11410105241004&histNo=023"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "서초구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 서초구 도시계획조례",
+      "amendmentDate": "2024-12-05",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11650112215006&histNo=010"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "서초구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 서초구 주차장 설치 및 관리 조례",
+      "amendmentDate": "2025-03-13",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11650107223003&histNo=023"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "서초구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 서초구 주차장 설치 및 관리 조례 시행규칙",
+      "amendmentDate": "2022-01-13",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11650107223002&histNo=011"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "성동구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 성동구 도시계획 조례",
+      "amendmentDate": "2016-03-17",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11200106215001&histNo=004"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "성동구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 성동구 주차장 설치 및 관리 조례",
+      "amendmentDate": "2025-05-08",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11200107238002&histNo=021"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "성동구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 성동구 주차장 설치 및 관리 조례 시행규칙",
+      "amendmentDate": "2021-04-22",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11200107238003&histNo=017"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "성동구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 성동구 향토유산 보호 조례",
+      "amendmentDate": "2024-11-07",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11200103203024&histNo=004"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "성동구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 성동구 향토유산 보호 조례 시행규칙",
+      "amendmentDate": "2024-11-07",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11200103203015&histNo=002"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "성북구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 성북구 도시계획 조례",
+      "amendmentDate": "2023-12-28",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11290104242001&histNo=012"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "성북구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 성북구 주차장 설치 및 관리 조례",
+      "amendmentDate": "2024-10-04",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11290105237002&histNo=022"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "송파구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 송파구 도시계획 조례",
+      "amendmentDate": "2025-07-10",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11710107219003&histNo=007"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "송파구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 송파구 주차장 설치 및 관리 조례",
+      "amendmentDate": "2026-02-26",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11710108223001&histNo=023"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "송파구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 송파구 주차장 설치 및 관리 조례 시행규칙",
+      "amendmentDate": "2026-01-15",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11710108223002&histNo=015"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "양천구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 양천구 도시계획 조례",
+      "amendmentDate": "2024-12-19",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11470111222002&histNo=011"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "양천구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 양천구 주차장 설치 및 관리 조례",
+      "amendmentDate": "2026-07-09",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11470107258001&histNo=028"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "양천구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 양천구 주차장 설치 및 관리 조례 시행규칙",
+      "amendmentDate": "2024-05-27",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11470107258002&histNo=007"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "양천구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 양천구 향토유산 보호·관리 조례",
+      "amendmentDate": "2024-11-21",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11470112252013&histNo=002"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "영등포구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 영등포구 경관 조례",
+      "amendmentDate": "2021-07-15",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11560106219019&histNo=002"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "영등포구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 영등포구 도시계획 조례",
+      "amendmentDate": "2017-12-28",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11560106219003&histNo=006"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "영등포구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 영등포구 주차장 설치 및 관리 조례",
+      "amendmentDate": "2025-05-15",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11560111228003&histNo=031"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "영등포구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 영등포구 주차장 설치 및 관리 조례 시행규칙",
+      "amendmentDate": "2018-05-03",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11560111228005&histNo=010"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "영등포구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 영등포구 향토유산 보호 조례",
+      "amendmentDate": "2024-07-18",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11560113216018&histNo=002"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "용산구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 용산구 도시계획 조례",
+      "amendmentDate": "2019-07-05",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11170114265002&histNo=003"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "용산구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 용산구 주차장 설치 및 관리 조례",
+      "amendmentDate": "2026-07-10",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11170115273002&histNo=025"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "용산구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 용산구 향토유산 보호 조례",
+      "amendmentDate": "2024-09-27",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11170116252010&histNo=003"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "은평구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 은평구 경관 조례",
+      "amendmentDate": "2022-07-07",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11380116222011&histNo=003"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "은평구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 은평구 도시계획 조례",
+      "amendmentDate": "2020-05-14",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11380116222002&histNo=006"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "은평구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 은평구 주차장 설치 및 관리 조례",
+      "amendmentDate": "2024-09-26",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11380113227003&histNo=019"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "은평구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 은평구 주차장 설치 및 관리 조례 시행규칙",
+      "amendmentDate": "2024-05-02",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11380113227004&histNo=007"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "종로구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 종로구 도시계획 조례",
+      "amendmentDate": "2022-11-11",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11110111224002&histNo=008"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "종로구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 종로구 주차장 설치 및 관리 조례",
+      "amendmentDate": "2025-12-19",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11110111233003&histNo=023"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "종로구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 종로구 주차장 설치 및 관리 조례 시행규칙",
+      "amendmentDate": "2020-11-27",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11110111233004&histNo=008"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "중구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 중구 도시계획 조례",
+      "amendmentDate": "2023-07-25",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11140116263002&histNo=010"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "중구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 중구 주차장 설치 및 관리 조례",
+      "amendmentDate": "2026-03-25",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11140117272002&histNo=024"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "중구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 중구 향토유산 보호 조례",
+      "amendmentDate": "2024-07-19",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11140116266006&histNo=004"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "중랑구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 중랑구 경관 조례",
+      "amendmentDate": "2023-10-05",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11260105216010&histNo=002"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "중랑구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 중랑구 도시계획 조례",
+      "amendmentDate": "2025-12-31",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11260105216002&histNo=009"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "중랑구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 중랑구 주차장 설치 및 관리 조례",
+      "amendmentDate": "2025-09-25",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11260106223001&histNo=016"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "중랑구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시 중랑구 향토유산 보호 조례",
+      "amendmentDate": "2024-07-11",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11260102227028&histNo=002"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "중랑구",
+      "level": "MUNICIPALITY",
+      "name": "서울특별시중랑구주차장설치및관리조례시행규칙",
+      "amendmentDate": "2005-02-25",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11260106223003&histNo=001"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "서울특별시",
+      "level": "PROVINCE",
+      "name": "서울특별시 건축 조례",
+      "amendmentDate": "2026-01-05",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11000139000002&histNo=109"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "서울특별시",
+      "level": "PROVINCE",
+      "name": "서울특별시 경관 조례",
+      "amendmentDate": "2024-05-20",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11000131000016&histNo=016"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "서울특별시",
+      "level": "PROVINCE",
+      "name": "서울특별시 교통영향평가에 관한 조례",
+      "amendmentDate": "2024-03-26",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11000071000037&histNo=009"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "서울특별시",
+      "level": "PROVINCE",
+      "name": "서울특별시 대기환경개선 촉진 및 지원 등에 관한 조례",
+      "amendmentDate": "2025-05-19",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11000094000009&histNo=023"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "서울특별시",
+      "level": "PROVINCE",
+      "name": "서울특별시 도시계획 조례",
+      "amendmentDate": "2026-07-13",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11000131000007&histNo=114"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "서울특별시",
+      "level": "PROVINCE",
+      "name": "서울특별시 도시계획 조례 시행규칙",
+      "amendmentDate": "2024-10-14",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11000131000008&histNo=033"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "서울특별시",
+      "level": "PROVINCE",
+      "name": "서울특별시 주차장 설치 및 관리 조례",
+      "amendmentDate": "2026-07-13",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11000071000010&histNo=079"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "서울특별시",
+      "level": "PROVINCE",
+      "name": "서울특별시 주차장 설치 및 관리 조례 시행규칙",
+      "amendmentDate": "2019-10-10",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11000071000016&histNo=012"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "서울특별시",
+      "level": "PROVINCE",
+      "name": "서울특별시 하수도 사용 조례",
+      "amendmentDate": "2025-09-29",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11000110000010&histNo=059"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "서울특별시",
+      "level": "PROVINCE",
+      "name": "서울특별시 하수도 사용 조례 시행규칙",
+      "amendmentDate": "2026-01-19",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11000110000015&histNo=026"
+    },
+    {
+      "provinceName": "서울특별시",
+      "jurisdictionName": "서울특별시",
+      "level": "PROVINCE",
+      "name": "서울특별시 환경영향평가 조례 시행규칙",
+      "amendmentDate": "2026-01-19",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11000094000020&histNo=014"
+    },
+    {
       "provinceName": "세종특별자치시",
       "jurisdictionName": "세종특별자치시",
       "level": "PROVINCE",
@@ -7331,6 +11579,518 @@
       "name": "울산광역시 하수도 사용 조례 시행규칙",
       "amendmentDate": "2022-04-07",
       "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=31000007003012&histNo=023"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "강화군",
+      "level": "MUNICIPALITY",
+      "name": "강화군 건축 조례",
+      "amendmentDate": "2025-02-07",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28710114274001&histNo=009"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "강화군",
+      "level": "MUNICIPALITY",
+      "name": "강화군 경관 조례",
+      "amendmentDate": "2024-05-16",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28710112236025&histNo=001"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "강화군",
+      "level": "MUNICIPALITY",
+      "name": "강화군 주차장 설치 및 관리 조례",
+      "amendmentDate": "2025-09-26",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28710129231004&histNo=018"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "강화군",
+      "level": "MUNICIPALITY",
+      "name": "강화군 향토유산 보호 조례",
+      "amendmentDate": "2025-06-24",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28710131220004&histNo=003"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "검단구",
+      "level": "MUNICIPALITY",
+      "name": "인천광역시 검단구 경관 조례",
+      "amendmentDate": "2026-07-01",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28290129331001&histNo=001"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "검단구",
+      "level": "MUNICIPALITY",
+      "name": "인천광역시 검단구 주차장 설치 및 관리 조례",
+      "amendmentDate": "2026-07-01",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28290118268008&histNo=001"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "계양구",
+      "level": "MUNICIPALITY",
+      "name": "인천광역시 계양구 경관 조례",
+      "amendmentDate": "2021-11-12",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28250105225035&histNo=003"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "계양구",
+      "level": "MUNICIPALITY",
+      "name": "인천광역시 계양구 계양산업단지 공공폐수처리시설 운영 및 비용부담 조례",
+      "amendmentDate": "2026-08-07",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28250112000008&histNo=001"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "계양구",
+      "level": "MUNICIPALITY",
+      "name": "인천광역시 계양구 계양산업단지 공공폐수처리시설 운영 및 비용부담 조례 시행규칙",
+      "amendmentDate": "2026-08-14",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28250112000010&histNo=001"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "계양구",
+      "level": "MUNICIPALITY",
+      "name": "인천광역시 계양구 서운일반산업단지 공공폐수처리시설 운영 및 비용부담 조례",
+      "amendmentDate": "2022-07-08",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28250112000004&histNo=003"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "계양구",
+      "level": "MUNICIPALITY",
+      "name": "인천광역시 계양구 서운일반산업단지 공공폐수처리시설 운영 및 비용부담 조례 시행규칙",
+      "amendmentDate": "2022-07-08",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28250112000006&histNo=003"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "계양구",
+      "level": "MUNICIPALITY",
+      "name": "인천광역시 계양구 주차장 설치 및 관리 조례",
+      "amendmentDate": "2025-11-14",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28250109227004&histNo=027"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "계양구",
+      "level": "MUNICIPALITY",
+      "name": "인천광역시 계양구 주차장 설치 및 관리 조례 시행규칙",
+      "amendmentDate": "2017-12-29",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28250109227005&histNo=006"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "남동구",
+      "level": "MUNICIPALITY",
+      "name": "남동구 경관 조례",
+      "amendmentDate": "2025-07-07",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28200133000010&histNo=005"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "남동구",
+      "level": "MUNICIPALITY",
+      "name": "남동구 주차장 설치 및 관리 조례",
+      "amendmentDate": "2026-07-23",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28200119000001&histNo=032"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "남동구",
+      "level": "MUNICIPALITY",
+      "name": "남동구 주차장 설치 및 관리 조례 시행규칙",
+      "amendmentDate": "2021-02-26",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28200119000002&histNo=012"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "남동구",
+      "level": "MUNICIPALITY",
+      "name": "남동구 향토문화유산 보호 및 진흥 조례",
+      "amendmentDate": "2025-11-03",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28200102000041&histNo=001"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "미추홀구",
+      "level": "MUNICIPALITY",
+      "name": "인천광역시 미추홀구 경관 조례",
+      "amendmentDate": "2024-11-11",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28177173230021&histNo=004"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "미추홀구",
+      "level": "MUNICIPALITY",
+      "name": "인천광역시 미추홀구 주차장 설치 및 관리 조례",
+      "amendmentDate": "2026-08-18",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28177105231024&histNo=029"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "미추홀구",
+      "level": "MUNICIPALITY",
+      "name": "인천광역시 미추홀구 주차장 설치 및 관리 조례 시행규칙",
+      "amendmentDate": "2021-11-15",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28177105231004&histNo=006"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "미추홀구",
+      "level": "MUNICIPALITY",
+      "name": "인천광역시 미추홀구 향토문화유산 보호 및 육성에 관한 조례",
+      "amendmentDate": "2026-04-06",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28177172254014&histNo=005"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "부평구",
+      "level": "MUNICIPALITY",
+      "name": "인천광역시부평구 경관 조례",
+      "amendmentDate": "2025-05-19",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28240133276006&histNo=005"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "부평구",
+      "level": "MUNICIPALITY",
+      "name": "인천광역시부평구 주차장 설치 및 관리 조례",
+      "amendmentDate": "2026-04-13",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28240132291005&histNo=029"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "부평구",
+      "level": "MUNICIPALITY",
+      "name": "인천광역시부평구 주차장 설치 및 관리 조례 시행규칙",
+      "amendmentDate": "2026-06-01",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28240132291006&histNo=010"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "부평구",
+      "level": "MUNICIPALITY",
+      "name": "인천광역시부평구 향토문화유산 보호 조례",
+      "amendmentDate": "2025-05-19",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28240109236051&histNo=004"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "서해구",
+      "level": "MUNICIPALITY",
+      "name": "인천광역시 서해구 경관 조례",
+      "amendmentDate": "2026-06-29",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28275131361003&histNo=003"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "서해구",
+      "level": "MUNICIPALITY",
+      "name": "인천광역시 서해구 주차장 설치 및 관리 조례",
+      "amendmentDate": "2026-06-29",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28275138359002&histNo=026"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "서해구",
+      "level": "MUNICIPALITY",
+      "name": "인천광역시 서해구 향토문화유산 보호 조례",
+      "amendmentDate": "2026-06-29",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28275111388018&histNo=004"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "연수구",
+      "level": "MUNICIPALITY",
+      "name": "인천광역시 연수구 경관 조례",
+      "amendmentDate": "2018-08-20",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28180115000024&histNo=001"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "연수구",
+      "level": "MUNICIPALITY",
+      "name": "인천광역시 연수구 주차장 설치 및 관리 조례",
+      "amendmentDate": "2025-04-07",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28180117000017&histNo=017"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "연수구",
+      "level": "MUNICIPALITY",
+      "name": "인천광역시 연수구 향토유산 보존 및 활용에 관한 조례",
+      "amendmentDate": "2026-04-29",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28180109000054&histNo=001"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "영종구",
+      "level": "MUNICIPALITY",
+      "name": "인천광역시 영종구 경관 조례",
+      "amendmentDate": "2026-07-01",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28155134396001&histNo=001"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "영종구",
+      "level": "MUNICIPALITY",
+      "name": "인천광역시 영종구 주차장 설치 및 관리 조례",
+      "amendmentDate": "2026-07-01",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28155124397001&histNo=001"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "영종구",
+      "level": "MUNICIPALITY",
+      "name": "인천광역시 중구 경관 조례",
+      "amendmentDate": "2023-07-21",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28155148000617&histNo=001"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "영종구",
+      "level": "MUNICIPALITY",
+      "name": "인천광역시 중구 주차장 설치 및 관리 조례",
+      "amendmentDate": "2025-12-29",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28155148000260&histNo=016"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "옹진군",
+      "level": "MUNICIPALITY",
+      "name": "옹진군 건축 조례",
+      "amendmentDate": "2024-11-13",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28720123262002&histNo=012"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "옹진군",
+      "level": "MUNICIPALITY",
+      "name": "옹진군 주차장 설치 및 관리 조례",
+      "amendmentDate": "2023-05-10",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28720126293003&histNo=009"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "옹진군",
+      "level": "MUNICIPALITY",
+      "name": "옹진군 하수도 사용 조례",
+      "amendmentDate": "2015-07-31",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28720106329006&histNo=002"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "옹진군",
+      "level": "MUNICIPALITY",
+      "name": "옹진군 하수도 사용 조례 시행규칙",
+      "amendmentDate": "2025-01-17",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28720106329007&histNo=003"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "제물포구",
+      "level": "MUNICIPALITY",
+      "name": "인천광역시 동구 경관 조례",
+      "amendmentDate": "2025-09-29",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28125113259005&histNo=002"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "제물포구",
+      "level": "MUNICIPALITY",
+      "name": "인천광역시 동구 주차장 설치 및 관리 조례",
+      "amendmentDate": "2025-12-31",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28125112256003&histNo=011"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "제물포구",
+      "level": "MUNICIPALITY",
+      "name": "인천광역시 제물포구 경관 조례",
+      "amendmentDate": "2026-07-01",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28125113259017&histNo=001"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "제물포구",
+      "level": "MUNICIPALITY",
+      "name": "인천광역시 제물포구 주차장 설치 및 관리 조례",
+      "amendmentDate": "2026-07-01",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28125112256027&histNo=001"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "인천광역시",
+      "level": "PROVINCE",
+      "name": "인천광역시 건축 조례",
+      "amendmentDate": "2026-07-13",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28000012016022&histNo=063"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "인천광역시",
+      "level": "PROVINCE",
+      "name": "인천광역시 경관 조례",
+      "amendmentDate": "2024-06-10",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28000069000001&histNo=008"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "인천광역시",
+      "level": "PROVINCE",
+      "name": "인천광역시 경관 조례 시행규칙",
+      "amendmentDate": "2022-10-24",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28000069000002&histNo=004"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "인천광역시",
+      "level": "PROVINCE",
+      "name": "인천광역시 공공폐수처리시설 운영 및 비용부담 조례",
+      "amendmentDate": "2022-12-30",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28000060003004&histNo=007"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "인천광역시",
+      "level": "PROVINCE",
+      "name": "인천광역시 공공폐수처리시설 운영 및 비용부담 조례 시행규칙",
+      "amendmentDate": "2022-10-24",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28000060003005&histNo=004"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "인천광역시",
+      "level": "PROVINCE",
+      "name": "인천광역시 대기오염물질 배출허용기준 조례",
+      "amendmentDate": "2021-09-30",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28000013003006&histNo=005"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "인천광역시",
+      "level": "PROVINCE",
+      "name": "인천광역시 도시계획 조례",
+      "amendmentDate": "2026-07-13",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28000012001048&histNo=069"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "인천광역시",
+      "level": "PROVINCE",
+      "name": "인천광역시 도시계획 조례 시행규칙",
+      "amendmentDate": "2022-12-30",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28000012001047&histNo=015"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "인천광역시",
+      "level": "PROVINCE",
+      "name": "인천광역시 문화유산의 보존 및 활용에 관한 조례",
+      "amendmentDate": "2024-06-10",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28000011004064&histNo=020"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "인천광역시",
+      "level": "PROVINCE",
+      "name": "인천광역시 문화유산의 보존 및 활용에 관한 조례 시행규칙",
+      "amendmentDate": "2024-12-30",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28000011004062&histNo=013"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "인천광역시",
+      "level": "PROVINCE",
+      "name": "인천광역시 상수도 원인자부담금 등 징수 조례",
+      "amendmentDate": "2025-07-18",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28000018000092&histNo=003"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "인천광역시",
+      "level": "PROVINCE",
+      "name": "인천광역시 상수도 원인자부담금 등 징수 조례 시행규칙",
+      "amendmentDate": "2025-03-24",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28000018000098&histNo=001"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "인천광역시",
+      "level": "PROVINCE",
+      "name": "인천광역시 수도급수 조례",
+      "amendmentDate": "2024-09-25",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28000018000094&histNo=097"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "인천광역시",
+      "level": "PROVINCE",
+      "name": "인천광역시 수도급수 조례 시행규칙",
+      "amendmentDate": "2025-07-28",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28000018000097&histNo=051"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "인천광역시",
+      "level": "PROVINCE",
+      "name": "인천광역시 악취의 엄격한 배출허용기준 조례",
+      "amendmentDate": "2008-08-04",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28000013003012&histNo=001"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "인천광역시",
+      "level": "PROVINCE",
+      "name": "인천광역시 자연유산의 보존 및 활용에 관한 조례",
+      "amendmentDate": "2024-06-10",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28000011004069&histNo=001"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "인천광역시",
+      "level": "PROVINCE",
+      "name": "인천광역시 자연유산의 보존 및 활용에 관한 조례 시행규칙",
+      "amendmentDate": "2024-12-30",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28000011004071&histNo=001"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "인천광역시",
+      "level": "PROVINCE",
+      "name": "인천광역시 주차장 설치 및 관리 조례",
+      "amendmentDate": "2025-09-29",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28000010010020&histNo=063"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "인천광역시",
+      "level": "PROVINCE",
+      "name": "인천광역시 하수도 사용 조례",
+      "amendmentDate": "2025-03-12",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28000013006025&histNo=045"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "인천광역시",
+      "level": "PROVINCE",
+      "name": "인천광역시 하수도 사용 조례 시행규칙",
+      "amendmentDate": "2024-05-13",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28000013006027&histNo=015"
+    },
+    {
+      "provinceName": "인천광역시",
+      "jurisdictionName": "인천광역시",
+      "level": "PROVINCE",
+      "name": "인천광역시 환경영향평가 조례",
+      "amendmentDate": "2014-05-26",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=28000013011002&histNo=007"
     },
     {
       "provinceName": "전남광주통합특별시",
@@ -9549,6 +14309,14 @@
       "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=12760125289013&histNo=007"
     },
     {
+      "provinceName": "전남광주통합특별시",
+      "jurisdictionName": "전남광주통합특별시",
+      "level": "PROVINCE",
+      "name": "전남광주통합특별시 환경영향평가 조례",
+      "amendmentDate": "2026-07-01",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=12000056001005&histNo=001"
+    },
+    {
       "provinceName": "전북특별자치도",
       "jurisdictionName": "고창군",
       "level": "MUNICIPALITY",
@@ -11035,6 +15803,14 @@
       "name": "제주특별자치도 하수도 사용 조례 시행규칙",
       "amendmentDate": "2023-12-22",
       "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=50000025006017&histNo=006"
+    },
+    {
+      "provinceName": "제주특별자치도",
+      "jurisdictionName": "제주특별자치도",
+      "level": "PROVINCE",
+      "name": "제주특별자치도 환경영향평가 조례",
+      "amendmentDate": "2022-11-23",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=50000015004057&histNo=006"
     },
     {
       "provinceName": "충청남도",
@@ -12603,6 +17379,14 @@
       "name": "충청남도 문화유산 보존 및 활용에 관한 조례 시행규칙",
       "amendmentDate": "2025-01-31",
       "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=44000013005013&histNo=006"
+    },
+    {
+      "provinceName": "충청남도",
+      "jurisdictionName": "충청남도",
+      "level": "PROVINCE",
+      "name": "충청남도 환경영향평가 조례",
+      "amendmentDate": "2026-07-10",
+      "url": "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=44000048001063&histNo=003"
     },
     {
       "provinceName": "충청북도",

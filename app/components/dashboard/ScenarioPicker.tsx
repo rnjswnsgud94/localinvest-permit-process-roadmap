@@ -28,7 +28,12 @@ export const projectInputSections: readonly InputSection[] = [
       { key: "province" },
       { key: "city" },
       { key: "insideIndustrialComplex" },
-      { key: "industrialComplexOccupancyContractStatus" },
+      { key: "entryContractRegime" },
+      { key: "entryEligibilityConfirmed" },
+      { key: "entryContractStatus" },
+      { key: "entryZoneName" },
+      { key: "entryManagingAuthority" },
+      { key: "entryContractEvidence" },
       { key: "industrialComplexPlanSpecialCaseConfirmed" },
       { key: "industrialComplexPlanDocumentsIncluded" },
       { key: "industrialComplexPlanConsultationCompleted" },
@@ -68,6 +73,7 @@ export const projectInputSections: readonly InputSection[] = [
       { key: "buildingCommitteeReviewRequired" },
       { key: "mechanicalEquipmentActTarget" },
       { key: "totalAreaM2", unit: "㎡" },
+      { key: "siteDevelopmentAreaM2", unit: "㎡" },
       { key: "permitCoordination" },
       { key: "aiDataCenterActFacilityConfirmed" },
       { key: "aiDataCenterOneStopStatus" },
@@ -105,6 +111,7 @@ export const projectInputSections: readonly InputSection[] = [
       { key: "noiseVibrationFacility" },
       { key: "wasteFacility" },
       { key: "environmentalAssessmentType" },
+      { key: "localEnvironmentalAssessmentRequired" },
       { key: "integratedEnvironmentalPermitTarget" },
       { key: "powerIncreaseMw", unit: "MW" },
       { key: "waterDemandM3Day", unit: "㎥/일" },
@@ -169,6 +176,18 @@ const valueLabels: Record<string, Record<string, string>> = {
     COMPLETED: "일괄처리 완료",
   },
   industrialComplexOccupancyContractStatus: {
+    NOT_APPLIED: "미신청",
+    PLANNED: "신청 예정",
+    IN_PROGRESS: "협의·심사 중",
+    COMPLETED: "계약 체결 완료",
+  },
+  entryContractRegime: {
+    NONE: "입주계약 대상 아님",
+    INDUSTRIAL_COMPLEX_ACT: "산업집적법상 산업단지 입주계약",
+    PORT_ACT: "항만법상 1종 항만배후단지 입주계약",
+    FREE_TRADE_ZONE_ACT: "자유무역지역법상 입주계약",
+  },
+  entryContractStatus: {
     NOT_APPLIED: "미신청",
     PLANNED: "신청 예정",
     IN_PROGRESS: "협의·심사 중",
@@ -245,6 +264,27 @@ export function getProjectInputValue(answers: ScenarioAnswers, key: string) {
     !answers.city &&
     answers.province === "세종특별자치시"
   ) return "세종특별자치시(광역 단층제)";
+  const effectiveEntryContractRegime =
+    answers.entryContractRegime === "NONE" &&
+    answers.insideIndustrialComplex === true
+      ? "INDUSTRIAL_COMPLEX_ACT"
+      : answers.entryContractRegime;
+  if (key === "entryContractRegime") return effectiveEntryContractRegime;
+  if (
+    key === "entryContractStatus" &&
+    effectiveEntryContractRegime === "INDUSTRIAL_COMPLEX_ACT"
+  ) return answers.industrialComplexOccupancyContractStatus;
+  if (
+    key === "entryZoneName" &&
+    effectiveEntryContractRegime === "INDUSTRIAL_COMPLEX_ACT"
+  ) return answers.entryZoneName || answers.industrialComplexName;
+  if (
+    key === "entryManagingAuthority" &&
+    effectiveEntryContractRegime === "INDUSTRIAL_COMPLEX_ACT"
+  ) {
+    return answers.entryManagingAuthority ||
+      answers.industrialComplexManagingAuthority;
+  }
   return (answers as unknown as Record<string, unknown>)[key];
 }
 
@@ -300,6 +340,11 @@ export function isProjectInputFieldVisible(
   answers: ScenarioAnswers,
   key: string,
 ) {
+  const effectiveEntryContractRegime =
+    answers.entryContractRegime === "NONE" &&
+    answers.insideIndustrialComplex === true
+      ? "INDUSTRIAL_COMPLEX_ACT"
+      : answers.entryContractRegime;
   if (
     key === "airTotalManagementBusinessTarget" &&
     answers.airEmissionFacility !== true
@@ -310,11 +355,30 @@ export function isProjectInputFieldVisible(
     answers.supplementalPermitReviewedIds.length === 0
   ) return false;
   if (industrialComplexBaseKeys.has(key) && answers.insideIndustrialComplex !== true) return false;
+  if (
+    [
+      "entryContractStatus",
+      "entryZoneName",
+      "entryManagingAuthority",
+      "entryContractEvidence",
+    ].includes(key) &&
+    effectiveEntryContractRegime === "NONE"
+  ) return false;
+  if (
+    key === "entryEligibilityConfirmed" &&
+    !["PORT_ACT", "FREE_TRADE_ZONE_ACT"].includes(
+      effectiveEntryContractRegime,
+    )
+  ) return false;
   if (key === "industrialComplexPlanSpecialCaseConfirmed" && !answers.province) return false;
   if (industrialComplexPlanEvidenceKeys.has(key)) {
     return answers.industrialComplexPlanSpecialCaseConfirmed === true;
   }
-  if (key === "permitCoordination" && answers.insideIndustrialComplex !== false) return false;
+  if (
+    key === "permitCoordination" &&
+    answers.insideIndustrialComplex !== false &&
+    effectiveEntryContractRegime !== "PORT_ACT"
+  ) return false;
   if (key === "regionalSpecialZonePlanDeemingConfirmed" && !answers.province) return false;
   if (regionalSpecialZoneEvidenceKeys.has(key)) {
     return answers.regionalSpecialZonePlanDeemingConfirmed === true;

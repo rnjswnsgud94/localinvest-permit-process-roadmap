@@ -37,6 +37,7 @@ function allTargetsAnswers(): ScenarioAnswers {
     "permitCoordination",
     "increaseAreaM2",
     "totalAreaM2",
+    "siteDevelopmentAreaM2",
     "powerIncreaseMw",
     "waterDemandM3Day",
     "wastewaterM3Day",
@@ -64,6 +65,7 @@ function allTargetsAnswers(): ScenarioAnswers {
     permitCoordination: "OTHER_GTE_20",
     increaseAreaM2: 100_000,
     totalAreaM2: 100_000,
+    siteDevelopmentAreaM2: 500_000,
     powerIncreaseMw: 500,
     waterDemandM3Day: 10_000,
     wastewaterM3Day: 5_000,
@@ -125,7 +127,7 @@ describe("permit PDF renderer", () => {
       stage.items.filter((item) => item.category === "REQUIRED").length,
     );
 
-    expect(requiredCounts).toEqual([12, 15, 44, 4, 40, 5]);
+    expect(requiredCounts).toEqual([19, 18, 45, 4, 40, 5]);
     expect(model.flow.coreRelations.length).toBeGreaterThan(0);
     expect(model.flow.coreRelations.length).toBeLessThanOrEqual(10);
     expect(model.localOrdinances.categories.length).toBeGreaterThan(0);

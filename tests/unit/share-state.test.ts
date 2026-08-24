@@ -182,7 +182,7 @@ describe("versioned share state", () => {
     const first = encodeShareState(answers, "SCHEDULE");
     const second = encodeShareState(answers, "SCHEDULE");
     expect(first).toBe(second);
-    expect(first).toContain("v=13");
+    expect(first).toContain("v=15");
     expect(decodeShareState(first, catalog.scenarios[0].answers)).toEqual({ answers, tab: "SCHEDULE" });
     expect(first).not.toContain("address");
   });
@@ -297,7 +297,7 @@ describe("versioned share state", () => {
     };
     const encoded = encodeShareState(answers, "LEGAL");
 
-    expect(encoded).toContain("v=13");
+    expect(encoded).toContain("v=15");
     expect(encoded).toContain("ipa=1");
     expect(encoded).toContain("ipad=2026-08-20");
     expect(decodeShareState(encoded, fallback)).toEqual({ answers, tab: "LEGAL" });
@@ -319,7 +319,7 @@ describe("versioned share state", () => {
     };
     const encoded = encodeShareState(answers, "SWIMLANE");
 
-    expect(encoded).toContain("v=13");
+    expect(encoded).toContain("v=15");
     expect(encoded).toContain("noi=1");
     expect(decodeShareState(encoded, fallback)).toEqual({ answers, tab: "SWIMLANE" });
 
@@ -343,7 +343,7 @@ describe("versioned share state", () => {
     const encoded = encodeShareState(answers, "SCHEDULE");
     const params = new URLSearchParams(encoded);
 
-    expect(params.get("v")).toBe("13");
+    expect(params.get("v")).toBe("15");
     expect(params.get("ud")).toBe(
       "building-permit~45~c.factory-establishment-approval~3650~m.landscape-review~0~b",
     );
@@ -365,6 +365,80 @@ describe("versioned share state", () => {
     expect(restored.warning).toContain("사용자 예상 처리기간");
   });
 
+  it("round-trips the unified entry-contract facts only in v15", () => {
+    const fallback = catalog.scenarios[0].answers;
+    const answers: ScenarioAnswers = {
+      ...fallback,
+      insideIndustrialComplex: true,
+      entryContractRegime: "FREE_TRADE_ZONE_ACT",
+      entryEligibilityConfirmed: true,
+      entryContractStatus: "COMPLETED",
+      entryZoneName: "부산항 자유무역지역",
+      entryManagingAuthority: "부산항만공사",
+      entryContractEvidence: "입주계약 2026-100호 · 2026-08-20",
+    };
+    const encoded = encodeShareState(answers, "LEGAL");
+
+    expect(new URLSearchParams(encoded).get("v")).toBe("15");
+    expect(decodeShareState(encoded, fallback)).toEqual({
+      answers,
+      tab: "LEGAL",
+    });
+    expect(decodeInputCode(encodeInputCode(answers), fallback)).toEqual(
+      answers,
+    );
+  });
+
+  it("migrates v14 industrial, port, and legacy local-EIA facts conservatively", () => {
+    const fallback = catalog.scenarios[0].answers;
+    const industrial = new URLSearchParams(
+      encodeShareState(
+        {
+          ...fallback,
+          insideIndustrialComplex: true,
+          industrialComplexName: "아산테크노밸리",
+          industrialComplexManagingAuthority: "아산시",
+          industrialComplexOccupancyContractStatus: "COMPLETED",
+        },
+        "SWIMLANE",
+      ),
+    );
+    industrial.set("v", "14");
+    for (const key of ["ecr", "eec", "ecs", "ezn", "ema", "ece"]) {
+      industrial.delete(key);
+    }
+    industrial.set("eia", "LOCAL");
+
+    const restoredIndustrial = decodeShareState(
+      industrial.toString(),
+      fallback,
+    );
+    expect(restoredIndustrial.answers).toMatchObject({
+      environmentalAssessmentType: "NONE",
+      localEnvironmentalAssessmentRequired: true,
+      entryContractRegime: "INDUSTRIAL_COMPLEX_ACT",
+      entryContractStatus: "COMPLETED",
+      entryZoneName: "아산테크노밸리",
+      entryManagingAuthority: "아산시",
+      entryContractEvidence: "",
+    });
+
+    const legacyPort = new URLSearchParams(industrial);
+    legacyPort.set("ic", "0");
+    legacyPort.set("ocs", "NOT_APPLIED");
+    legacyPort.set("spr", "port-hinterland-entry-contract");
+    legacyPort.set("spt", "port-hinterland-entry-contract");
+    const restoredPort = decodeShareState(legacyPort.toString(), fallback);
+    expect(restoredPort.answers).toMatchObject({
+      entryContractRegime: "PORT_ACT",
+      entryEligibilityConfirmed: true,
+      entryContractStatus: "NOT_APPLIED",
+      supplementalPermitReviewedIds: [],
+      supplementalPermitTargetIds: [],
+    });
+    expect(restoredPort.warning).toContain("단일 적용 법률 입력으로 변환");
+  });
+
   it("imports a checksummed v12 portable code and migrates it to empty user estimates", () => {
     const fallback = catalog.scenarios[0].answers;
     const legacyParams = new URLSearchParams(
@@ -376,7 +450,11 @@ describe("versioned share state", () => {
 
     expect(
       decodeInputCode(encodeInputCodePayload(legacyParams.toString()), fallback),
-    ).toEqual({ ...fallback, userDurationOverrides: {} });
+    ).toEqual({
+      ...fallback,
+      entryContractRegime: "INDUSTRIAL_COMPLEX_ACT",
+      userDurationOverrides: {},
+    });
   });
 
   it("preserves the compact supplemental threshold review and selected targets", () => {
@@ -464,11 +542,23 @@ describe("versioned share state", () => {
     expect(restored.warning).toContain("AI 데이터센터 특례 조건");
   });
 
-  it("falls back safely when a shared region is outside the non-capital scope", () => {
+  it("round-trips a capital-region location", () => {
     const fallback = catalog.scenarios[0].answers;
     const params = new URLSearchParams(encodeShareState(catalog.scenarios[2].answers, "SWIMLANE"));
     params.set("pr", "경기도");
     params.set("ct", "수원시");
+
+    const restored = decodeShareState(params.toString(), fallback);
+    expect(restored.answers.province).toBe("경기도");
+    expect(restored.answers.city).toBe("수원시");
+    expect(restored.warning).toBeUndefined();
+  });
+
+  it("falls back safely when a shared region is outside the nationwide scope", () => {
+    const fallback = catalog.scenarios[0].answers;
+    const params = new URLSearchParams(encodeShareState(catalog.scenarios[2].answers, "SWIMLANE"));
+    params.set("pr", "가상도");
+    params.set("ct", "가상시");
 
     const restored = decodeShareState(params.toString(), fallback);
     expect(restored.answers.province).toBe(fallback.province);
@@ -547,6 +637,7 @@ describe("versioned share state", () => {
     const restored = decodeShareState(params.toString(), fallback);
     expect(restored.answers).toEqual({
       ...fallback,
+      entryContractRegime: "INDUSTRIAL_COMPLEX_ACT",
       noiseVibrationFacility: null,
     });
     expect(restored.warning).toContain("소음·진동배출시설 확인값");

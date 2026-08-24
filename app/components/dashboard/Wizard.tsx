@@ -24,11 +24,18 @@ import {
   semiconductorClusterPlanDeemedProcedureIds,
 } from "@/lib/data/special-law-processes";
 import {
+  capitalRegionSiteReviewTargetIds,
+  constructionEnvironmentSupplementalPermitTargetIds,
+  gyeonggiSiteReviewTargetIds,
+  siteReviewSupplementalPermitTargetIds,
   supplementalPermitTargetDescriptions,
-  supplementalPermitTargetIds,
   type SupplementalPermitTargetId,
 } from "@/lib/data/supplemental-permit-targets";
-import { nonCapitalRegions } from "@/lib/regions";
+import {
+  capitalRegions,
+  isCapitalRegionProvince,
+  nonCapitalRegions,
+} from "@/lib/regions";
 import { listSupportedMunicipalities } from "@/lib/regions/local-ordinances";
 
 type Props = {
@@ -230,11 +237,32 @@ function NumberInput({
 
 export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
   const [assessmentDateError, setAssessmentDateError] = useState("");
+  const panelRef = useRef<HTMLElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
   const assessmentDateIsValid = isValidAssessmentDate(answers.assessmentDate);
   const selectedIndustryProfile = getIndustryProfile(answers.industryCategory);
   const municipalities = listSupportedMunicipalities(answers.province);
-  const aiDataCenterSpecialLaws = getAiDataCenterSpecialLawDefinitions();
+  const isCapitalRegion = isCapitalRegionProvince(answers.province);
+  const effectiveEntryContractRegime =
+    answers.entryContractRegime === "NONE" &&
+    answers.insideIndustrialComplex === true
+      ? "INDUSTRIAL_COMPLEX_ACT"
+      : answers.entryContractRegime;
+  const visibleSiteReviewTargetIds = siteReviewSupplementalPermitTargetIds.filter(
+    (procedureId) => {
+      if (capitalRegionSiteReviewTargetIds.includes(
+        procedureId as (typeof capitalRegionSiteReviewTargetIds)[number],
+      )) return isCapitalRegion;
+      if (gyeonggiSiteReviewTargetIds.includes(
+        procedureId as (typeof gyeonggiSiteReviewTargetIds)[number],
+      )) return answers.province === "경기도";
+      return true;
+    },
+  );
+  const aiDataCenterSpecialLaws = getAiDataCenterSpecialLawDefinitions(
+    answers.province,
+  );
   const automaticSpecialLawCandidates = getAutomaticSpecialLawDefinitions(answers);
   const confirmedAutomaticSpecialLawCount = automaticSpecialLawCandidates.filter(
     (law) => law.qualificationKey && answers[law.qualificationKey] === true,
@@ -255,7 +283,17 @@ export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
     answers.riverOccupationRequired,
     answers.publicWaterOccupationRequired,
     answers.waterSourceProtectionZone,
-  ]);
+  ]) + answers.supplementalPermitReviewedIds.filter((procedureId) =>
+    visibleSiteReviewTargetIds.includes(
+      procedureId as (typeof visibleSiteReviewTargetIds)[number],
+    )
+  ).length;
+  const constructionEnvironmentReviewedCount =
+    answers.supplementalPermitReviewedIds.filter((procedureId) =>
+      constructionEnvironmentSupplementalPermitTargetIds.includes(
+        procedureId as (typeof constructionEnvironmentSupplementalPermitTargetIds)[number],
+      )
+    ).length;
   const gasSafetyAnsweredCount = answeredCount([
     answers.specificHighPressureGasUse,
     answers.lpgSpecificUseFacility,
@@ -270,6 +308,16 @@ export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
   ]);
   function changeIndustry(industryCategory: string) {
     onChange("industryCategory", industryCategory);
+    if (
+      industryCategory === AI_DATA_CENTER_INDUSTRY_ID &&
+      answers.entryContractRegime === "FREE_TRADE_ZONE_ACT"
+    ) {
+      changeEntryContractRegime(
+        answers.insideIndustrialComplex === true
+          ? "INDUSTRIAL_COMPLEX_ACT"
+          : "NONE",
+      );
+    }
     if (industryCategory !== AI_DATA_CENTER_INDUSTRY_ID) {
       if (answers.aiDataCenterActFacilityConfirmed !== null) {
         onChange("aiDataCenterActFacilityConfirmed", null);
@@ -306,6 +354,45 @@ export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
     }
   }
 
+  function changeEntryContractRegime(
+    regime: ScenarioAnswers["entryContractRegime"],
+  ) {
+    const previousRegime = effectiveEntryContractRegime;
+    onChange("entryContractRegime", regime);
+
+    if (regime === "INDUSTRIAL_COMPLEX_ACT") {
+      onChange("insideIndustrialComplex", true);
+      onChange("entryEligibilityConfirmed", null);
+      onChange(
+        "entryContractStatus",
+        answers.industrialComplexOccupancyContractStatus,
+      );
+      onChange("entryZoneName", answers.industrialComplexName);
+      onChange(
+        "entryManagingAuthority",
+        answers.industrialComplexManagingAuthority,
+      );
+      return;
+    }
+
+    if (regime === "NONE") {
+      onChange("entryEligibilityConfirmed", null);
+      onChange("entryContractStatus", "NOT_APPLIED");
+      onChange("entryZoneName", "");
+      onChange("entryManagingAuthority", "");
+      onChange("entryContractEvidence", "");
+      return;
+    }
+
+    if (previousRegime !== regime) {
+      onChange("entryEligibilityConfirmed", null);
+      onChange("entryContractStatus", "NOT_APPLIED");
+      onChange("entryZoneName", "");
+      onChange("entryManagingAuthority", "");
+      onChange("entryContractEvidence", "");
+    }
+  }
+
   function toggleSpecialLaw(id: AiDataCenterSpecialLawId) {
     const selected = answers.appliedSpecialLawIds.includes(id);
     onChange(
@@ -319,6 +406,10 @@ export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
         "aiDataCenterOneStopStatus",
         selected ? "NOT_APPLIED" : "PLANNED",
       );
+    }
+    if (id === "AIDC_PORT_HINTERLAND_ENTRY" && !selected) {
+      changeEntryContractRegime("PORT_ACT");
+      onChange("entryEligibilityConfirmed", true);
     }
   }
 
@@ -365,6 +456,9 @@ export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
     const excludedTarget = value === true
       ? mutuallyExclusiveTarget[procedureId]
       : undefined;
+    const requiredTarget = value === true && procedureId === "road-occupation-traffic-flow-plan-review"
+      ? "road-occupation-permit" as const
+      : undefined;
     const reviewed = answers.supplementalPermitReviewedIds.filter(
       (item) => item !== procedureId,
     );
@@ -379,28 +473,56 @@ export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
             ...reviewed,
             procedureId,
             ...(excludedTarget ? [excludedTarget] : []),
+            ...(requiredTarget ? [requiredTarget] : []),
           ])],
     );
     onChange(
       "supplementalPermitTargetIds",
-      value === true ? [...selected, procedureId] : selected,
+      value === true
+        ? [...new Set([...selected, procedureId, ...(requiredTarget ? [requiredTarget] : [])])]
+        : selected,
     );
     if (procedureId === "hazard-prevention-plan" && value !== true) {
       onChange("psmCoversSameHazardPreventionScope", null);
     }
   }
 
-  function changeStep(step: number) {
+  function changeStep(step: number, scrollMobilePage = false) {
     if (bodyRef.current) bodyRef.current.scrollTop = 0;
     onStepChange(step);
+
+    if (
+      !scrollMobilePage
+      || typeof window === "undefined"
+      || typeof window.matchMedia !== "function"
+      || !window.matchMedia("(max-width: 820px)").matches
+    ) {
+      return;
+    }
+
+    const alignNextStep = () => {
+      headingRef.current?.focus({ preventScroll: true });
+      panelRef.current?.scrollIntoView({
+        block: "start",
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          ? "auto"
+          : "smooth",
+      });
+    };
+
+    if (typeof window.requestAnimationFrame === "function") {
+      window.requestAnimationFrame(alignNextStep);
+    } else {
+      alignNextStep();
+    }
   }
 
   return (
-    <aside className="wizard-panel" aria-label="사업조건 입력">
+    <aside className="wizard-panel" aria-label="사업조건 입력" ref={panelRef}>
       <div className="wizard-heading">
         <div>
           <span className="eyebrow">사업 정보 입력</span>
-          <h2>{steps[activeStep].title}</h2>
+          <h2 ref={headingRef} tabIndex={-1}>{steps[activeStep].title}</h2>
         </div>
         <span className="step-count">{activeStep + 1} / {steps.length}</span>
       </div>
@@ -463,7 +585,7 @@ export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
                 </p>
               ) : null}
             </Question>
-            <Question label="투자 지역" hint="비수도권 13개 광역자치단체와 시·군·구를 선택하면 해당 관할의 현행 자치법규 상세 원문을 결과에 연결합니다.">
+            <Question label="투자 지역" hint="전국 16개 광역자치단체와 시·군·구를 선택하면 해당 관할의 현행 자치법규 상세 원문을 결과에 연결합니다.">
               <div className="two-column-fields">
                 <label>
                   <span>시·도</span>
@@ -482,9 +604,16 @@ export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
                     }}
                   >
                     <option value="">시·도 선택</option>
-                    {nonCapitalRegions.map((province) => (
-                      <option key={province} value={province}>{province}</option>
-                    ))}
+                    <optgroup label="수도권">
+                      {capitalRegions.map((province) => (
+                        <option key={province} value={province}>{province}</option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="비수도권">
+                      {nonCapitalRegions.map((province) => (
+                        <option key={province} value={province}>{province}</option>
+                      ))}
+                    </optgroup>
                   </select>
                 </label>
                 <label>
@@ -501,6 +630,14 @@ export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
                   </select>
                 </label>
               </div>
+              {isCapitalRegion ? (
+                <div className="inline-notice warning">
+                  <strong>수도권 공장입지 추가 확인</strong>
+                  <span>
+                    서울·인천·경기는 수도권 권역별 공장 제한·예외와 공장건축 총량을 함께 검토합니다. 인천·경기는 시·군만으로 법정 권역을 확정할 수 없는 곳이 있으므로 상세 주소·용도지역과 최신 시·도 배정공고를 관할청에 확인하세요.
+                  </span>
+                </div>
+              ) : null}
             </Question>
             <Question label="산업단지 안에 있습니까?">
               <TriState
@@ -509,26 +646,149 @@ export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
                 noLabel="개별입지"
                 onChange={(value) => {
                   onChange("insideIndustrialComplex", value);
+                  if (value === true && answers.entryContractRegime === "NONE") {
+                    onChange("entryContractRegime", "INDUSTRIAL_COMPLEX_ACT");
+                    onChange(
+                      "entryContractStatus",
+                      answers.industrialComplexOccupancyContractStatus,
+                    );
+                  }
                   if (value !== true) {
                     onChange("industrialComplexName", "");
                     onChange("industrialComplexIdentifier", "");
                     onChange("industrialComplexManagingAuthority", "");
                     onChange("industrialComplexOccupancyContractStatus", "NOT_APPLIED");
+                    if (effectiveEntryContractRegime === "INDUSTRIAL_COMPLEX_ACT") {
+                      onChange("entryContractRegime", "NONE");
+                      onChange("entryEligibilityConfirmed", null);
+                      onChange("entryContractStatus", "NOT_APPLIED");
+                      onChange("entryZoneName", "");
+                      onChange("entryManagingAuthority", "");
+                      onChange("entryContractEvidence", "");
+                    }
                   }
                 }}
               />
             </Question>
-            {answers.insideIndustrialComplex === true ? (
-              <Question label="산업단지 입주계약 상태" hint="산업단지 소재만으로 공장설립승인이 의제되지 않습니다. 입주계약·변경계약의 실제 진행상태만 선택하세요.">
-                <select value={answers.industrialComplexOccupancyContractStatus} onChange={(event) => onChange("industrialComplexOccupancyContractStatus", event.target.value as ScenarioAnswers["industrialComplexOccupancyContractStatus"])}>
-                  <option value="NOT_APPLIED">미신청</option>
-                  <option value="PLANNED">신청 예정</option>
-                  <option value="IN_PROGRESS">협의·심사 중</option>
-                  <option value="COMPLETED">계약 체결 완료</option>
-                </select>
-                <div className="inline-notice warning"><strong>의제 범위</strong><span>실제 계약이 체결된 경우에만 공장설립승인을 받은 것으로 봅니다. 환경·건축·안전 인허가가 함께 면제되는 것은 아닙니다.</span></div>
-              </Question>
-            ) : null}
+            <Question
+              label="입주계약 적용 법률"
+              hint="산업단지·1종 항만배후단지·자유무역지역이 중첩된 경우 실제 계약서와 모집공고에 적힌 근거 법률 하나를 선택하세요. 소재지만으로 계약이나 의제를 확정하지 않습니다."
+            >
+              <select
+                aria-label="입주계약 적용 법률"
+                value={effectiveEntryContractRegime}
+                onChange={(event) => changeEntryContractRegime(
+                  event.target.value as ScenarioAnswers["entryContractRegime"],
+                )}
+              >
+                <option value="NONE" disabled={answers.insideIndustrialComplex === true}>입주계약 대상 아님</option>
+                <option value="INDUSTRIAL_COMPLEX_ACT">산업집적법상 산업단지 입주계약</option>
+                <option value="PORT_ACT">항만법상 1종 항만배후단지 입주계약</option>
+                {answers.industryCategory !== AI_DATA_CENTER_INDUSTRY_ID ? (
+                  <option value="FREE_TRADE_ZONE_ACT">자유무역지역법상 입주계약</option>
+                ) : null}
+              </select>
+              {effectiveEntryContractRegime !== "NONE" ? (
+                <div className="stacked-fields">
+                  {effectiveEntryContractRegime !== "INDUSTRIAL_COMPLEX_ACT" ? (
+                    <label>
+                      <span>입주자격 확인</span>
+                      <TriState
+                        value={answers.entryEligibilityConfirmed}
+                        yesLabel="자격 확인"
+                        noLabel="자격 미충족"
+                        unknownLabel="미확인"
+                        ariaLabel="입주자격 확인 결과"
+                        onChange={(value) => onChange("entryEligibilityConfirmed", value)}
+                      />
+                    </label>
+                  ) : null}
+                  <label>
+                    <span>입주계약 진행상태</span>
+                    <select
+                      aria-label="입주계약 진행상태"
+                      value={
+                        effectiveEntryContractRegime === "INDUSTRIAL_COMPLEX_ACT"
+                          ? answers.industrialComplexOccupancyContractStatus
+                          : answers.entryContractStatus
+                      }
+                      onChange={(event) => {
+                        const status = event.target.value as ScenarioAnswers["entryContractStatus"];
+                        onChange("entryContractStatus", status);
+                        if (effectiveEntryContractRegime === "INDUSTRIAL_COMPLEX_ACT") {
+                          onChange("industrialComplexOccupancyContractStatus", status);
+                        }
+                      }}
+                    >
+                      <option value="NOT_APPLIED">미신청</option>
+                      <option value="PLANNED">신청 예정</option>
+                      <option value="IN_PROGRESS">협의·심사 중</option>
+                      <option value="COMPLETED">계약 체결 완료</option>
+                    </select>
+                  </label>
+                  <div className="two-column-fields">
+                    <label>
+                      <span>{effectiveEntryContractRegime === "INDUSTRIAL_COMPLEX_ACT" ? "산업단지명" : "구역명"}</span>
+                      <input
+                        className="text-input"
+                        type="text"
+                        maxLength={120}
+                        placeholder="공식 고시·계약서상 명칭"
+                        value={
+                          effectiveEntryContractRegime === "INDUSTRIAL_COMPLEX_ACT"
+                            ? answers.industrialComplexName
+                            : answers.entryZoneName
+                        }
+                        onChange={(event) => {
+                          onChange("entryZoneName", event.target.value);
+                          if (effectiveEntryContractRegime === "INDUSTRIAL_COMPLEX_ACT") {
+                            onChange("industrialComplexName", event.target.value);
+                          }
+                        }}
+                      />
+                    </label>
+                    <label>
+                      <span>관리권자·관리기관</span>
+                      <input
+                        className="text-input"
+                        type="text"
+                        maxLength={120}
+                        placeholder="계약 접수기관"
+                        value={
+                          effectiveEntryContractRegime === "INDUSTRIAL_COMPLEX_ACT"
+                            ? answers.industrialComplexManagingAuthority
+                            : answers.entryManagingAuthority
+                        }
+                        onChange={(event) => {
+                          onChange("entryManagingAuthority", event.target.value);
+                          if (effectiveEntryContractRegime === "INDUSTRIAL_COMPLEX_ACT") {
+                            onChange("industrialComplexManagingAuthority", event.target.value);
+                          }
+                        }}
+                      />
+                    </label>
+                  </div>
+                  <label>
+                    <span>계약 증빙</span>
+                    <input
+                      className="text-input"
+                      type="text"
+                      maxLength={300}
+                      placeholder="계약번호·체결일·공식 문서 식별자"
+                      value={answers.entryContractEvidence}
+                      onChange={(event) => onChange("entryContractEvidence", event.target.value)}
+                    />
+                  </label>
+                </div>
+              ) : null}
+              {effectiveEntryContractRegime === "INDUSTRIAL_COMPLEX_ACT" ? (
+                <div className="inline-notice warning"><strong>의제 범위</strong><span>실제 산업단지 입주계약이 체결된 경우에만 공장설립승인을 받은 것으로 봅니다. 환경·건축·안전 인허가가 함께 면제되는 것은 아닙니다.</span></div>
+              ) : effectiveEntryContractRegime === "PORT_ACT" ? (
+                <div className="inline-notice warning"><strong>별도 승인 유지</strong><span>항만법상 입주계약은 공장설립승인을 의제하지 않습니다. 공장 규모와 개별 인허가 협의범위를 별도로 판정합니다.</span></div>
+              ) : effectiveEntryContractRegime === "FREE_TRADE_ZONE_ACT" ? (
+                <div className="inline-notice warning"><strong>증빙 확인 후 의제</strong><span>자유무역지역 입주자격, 계약 체결 완료와 계약 증빙이 모두 확인된 경우에만 공장설립승인 의제를 반영합니다.</span></div>
+              ) : null}
+            </Question>
             <Question
               label="업종·주요 공정"
               hint="제조업 분류와 AI 데이터센터를 투자 검토용으로 묶었습니다. 업종 선택은 확인할 항목을 추천할 뿐 개별 인허가를 자동 확정하지 않습니다."
@@ -898,6 +1158,9 @@ export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
                 </p>
               ) : null}
             </Question>
+            <Question label="사업·개발면적" hint="건축물 연면적과 구분해 실제 사업구역·토지개발 면적을 입력합니다. 공업용지 조성, 환경영향평가 등 사업면적 기준에 사용합니다.">
+              <NumberInput label="사업·개발면적" unit="㎡" value={answers.siteDevelopmentAreaM2} onChange={(value) => onChange("siteDevelopmentAreaM2", value)} />
+            </Question>
             <Question label="부지 현황" hint="개별입지는 지목뿐 아니라 실제 농지·산지 여부를 함께 확인해야 합니다.">
               <select
                 value={answers.landCategory ?? "UNKNOWN"}
@@ -970,7 +1233,7 @@ export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
                 <Question label="교통영향평가 대상 여부" hint="공장 연면적·도시교통정비지역·조례 기준을 검토한 결과를 입력합니다.">
                   <TriState value={answers.trafficImpactAssessmentRequired} yesLabel="대상" noLabel="비대상" onChange={(value) => onChange("trafficImpactAssessmentRequired", value)} />
                 </Question>
-                {answers.insideIndustrialComplex !== true ? (
+                {answers.insideIndustrialComplex !== true || effectiveEntryContractRegime === "PORT_ACT" ? (
                   <Question label="공장설립 승인 시 의제협의 범위" hint="정부24 처리기간 유형 선택에만 사용하며 자동 의제를 의미하지 않습니다.">
                     <select
                       value={answers.permitCoordination ?? "UNKNOWN"}
@@ -983,12 +1246,12 @@ export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
                       <option value="UNKNOWN">미확인</option>
                     </select>
                   </Question>
-                ) : (
+                ) : effectiveEntryContractRegime === "INDUSTRIAL_COMPLEX_ACT" ? (
                   <div className="inline-notice success">
                     <strong>산단 경로</strong>
                     <span>입주계약 체결 시 별도 공장설립 승인은 의제되어 중복 제거됩니다.</span>
                   </div>
-                )}
+                ) : null}
                 <Question label="재해영향평가등 협의 검토 결과">
                   <select
                     value={answers.disasterImpactAssessmentType ?? "UNKNOWN"}
@@ -1031,6 +1294,33 @@ export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
                     <label><span>상수원보호구역 해당</span><TriState value={answers.waterSourceProtectionZone} yesLabel="해당" noLabel="비해당" onChange={(value) => onChange("waterSourceProtectionZone", value)} /></label>
                   </div>
                 </Question>
+                <Question label="법정 입지제한·관계기관 협의" hint="정확한 필지와 사업범위를 공식 도면·고시·법정 기준에 대조한 뒤 각 항목을 대상 또는 비대상으로 표시합니다.">
+                  <div
+                    className="supplemental-permit-decision-list"
+                    role="group"
+                    aria-label="법정 입지제한·관계기관 협의 검토 결과"
+                  >
+                    {visibleSiteReviewTargetIds.map((procedureId) => {
+                      const procedureName = procedureNameById.get(procedureId) ?? procedureId;
+                      return (
+                        <div className="supplemental-permit-decision-row" key={procedureId}>
+                          <span>
+                            <strong>{procedureName}</strong>
+                            <small>{supplementalPermitTargetDescriptions[procedureId]}</small>
+                          </span>
+                          <TriState
+                            value={supplementalPermitDecision(procedureId)}
+                            yesLabel="대상"
+                            noLabel="비대상"
+                            unknownLabel="미확인"
+                            ariaLabel={`${procedureName} 대상 여부`}
+                            onChange={(value) => setSupplementalPermitDecision(procedureId, value)}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </Question>
               </div>
             </details>
           </>
@@ -1070,7 +1360,7 @@ export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
               <Question label="폐기물처리시설 설치 여부">
                 <TriState value={answers.wasteFacility} onChange={(value) => onChange("wasteFacility", value)} />
               </Question>
-              <Question label="환경영향평가 검토 결과" hint="사업유형·용도지역·개발면적을 기준으로 본안/소규모 여부를 구분합니다.">
+              <Question label="국가 환경영향평가 검토 결과" hint="사업유형·용도지역·사업면적을 기준으로 국가 환경영향평가 또는 소규모 환경영향평가 대상 여부를 구분합니다.">
                 <select
                   value={answers.environmentalAssessmentType ?? "UNKNOWN"}
                   onChange={(event) => onChange("environmentalAssessmentType", event.target.value === "UNKNOWN" ? null : event.target.value as ScenarioAnswers["environmentalAssessmentType"])}
@@ -1081,6 +1371,14 @@ export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
                   <option value="UNKNOWN">미확인</option>
                 </select>
               </Question>
+              <Question label="시·도 조례 환경영향평가 대상 여부" hint="서울·경기는 건축 연면적, 인천은 공장설립 사업면적 등 관할 조례의 대상·제외기준을 확인한 결과입니다. 국가 평가와 사업범위가 다르면 함께 적용될 수 있고, 동일 범위의 중복·생략 여부는 조례와 승인기관 협의로 확정합니다.">
+                <TriState
+                  value={answers.localEnvironmentalAssessmentRequired}
+                  yesLabel="대상"
+                  noLabel="비대상"
+                  onChange={(value) => onChange("localEnvironmentalAssessmentRequired", value)}
+                />
+              </Question>
               <Question label="통합환경허가 대상 여부" hint="대상 업종과 대기·수질 1·2종 등 규모를 검토한 결과를 입력합니다.">
                 <TriState value={answers.integratedEnvironmentalPermitTarget} yesLabel="대상" noLabel="비대상" onChange={(value) => onChange("integratedEnvironmentalPermitTarget", value)} />
               </Question>
@@ -1088,7 +1386,7 @@ export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
             <details className="wizard-optional-section supplemental-permit-review">
               <summary>
                 <strong>공사·환경 법정 임계값 정밀검토</strong>
-                <span>{answers.supplementalPermitReviewedIds.length}/{supplementalPermitTargetIds.length} 검토 · {answers.supplementalPermitTargetIds.length}개 대상</span>
+                <span>{constructionEnvironmentReviewedCount}/{constructionEnvironmentSupplementalPermitTargetIds.length} 검토 · {answers.supplementalPermitTargetIds.filter((procedureId) => constructionEnvironmentSupplementalPermitTargetIds.includes(procedureId as (typeof constructionEnvironmentSupplementalPermitTargetIds)[number])).length}개 대상</span>
               </summary>
               <div className="wizard-optional-body">
                 <p className="supplemental-permit-intro">단순 업종·신축·전력·용수만으로 확정할 수 없는 절차입니다. 법정 시설·수량·공사기준을 대조한 항목만 대상 또는 비대상으로 표시하고, 아직 보지 않은 항목은 미확인으로 남겨 주세요.</p>
@@ -1097,7 +1395,7 @@ export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
                   role="group"
                   aria-label="공사·환경 법정 임계값 검토 결과"
                 >
-                  {supplementalPermitTargetIds.map((procedureId) => {
+                  {constructionEnvironmentSupplementalPermitTargetIds.map((procedureId) => {
                     const procedureName = procedureNameById.get(procedureId) ?? procedureId;
                     return (
                       <div className="supplemental-permit-decision-row" key={procedureId}>
@@ -1382,7 +1680,7 @@ export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
 
       <div className="wizard-footer">
         <button type="button" disabled={activeStep === 0} onClick={() => changeStep(Math.max(0, activeStep - 1))}>이전</button>
-        <button type="button" className="primary-button" disabled={activeStep === steps.length - 1} onClick={() => changeStep(Math.min(steps.length - 1, activeStep + 1))}>다음</button>
+        <button type="button" className="primary-button" disabled={activeStep === steps.length - 1} onClick={() => changeStep(Math.min(steps.length - 1, activeStep + 1), true)}>다음</button>
       </div>
     </aside>
   );
