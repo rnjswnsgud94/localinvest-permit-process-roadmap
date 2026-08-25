@@ -17,6 +17,7 @@ type LocalRect = CardRect;
 type RoutingBounds = {
   width: number;
   height: number;
+  top?: number;
 };
 
 type PortSide = "left" | "right" | "top" | "bottom";
@@ -365,7 +366,14 @@ export function createObstacleAvoidingConnectorRouter(
   const height = rounded(bounds?.height ?? Math.max(0, ...verticalExtents));
   const routingLeft = rounded(Math.max(0, Math.min(...horizontalExtents)));
   const routingRight = rounded(Math.min(width, Math.max(...horizontalExtents)));
-  const routingTop = rounded(Math.max(0, Math.min(...verticalExtents)));
+  // The flow grid has a fixed stage-header row above its lane cells. Excluding
+  // that row from the routing graph prevents top-port detours from disappearing
+  // underneath the higher-z-index header surfaces.
+  const routingTop = rounded(Math.max(
+    0,
+    Math.min(height, bounds?.top ?? 0),
+    Math.min(...verticalExtents),
+  ));
   const routingBottom = rounded(Math.min(height, Math.max(...verticalExtents)));
 
   const xCoordinates = [...new Set([
@@ -588,6 +596,7 @@ export function createObstacleAvoidingConnectorRouter(
         if (
           candidate.fixed < 0
           || (candidate.orientation === "vertical" && candidate.fixed > width)
+          || (candidate.orientation === "horizontal" && candidate.fixed < routingTop)
           || (candidate.orientation === "horizontal" && candidate.fixed > height)
           || !visualSegmentIsAvailable(candidate)
         ) continue;
@@ -614,7 +623,8 @@ export function createObstacleAvoidingConnectorRouter(
     adjustedPoints.push(routePoints[routePoints.length - 1]);
 
     const withinBounds = adjustedPoints.every((point) =>
-      point.x >= 0 && point.x <= width && point.y >= 0 && point.y <= height,
+      point.x >= 0 && point.x <= width
+      && point.y >= routingTop && point.y <= height,
     );
     const accepted = withinBounds && pathIsClear(adjustedPoints, obstacles)
       ? adjustedPoints

@@ -208,6 +208,11 @@ describe("swimlane dense procedure columns", () => {
       expect(cell).toHaveAttribute("data-item-count", "5");
       expect(cell.querySelectorAll(".procedure-card-main")).toHaveLength(5);
     }
+    expect(view.container.querySelectorAll(".procedure-meta-label")).toHaveLength(10);
+    expect([...view.container.querySelectorAll(".procedure-meta em")]).toHaveLength(10);
+    for (const badge of view.container.querySelectorAll(".procedure-meta em")) {
+      expect(badge).toHaveTextContent("병렬");
+    }
     expect(
       (view.container.querySelector(".swimlane-grid") as HTMLElement).style
         .gridTemplateColumns,
@@ -333,6 +338,67 @@ describe("swimlane dense procedure columns", () => {
     }
   });
 
+  it("keeps connector detours below a reserved flow-header boundary", () => {
+    const source = {
+      top: 100,
+      right: 260,
+      bottom: 160,
+      left: 180,
+      width: 80,
+      height: 60,
+    };
+    const target = {
+      top: 100,
+      right: 480,
+      bottom: 160,
+      left: 400,
+      width: 80,
+      height: 60,
+    };
+    const blocker = {
+      top: 80,
+      right: 370,
+      bottom: 180,
+      left: 290,
+      width: 80,
+      height: 100,
+    };
+    const reservedTop = 90;
+    const path = orthogonalConnectorPath(
+      source,
+      target,
+      { top: 0, left: 0 },
+      [blocker],
+      { width: 660, height: 380, top: reservedTop },
+    );
+
+    expect(path).not.toBeNull();
+    const points = svgPathPoints(path!);
+    expect(Math.min(...points.map((point) => point.y))).toBeGreaterThanOrEqual(reservedTop);
+    for (let index = 1; index < points.length; index += 1) {
+      expect(crossesRect(points[index - 1], points[index], blocker)).toBe(false);
+    }
+
+    const repeatedRouter = createObstacleAvoidingConnectorRouter(
+      new Map([
+        ["source", source],
+        ["target", target],
+        ["blocker", blocker],
+      ]),
+      { top: 0, left: 0 },
+      { width: 660, height: 380, top: reservedTop },
+    );
+    const repeatedPaths = [
+      repeatedRouter("source", "target"),
+      repeatedRouter("source", "target"),
+    ];
+    expect(repeatedPaths.every(Boolean)).toBe(true);
+    for (const repeatedPath of repeatedPaths) {
+      expect(Math.min(...svgPathPoints(repeatedPath!).map((point) => point.y)))
+        .toBeGreaterThanOrEqual(reservedTop);
+    }
+  });
+
   it("shows verified sequences and calculated bottleneck candidates with expandable modes", () => {
     const evaluation = evaluateProject(catalog.scenarios[0].answers);
     const schedule = evaluation.schedules.TYPICAL;
@@ -357,6 +423,7 @@ describe("swimlane dense procedure columns", () => {
     expect(
       screen.getByRole("list", { name: "현재 표시된 선후행 연결" }),
     ).toBeInTheDocument();
+    expect(view.container.querySelectorAll(".route-chip > span").length).toBeGreaterThan(0);
 
     fireEvent.click(screen.getByRole("button", { name: /법정 분류/ }));
     expect(view.container.querySelector(".swimlane-grid")).toHaveAttribute(

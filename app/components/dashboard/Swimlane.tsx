@@ -446,6 +446,14 @@ export function Swimlane({
     // after cards or lanes are removed. `clientHeight` reflects the rendered
     // grid tracks and lets the overlay shrink with the actual flow.
     const height = grid.clientHeight;
+    const firstLaneCell = grid.querySelector<HTMLElement>(".lane-cell");
+    const firstLaneCellRect = firstLaneCell?.getBoundingClientRect();
+    // Keep connector halos and arrowheads below the stage-header row. Without
+    // this inset, top-port detours can run behind the opaque header cells and
+    // look broken even though the SVG path itself is continuous.
+    const routingTop = firstLaneCellRect
+      ? Math.min(height, Math.max(0, firstLaneCellRect.top - gridRect.top + 5))
+      : 0;
     const visibleCardRects = new Map<string, CardRect>();
     for (const [id, card] of cardRefs.current.entries()) {
       const rect = card.getBoundingClientRect();
@@ -454,7 +462,7 @@ export function Swimlane({
     const routeConnector = createObstacleAvoidingConnectorRouter(
       visibleCardRects,
       gridRect,
-      { width, height },
+      { width, height, top: routingTop },
     );
     const strengthRoutePriority: Record<ProcedureEdge["strength"], number> = {
       LEGAL_HARD: 0,
@@ -875,10 +883,17 @@ export function Swimlane({
                             onClick={() => onSelect(decision.procedure.id)}
                           >
                             <span className="procedure-card-topline"><StatusBadge status={decision.status} isDeemed={decision.isDeemed} provisionalEffect={decision.provisionalEffect} missingInputs={decision.missingInputs} conflictRuleIds={decision.conflictRuleIds} needsLegalReview={decision.needsLegalReview} compact /><span>{stageLabels[decision.procedure.stage]}</span></span>
-                            <strong>{decision.procedure.name}</strong>
+                            <strong className="procedure-card-title">
+                              {decision.procedure.name}
+                            </strong>
                             {decision.specialLawImpacts?.length ? <span className="special-law-chip">{decision.specialLawImpacts[0].effectLabel} · {decision.specialLawImpacts[0].statusLabel}</span> : null}
                             <span className="procedure-official-duration"><b>법정·공식 기간</b><span>{officialDurationSummaryByProcedure.get(decision.procedure.id)}</span></span>
-                            <span className="procedure-meta">{planningLabel(timelineNode, completedCheckpoint)}{!completedCheckpoint && parallelCount > 1 ? <em>병렬</em> : null}</span>
+                            <span className="procedure-meta">
+                              <span className="procedure-meta-label">
+                                {planningLabel(timelineNode, completedCheckpoint)}
+                              </span>
+                              {!completedCheckpoint && parallelCount > 1 ? <em>병렬</em> : null}
+                            </span>
                             {completedCheckpoint ? (
                               <span className="procedure-route route-start"><b>완료 확인</b> 잔여 일정 계산에서 제외</span>
                             ) : incoming.length ? (
@@ -887,7 +902,8 @@ export function Swimlane({
                                 <span className="procedure-route-list">
                                   {incoming.slice(0, 3).map((item) => (
                                     <span className={`route-chip route-${item.strength.toLowerCase()}${item.evidence === "VERIFIED_LEGAL_SEQUENCE" ? " is-verified" : ""}`} key={`${item.name}-${item.strength}`}>
-                                      <em>{strengthLabel(item.strength, item.evidence)}</em>{item.name}
+                                      <em>{strengthLabel(item.strength, item.evidence)}</em>
+                                      <span>{item.name}</span>
                                     </span>
                                   ))}
                                   {incoming.length > 3 ? <span className="route-more">외 {incoming.length - 3}개</span> : null}

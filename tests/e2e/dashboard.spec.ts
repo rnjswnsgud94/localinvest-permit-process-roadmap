@@ -74,6 +74,101 @@ test("desktop result summary uses the available width without cramped copy", asy
 
   const flowGrid = page.locator(".swimlane-grid");
   await expect(flowGrid).toHaveAttribute("data-connector-mode", "CORE");
+  const initialConnectorBoundary = await flowGrid.evaluate((element) => {
+    const gridRect = element.getBoundingClientRect();
+    const firstLaneCell = element.querySelector<HTMLElement>(".lane-cell");
+    const linePaths = [
+      ...element.querySelectorAll<SVGPathElement>(".dependency-connector-line"),
+    ];
+    if (!firstLaneCell || linePaths.length === 0) return null;
+
+    const yCoordinates: number[] = [];
+    for (const linePath of linePaths) {
+      const tokens = (linePath.getAttribute("d") ?? "").split(/\s+/);
+      let y = 0;
+      for (let index = 0; index < tokens.length;) {
+        if (tokens[index] === "M") {
+          y = Number(tokens[index + 2]);
+          index += 3;
+        } else if (tokens[index] === "H") {
+          index += 2;
+        } else if (tokens[index] === "V") {
+          y = Number(tokens[index + 1]);
+          index += 2;
+        } else {
+          throw new Error(`Unexpected connector command: ${tokens[index]}`);
+        }
+        yCoordinates.push(y);
+      }
+    }
+
+    return {
+      pathCount: linePaths.length,
+      visibleCount: Number(element.getAttribute("data-visible-edge-count")),
+      laneTop: firstLaneCell.getBoundingClientRect().top - gridRect.top,
+      minimumPathY: Math.min(...yCoordinates),
+    };
+  });
+  expect(initialConnectorBoundary).not.toBeNull();
+  expect(initialConnectorBoundary!.pathCount).toBeGreaterThan(0);
+  expect(initialConnectorBoundary!.pathCount).toBe(initialConnectorBoundary!.visibleCount);
+  expect(
+    initialConnectorBoundary!.minimumPathY - initialConnectorBoundary!.laneTop,
+  ).toBeGreaterThanOrEqual(4);
+
+  const readability = await page.locator(".workspace").evaluate((element) => {
+    const fontSize = (selector: string) => {
+      const target = element.querySelector<HTMLElement>(selector);
+      if (!target) throw new Error(`Missing readability target: ${selector}`);
+      return Number.parseFloat(getComputedStyle(target).fontSize);
+    };
+    const flowToolbar = element.querySelector<HTMLElement>(".flow-connector-toolbar");
+    const practitionerTools = element.querySelector<HTMLElement>(".practitioner-tools");
+    const toolDescription = element.querySelector<HTMLElement>(
+      ".practitioner-tool-actions small",
+    );
+    if (!flowToolbar || !practitionerTools || !toolDescription) return null;
+
+    return {
+      flowHeading: fontSize(".flow-connector-heading > strong"),
+      flowDescription: fontSize(".flow-connector-heading > small"),
+      modeButton: fontSize(".connector-mode-switch button"),
+      modeStatus: fontSize(".connector-mode-status"),
+      focusHeading: fontSize(".bottleneck-focus > header span"),
+      focusDescription: fontSize(".bottleneck-focus > header p"),
+      focusItem: fontSize(".bottleneck-focus button > strong"),
+      focusMetadata: fontSize(".bottleneck-focus button > small"),
+      practitionerHeading: fontSize(".practitioner-tools > header h3"),
+      practitionerDescription: fontSize(".practitioner-tools > header p"),
+      toolTitle: fontSize(".practitioner-tool-actions strong"),
+      toolDescription: fontSize(".practitioner-tool-actions small"),
+      stageTitle: fontSize(".stage-header strong"),
+      flowToolbarOverflows: flowToolbar.scrollWidth > flowToolbar.clientWidth + 1,
+      practitionerToolsOverflow:
+        practitionerTools.scrollWidth > practitionerTools.clientWidth + 1,
+      toolDescriptionWhiteSpace: getComputedStyle(toolDescription).whiteSpace,
+    };
+  });
+  expect(readability).not.toBeNull();
+  expect(readability).toMatchObject({
+    flowHeading: 15,
+    flowDescription: 12,
+    modeButton: 12,
+    modeStatus: 11,
+    focusHeading: 13,
+    focusDescription: 11,
+    focusItem: 12,
+    focusMetadata: 11,
+    practitionerHeading: 18,
+    practitionerDescription: 12,
+    toolTitle: 13,
+    toolDescription: 11,
+    stageTitle: 12,
+    flowToolbarOverflows: false,
+    practitionerToolsOverflow: false,
+    toolDescriptionWhiteSpace: "normal",
+  });
+
   await page.getByRole("button", { name: /법정 분류/ }).click();
   await expect(flowGrid).toHaveAttribute("data-connector-mode", "LEGAL");
   await page.getByRole("button", { name: /전체 연결/ }).click();
@@ -234,6 +329,105 @@ test("all-edge routing limits positive-length collinear overlap", async ({ page 
     overlap.overlappingPairs / overlap.pairCount,
     JSON.stringify(overlap, null, 2),
   ).toBeLessThan(0.05);
+});
+
+test("compact desktop keeps the enlarged workbench copy inside its panels", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "desktop", "desktop responsive regression");
+  await page.setViewportSize({ width: 1024, height: 900 });
+  await gotoHydratedDashboard(page);
+
+  const layout = await page.locator(".workspace").evaluate((element) => {
+    const flowToolbar = element.querySelector<HTMLElement>(".flow-connector-toolbar");
+    const focus = element.querySelector<HTMLElement>(".bottleneck-focus");
+    const practitionerTools = element.querySelector<HTMLElement>(".practitioner-tools");
+    const toolActions = element.querySelector<HTMLElement>(".practitioner-tool-actions");
+    if (!flowToolbar || !focus || !practitionerTools || !toolActions) return null;
+
+    return {
+      flowColumns: getComputedStyle(flowToolbar).gridTemplateColumns
+        .split(/\s+/)
+        .filter(Boolean).length,
+      focusColumns: getComputedStyle(focus).gridTemplateColumns
+        .split(/\s+/)
+        .filter(Boolean).length,
+      practitionerColumns: getComputedStyle(practitionerTools).gridTemplateColumns
+        .split(/\s+/)
+        .filter(Boolean).length,
+      flowOverflows: flowToolbar.scrollWidth > flowToolbar.clientWidth + 1,
+      focusOverflows: focus.scrollWidth > focus.clientWidth + 1,
+      practitionerOverflows:
+        practitionerTools.scrollWidth > practitionerTools.clientWidth + 1,
+      toolActionsOverflow: toolActions.scrollWidth > toolActions.clientWidth + 1,
+      documentOverflows:
+        document.documentElement.scrollWidth > document.documentElement.clientWidth,
+    };
+  });
+
+  expect(layout).toMatchObject({
+    flowColumns: 1,
+    focusColumns: 1,
+    practitionerColumns: 1,
+    flowOverflows: false,
+    focusOverflows: false,
+    practitionerOverflows: false,
+    toolActionsOverflow: false,
+    documentOverflows: false,
+  });
+});
+
+test("flow cards keep compact Korean labels intact and wrap copy by words", async ({ page }) => {
+  await gotoHydratedDashboard(page);
+  const parallelBadge = page.locator(".procedure-meta em", { hasText: "병렬" }).first();
+  await expect(parallelBadge).toBeVisible();
+
+  const typography = await page.locator(".swimlane-grid").evaluate((element) => {
+    const badge = element.querySelector<HTMLElement>(".procedure-meta em");
+    const title = element.querySelector<HTMLElement>(".procedure-card-title");
+    const duration = element.querySelector<HTMLElement>(".procedure-official-duration");
+    const durationLabel = duration?.querySelector<HTMLElement>("b");
+    const durationValue = duration?.querySelector<HTMLElement>("span");
+    const routeName = element.querySelector<HTMLElement>(".route-chip > span");
+    const routeKind = element.querySelector<HTMLElement>(".route-chip > em");
+    if (!badge || !title || !duration || !durationLabel || !durationValue || !routeName || !routeKind) {
+      return null;
+    }
+
+    const badgeRange = document.createRange();
+    badgeRange.selectNodeContents(badge);
+    const durationLabelRect = durationLabel.getBoundingClientRect();
+    const durationValueRect = durationValue.getBoundingClientRect();
+    const cards = [...element.querySelectorAll<HTMLElement>(".procedure-card")];
+
+    return {
+      badgeLineCount: badgeRange.getClientRects().length,
+      badgeWhiteSpace: getComputedStyle(badge).whiteSpace,
+      badgeFlexShrink: getComputedStyle(badge).flexShrink,
+      titleWordBreak: getComputedStyle(title).wordBreak,
+      titleOverflowWrap: getComputedStyle(title).overflowWrap,
+      durationColumnCount: getComputedStyle(duration).gridTemplateColumns
+        .split(/\s+/)
+        .filter(Boolean).length,
+      durationIsStacked: durationValueRect.top >= durationLabelRect.bottom - 1,
+      routeWordBreak: getComputedStyle(routeName).wordBreak,
+      routeOverflowWrap: getComputedStyle(routeName).overflowWrap,
+      routeKindWhiteSpace: getComputedStyle(routeKind).whiteSpace,
+      overflowingCardCount: cards.filter((card) => card.scrollWidth > card.clientWidth + 1).length,
+    };
+  });
+
+  expect(typography).toMatchObject({
+    badgeLineCount: 1,
+    badgeWhiteSpace: "nowrap",
+    badgeFlexShrink: "0",
+    titleWordBreak: "keep-all",
+    titleOverflowWrap: "anywhere",
+    durationColumnCount: 1,
+    durationIsStacked: true,
+    routeWordBreak: "keep-all",
+    routeOverflowWrap: "anywhere",
+    routeKindWhiteSpace: "nowrap",
+    overflowingCardCount: 0,
+  });
 });
 
 test("desktop wizard keeps its navigation visible and scrolls independently", async ({ page }) => {
