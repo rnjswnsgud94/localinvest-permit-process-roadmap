@@ -1732,6 +1732,10 @@ export async function renderPermitReportPdf(
     REPORT_OUTLINE[5],
     "로드맵 포함 절차와 추가 확인 절차를 단계·선행관계 순으로 정리했습니다. 법정·공식 기간과 프로젝트 일정 반영값은 별도 행으로 표시하며, 정확한 적용대상·관할·구비서류는 접수 전 관계기관에 확인해야 합니다.",
   );
+  writer.paragraph(model.practicalPriorityNotice, {
+    size: 8.2,
+    color: palette.muted,
+  });
   let currentStage = "";
   model.procedures.forEach((procedure) => {
     if (procedure.stage !== currentStage) {
@@ -1741,11 +1745,12 @@ export async function renderPermitReportPdf(
     const requiresConfirmation = procedure.category === "CONFIRM";
     writer.card({
       title: procedure.name,
-      badge: procedure.categoryLabel,
+      badge: `${procedure.practicalPriority} · ${procedure.practicalPriorityLabel}`,
       accent: requiresConfirmation ? palette.amber : palette.blue,
       background: requiresConfirmation ? palette.amberSoft : palette.panel,
       rows: [
         { label: "판정", value: `${procedure.status} · ${procedure.reason}`, tone: requiresConfirmation ? "warning" : "accent" },
+        { label: "실무 우선순위", value: `${procedure.categoryLabel} · ${procedure.practicalPriorityReasons.join(" · ")}`, tone: procedure.practicalPriority === "P0" ? "accent" : undefined },
         { label: "공식 기간", value: procedure.officialDuration, tone: "accent" },
         { label: "프로젝트 일정", value: `${procedure.schedule} · ${procedure.scheduleNote}` },
         { label: "접수/결정", value: `${procedure.authority} / ${procedure.decisionMaker}` },

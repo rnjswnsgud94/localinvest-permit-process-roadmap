@@ -160,6 +160,16 @@ describe("action plan", () => {
   it("labels practical order separately and does not assert uncited legal edges", () => {
     renderActionPlan();
 
+    const priorityGuide = screen.getByRole("region", { name: "실무 중요도 안내" });
+    expect(priorityGuide).toHaveTextContent("법적 효력·적용 여부의 우열이 아니며");
+
+    const contractTitle = screen.getByText("산업단지 입주계약·변경계약", {
+      selector: ".action-plan-card > header > strong",
+    });
+    const contractCard = contractTitle.closest("article");
+    expect(contractCard).toHaveTextContent("P0 · 핵심 게이트");
+    expect(contractCard).toHaveTextContent("기업·지자체 실무목록 교차검토");
+
     const completionTitle = screen.getByText("공장설립 완료신고(산업단지)", {
       selector: ".action-plan-card > header > strong",
     });
@@ -209,6 +219,9 @@ describe("action plan", () => {
       expect(csv).toContain('"권한근거 상태"');
       expect(csv).toContain('"선후행 조문 연결"');
       expect(csv).toContain('"실무 권장 선행"');
+      expect(csv).toContain('"실무 중요도"');
+      expect(csv).toContain('"실무 중요도 근거"');
+      expect(csv).toContain("P0 · 핵심 게이트");
       expect(csv).toContain('"법정 분류·관계근거 보강"');
       expect(csv).toContain("아산시 산업단지 담당부서");
       expect(csv).toContain("아산시장(관리기관 보고 경로)");

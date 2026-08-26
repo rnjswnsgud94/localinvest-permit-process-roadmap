@@ -103,6 +103,7 @@ describe("catalog integrity", () => {
       "forestland-restoration-design-approval",
       "forestland-restoration-completion-inspection",
       "capital-region-factory-restriction-review",
+      "industrial-water-master-plan-reflection-consultation",
     ]) expect(ids.has(id), id).toBe(true);
     for (const id of [
       "utility-supply-consultation",
@@ -225,6 +226,57 @@ describe("catalog integrity", () => {
     }
   });
 
+  it("keeps field-list duration branches tied to their distinct official sources", () => {
+    const citations = new Map(catalog.citations.map((item) => [item.id, item]));
+    const durationFor = (procedureId: string) => {
+      const duration = catalog.durations.find((item) => item.procedureId === procedureId);
+      expect(duration, procedureId).toBeDefined();
+      return duration!;
+    };
+    const durationSourceIds = (procedureId: string) => new Set(
+      durationFor(procedureId).citationIds
+        .map((citationId) => citations.get(citationId))
+        .filter((citation) => citation?.role === "DURATION")
+        .map((citation) => citation!.sourceId),
+    );
+
+    expect(durationFor("temporary-building-permit-report").authorityProcessing).toEqual({
+      min: 3, base: 7, max: 7, unit: "BUSINESS_DAY",
+    });
+    expect(durationSourceIds("temporary-building-permit-report")).toEqual(new Set([
+      "src-gov24-temporary-building-permit-current",
+      "src-gov24-temporary-building-report-current",
+    ]));
+
+    expect(durationFor("forestland-temporary-use-permit-report").authorityProcessing).toEqual({
+      min: 10, base: 25, max: 25, unit: "BUSINESS_DAY",
+    });
+    expect(durationSourceIds("forestland-temporary-use-permit-report")).toEqual(new Set([
+      "src-gov24-forestland-temporary-use-permit-current",
+      "src-gov24-forestland-temporary-use-report-current",
+    ]));
+
+    expect(durationFor("standing-timber-felling-permit-report").authorityProcessing).toEqual({
+      min: 7, base: 30, max: 30, unit: "BUSINESS_DAY",
+    });
+    expect(durationSourceIds("standing-timber-felling-permit-report")).toEqual(new Set([
+      "src-gov24-standing-timber-felling-permit-current",
+      "src-gov24-standing-timber-felling-report-current",
+    ]));
+
+    expect(durationFor("psm-pre-operation-confirmation")).toMatchObject({
+      authorityProcessing: null,
+      elapsed: null,
+      planningBasis: "MILESTONE_ONLY",
+    });
+    expect(durationFor("psm-pre-operation-confirmation").statutoryPeriod).toContain(
+      "확인요청일부터 1개월 이내",
+    );
+    expect(durationFor("psm-pre-operation-confirmation").statutoryPeriod).toContain(
+      "확인일부터 15일 이내",
+    );
+  });
+
   it("keeps the six parcel-and-facility review gates evidence-linked without inventing total durations", () => {
     const procedureIds = [
       "education-environment-protection-zone-review",
@@ -334,6 +386,35 @@ describe("catalog integrity", () => {
       expect(duration.elapsed).toBeNull();
       expect(duration.authorityProcessing).toBeNull();
     }
+  });
+
+  it("keeps national industrial-water plan reflection as an upstream consultation with no invented deadline", () => {
+    const procedureId = "industrial-water-master-plan-reflection-consultation";
+    const procedure = catalog.procedures.find((item) => item.id === procedureId);
+    const duration = catalog.durations.find((item) => item.procedureId === procedureId);
+    const citations = catalog.citations.filter((item) =>
+      procedure?.citationIds.includes(item.id),
+    );
+    const sources = citations.map((citation) =>
+      catalog.legalSources.find((source) => source.id === citation.sourceId),
+    );
+
+    expect(procedure).toMatchObject({
+      actionType: "CONSULTATION",
+      stage: "SITE_REVIEW",
+      verificationStatus: "INTERNAL_REVIEWED",
+    });
+    expect(procedure?.reviewNote).toContain("용수수요량만으로 계획 변경 필요성을 자동 확정하지 않습니다");
+    expect(procedure?.reviewNote).toContain("직접 반영 신청절차");
+    expect(procedure?.reviewNote).toContain("공급계약");
+    expect(citations.length).toBeGreaterThanOrEqual(3);
+    expect(sources.every((source) => source?.officialUrl.startsWith("https://"))).toBe(true);
+    expect(duration).toMatchObject({
+      authorityProcessing: null,
+      elapsed: null,
+      evidenceType: "INSUFFICIENT_DATA",
+    });
+    expect(duration?.statutoryPeriod).toMatch(/미규정|규정되지 않음/);
   });
 
   it("does not encode an immediate service standard as a zero-day procedure", () => {

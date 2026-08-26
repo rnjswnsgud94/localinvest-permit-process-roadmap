@@ -11,6 +11,7 @@ import {
   verifiedSequenceCitationIds,
 } from "@/lib/data/edge-evidence";
 import type { ProcedureDecision } from "@/lib/engine/rule-engine";
+import { practicalPriorityForProcedure } from "@/lib/engine/practical-priority";
 import { PRACTITIONER_REVIEW_NOTICE } from "@/lib/domain/legal-review";
 import type { ScheduleResult } from "@/lib/engine/schedule";
 import {
@@ -231,6 +232,13 @@ export function ProcedureDrawer({
   if (!decision) return null;
   const procedure = decision.procedure;
   const timelineNode = schedule.projectTimeline?.nodes.find((item) => item.procedureId === procedure.id);
+  const practicalPriority = practicalPriorityForProcedure(procedure, {
+    applicability: decision.status,
+    isDeemed: decision.isDeemed,
+    critical: Boolean(
+      timelineNode?.extendsOperationReady || schedule.criticalProcedureIds.includes(procedure.id),
+    ),
+  });
   const completedCheckpoint =
     timelineNode?.completedCheckpoint ??
     schedule.completedCheckpoints.find(
@@ -300,6 +308,16 @@ export function ProcedureDrawer({
         <section className="reason-box">
           <span>판정 이유</span><p>{decision.reason}</p>
           {decision.missingInputs.length ? <p className="missing-inputs"><strong>추가 확인:</strong> {decision.missingInputs.map(inputLabel).join(", ")}</p> : null}
+        </section>
+        <section className="practical-priority-panel" role="note" aria-label="실무 중요도">
+          <div>
+            <span className={`practical-priority-chip priority-${practicalPriority.level.toLowerCase()}`}>
+              {practicalPriority.level}
+            </span>
+            <strong>{practicalPriority.label}</strong>
+          </div>
+          <p>{practicalPriority.reasons.join(" · ")}</p>
+          <small>현재 사업조건과 일정 기준의 실무 순서이며 법적 효력·의무의 우열을 뜻하지 않습니다.</small>
         </section>
         <dl className="detail-grid">
           <div><dt>수행 단계</dt><dd>{stageLabels[procedure.stage]}</dd></div>

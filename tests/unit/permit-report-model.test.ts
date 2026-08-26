@@ -82,6 +82,28 @@ describe("permit PDF report model", () => {
     );
   });
 
+  it("adds project-specific practical priorities without presenting them as a legal hierarchy", () => {
+    const { report } = reportFor(catalog.scenarios[0].answers);
+    const coreGate = report.procedures.find(
+      (procedure) => procedure.practicalPriority === "P0",
+    );
+
+    expect(coreGate).toBeDefined();
+    expect(coreGate).toMatchObject({
+      practicalPriority: "P0",
+      practicalPriorityLabel: "핵심 게이트",
+    });
+    expect(coreGate?.practicalPriorityReasons.length).toBeGreaterThan(0);
+    expect(report.procedures.every((procedure) =>
+      ["P0", "P1", "P2"].includes(procedure.practicalPriority),
+    )).toBe(true);
+    expect(report.practicalPriorityNotice).toContain("프로젝트 관리용 확인 순서");
+    expect(report.practicalPriorityNotice).toContain("법정 중요도를 뜻하지 않습니다");
+    expect(report.procedures.flatMap((procedure) =>
+      procedure.practicalPriorityReasons,
+    ).join(" ")).not.toMatch(/삼성|SK하이닉스|삼성전기/);
+  });
+
   it("includes descriptive project inputs that identify the reviewed site and process", () => {
     const answers: ScenarioAnswers = {
       ...catalog.scenarios[0].answers,

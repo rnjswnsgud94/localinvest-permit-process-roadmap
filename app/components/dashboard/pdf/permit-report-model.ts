@@ -18,6 +18,10 @@ import type { SpecialLawEffect } from "@/lib/data/special-laws";
 import { PRACTITIONER_REVIEW_NOTICE } from "@/lib/domain/legal-review";
 import { coreFlowEdges, describeFlowEdges } from "@/lib/engine/flow-edges";
 import type { evaluateProject } from "@/lib/engine/pipeline";
+import {
+  practicalPriorityForProcedure,
+  type PracticalPriorityLevel,
+} from "@/lib/engine/practical-priority";
 import type { DurationScenario, ScheduleResult } from "@/lib/engine/schedule";
 import {
   formatCalendarPeriod,
@@ -232,6 +236,9 @@ export type PermitReportModel = {
     followUp: string;
     missingInputs: string[];
     specialLawEffects: string[];
+    practicalPriority: PracticalPriorityLevel;
+    practicalPriorityLabel: string;
+    practicalPriorityReasons: string[];
     legalReviewNote: string | null;
     sourceSummaries: string[];
   }>;
@@ -279,6 +286,7 @@ export type PermitReportModel = {
     officialUrl: string;
   }>;
   warnings: string[];
+  practicalPriorityNotice: string;
   disclaimer: string;
 };
 
@@ -528,6 +536,7 @@ export function buildPermitReportModel({
   const topologicalOrder = new Map(
     schedule.topologicalOrder.map((procedureId, index) => [procedureId, index]),
   );
+  const criticalProcedureIds = new Set(schedule.criticalProcedureIds);
 
   const projectSections: PermitReportModel["project"]["sections"] = getVisibleProjectInputSections(answers).map((section) => ({
     id: section.id,
@@ -592,6 +601,11 @@ export function buildPermitReportModel({
         : undefined;
       const planning = planningByProcedureId.get(procedure.id);
       const timelineNode = timelineNodeByProcedureId.get(procedure.id);
+      const practicalPriority = practicalPriorityForProcedure(procedure, {
+        applicability: decision.status,
+        isDeemed: decision.isDeemed,
+        critical: criticalProcedureIds.has(procedure.id),
+      });
       const sourceSummaries = stableUnique([
         ...procedure.citationIds,
         ...matchedRuleCitationIds(decision),
@@ -644,6 +658,9 @@ export function buildPermitReportModel({
         specialLawEffects: stableUnique((decision.specialLawImpacts ?? []).map((impact) =>
           `${impact.effectLabel} · ${impact.statusLabel} · ${impact.description}${impact.statutoryCap ? ` · ${impact.statutoryCap}` : ""}`,
         )),
+        practicalPriority: practicalPriority.level,
+        practicalPriorityLabel: practicalPriority.label,
+        practicalPriorityReasons: practicalPriority.reasons,
         legalReviewNote:
           category === "CONFIRM" &&
           decision.needsLegalReview &&
@@ -928,6 +945,7 @@ export function buildPermitReportModel({
       ...catalog.coverage.gaps,
       ...catalog.coverage.futureLawWarnings,
     ]),
+    practicalPriorityNotice: "P0·P1·P2는 현재 입력·일정 계산과 익명화한 기업·지자체 실무목록 교차검토를 바탕으로 한 프로젝트 관리용 확인 순서입니다. 법적 효력·처분 우열·법정 중요도를 뜻하지 않습니다.",
     disclaimer: `${catalog.coverage.disclaimer} 이 보고서는 입력값을 기준으로 한 사전 검토자료이며, 인허가 처분·법률자문 또는 관할기관의 공식 답변을 대체하지 않습니다. 법정기간의 정지·보완·협의·주민의견 수렴과 지역별 기준은 실제 일정에 별도로 반영해야 합니다. 사용자 입력 고시번호·공문번호의 원본·발행기관·의제목록 진위는 사이트가 보증하지 않습니다.`,
   };
 }

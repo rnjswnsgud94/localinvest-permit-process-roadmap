@@ -176,7 +176,7 @@
     "priority": 0,
     "status": "DRAFT",
     "reviewActor": "AI-assisted draft",
-    "note": "임시사용승인 등 대체경로는 현재 카탈로그 범위에 포함하지 않음."
+    "note": "완성된 일부를 최종 사용승인 전에 사용해야 하는 경우에는 별도 확인값에 따라 건축물 임시사용승인 절차를 함께 표시하며, 임시사용승인은 최종 사용승인을 대체하지 않음."
   },
   {
     "id": "rule-completion-inside-complex",

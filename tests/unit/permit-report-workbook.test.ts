@@ -58,6 +58,8 @@ describe("permit report spreadsheet", () => {
       "진행상태",
       "담당자",
       "내부 목표일",
+      "실무 우선순위",
+      "우선순위 근거",
       "절차",
       "법정·공식 처리기간",
     ]));
@@ -67,6 +69,12 @@ describe("permit report spreadsheet", () => {
     expect(practical.getCell("B5").value).toBe("미착수");
     expect(practical.getCell("B5").dataValidation).toMatchObject({ type: "list" });
     expect(practical.getCell("D5").numFmt).toBe("yyyy-mm-dd");
+    expect(practical.getCell("F5").value).toBe(
+      `${report.procedures[0].practicalPriority} · ${report.procedures[0].practicalPriorityLabel}`,
+    );
+    expect(practical.getCell("G5").value).toBe(
+      report.procedures[0].practicalPriorityReasons.join(" · "),
+    );
     expect(String(practical.getCell("A1").alignment?.vertical)).toBe("center");
 
     const projectInputs = workbook.getWorksheet("사업조건")!;
@@ -88,12 +96,15 @@ describe("permit report spreadsheet", () => {
     const summary = workbook.getWorksheet("요약")!;
     const summaryText = summary.getSheetValues().flat().join(" ");
     expect(summaryText).toContain("노란색 관리열");
+    expect(summaryText).toContain("법적 효력·처분 우열·법정 중요도를 뜻하지 않습니다");
     expect(summaryText).toContain("최종 판단이나 법률자문");
     expect(summary.getCell("I9").value).toBeNull();
 
     const allCellText = workbook.worksheets.flatMap((sheet) =>
       sheet.getSheetValues().flat().map((value) => String(value ?? "")),
     ).join(" ");
+    expect(allCellText).toContain("공업용수 공급계획 반영 협의(국가·관할 수도정비계획)");
+    expect(allCellText).toContain("국가수도기본계획 부분변경");
     expect(allCellText).not.toMatch(/LAW_API_OC|confirmation\.|rule-/);
     expect(spreadsheetFilename(report)).toMatch(
       /^인허가-실무관리표_.+_20260824-130506\.xlsx$/,
@@ -106,7 +117,7 @@ describe("permit report spreadsheet", () => {
     const bytes = await generatePermitReportWorkbook(report);
     const workbook = readWorkbookBuffer(bytes);
 
-    expect(workbook.getWorksheet("실무 관리표")!.getCell("I5").value).toBe(
+    expect(workbook.getWorksheet("실무 관리표")!.getCell("K5").value).toBe(
       "=HYPERLINK(\"https://example.com\",\"열기\")",
     );
   });

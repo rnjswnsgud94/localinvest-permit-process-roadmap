@@ -770,10 +770,14 @@ export const localOrdinanceReviewCategories: readonly LocalOrdinanceReviewCatego
     id: "water-supply",
     title: "상수도 급수공사·부담금",
     scope: "PROVINCE_AND_MUNICIPALITY",
-    searchTerms: ["수도급수 조례", "급수공사", "시설분담금", "원인자부담금"],
+    searchTerms: ["수도급수 조례", "공업용수도 급수 조례", "공업용수도 사용 조례", "급수공사", "시설분담금", "원인자부담금"],
     ordinanceNamePatterns: [
       "상수도 급수 조례",
       "수도급수 조례",
+      "공업용수도 급수 조례",
+      "공업용수도급수 조례",
+      "공업용수도 사용 조례",
+      "공업용수도사용 조례",
       "상수도 원인자부담금",
       "수도 원인자부담금",
       "수도시설 원인자부담금",
@@ -793,7 +797,7 @@ export const localOrdinanceReviewCategories: readonly LocalOrdinanceReviewCatego
       },
     ],
     limitation:
-      "조례 확인만으로 공급용량이 보장되지 않으므로 수도정비기본계획과 수도사업자 기술검토가 필요합니다.",
+      "조례 확인만으로 공급용량이 보장되지 않으므로 국가수도기본계획·관할 수도정비계획과 수도사업자 기술검토가 필요합니다.",
   },
   {
     id: "heritage-local-assets",

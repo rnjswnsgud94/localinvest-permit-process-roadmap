@@ -14,6 +14,7 @@ import {
 import { buildInputConsistencyWarnings } from "@/lib/data/input-consistency";
 import { planningDurationNotice } from "@/lib/data/planning-durations";
 import type { ProcedureDecision } from "@/lib/engine/rule-engine";
+import { practicalPriorityForProcedure } from "@/lib/engine/practical-priority";
 import type { ScheduleResult } from "@/lib/engine/schedule";
 import {
   formatCalendarPeriod,
@@ -276,6 +277,14 @@ export function ActionPlanView({
           ? answers.plannedConstructionStartDate
           : null;
       const inputMatchedInclusion = isInputMatchedRoadmapInclusion(decision);
+      const practicalPriority = practicalPriorityForProcedure(decision.procedure, {
+        applicability: decision.status,
+        isDeemed: decision.isDeemed,
+        critical: Boolean(
+          timeline?.extendsOperationReady ||
+          schedule.criticalProcedureIds.includes(decision.procedure.id),
+        ),
+      });
       const nextAction = completedCheckpoint
         ? "완료 증빙을 보관하고 허가·계약 조건 및 후속 의무 이행상태를 확인"
         : decision.isDeemed
@@ -295,6 +304,7 @@ export function ActionPlanView({
         planningDuration: planningDurationById.get(decision.procedure.id) ?? null,
         category,
         inputMatchedInclusion,
+        practicalPriority,
         timeline,
         completedCheckpoint,
         legalPrerequisites,
@@ -341,7 +351,7 @@ export function ActionPlanView({
   };
 
   function downloadCsv() {
-    const header = ["순번", "절차", "판정", "법정·공식 처리기간", "다음 행동", "권장 사내 담당", "접수기관", "법정 결정권자", "협의기관", "권한근거 상태", "선후행 조문 연결", "실무 권장 선행", "법정 분류·관계근거 보강", "목표 착수일", "준비서류", "서류근거 상태"];
+    const header = ["순번", "절차", "판정", "실무 중요도", "실무 중요도 근거", "법정·공식 처리기간", "다음 행동", "권장 사내 담당", "접수기관", "법정 결정권자", "협의기관", "권한근거 상태", "선후행 조문 연결", "실무 권장 선행", "법정 분류·관계근거 보강", "목표 착수일", "준비서류", "서류근거 상태"];
     const body = rows.map((row, index) => [
       String(index + 1),
       row.decision.procedure.name,
@@ -350,6 +360,8 @@ export function ActionPlanView({
         : row.category === "REQUIRED"
           ? "확정 필수"
           : "추가 확인 필요",
+      `${row.practicalPriority.level} · ${row.practicalPriority.label}`,
+      row.practicalPriority.reasons.join(" · "),
       `${formatResolvedOfficialDurationSummary(row.officialDuration, row.planningDuration)} · ${row.officialDuration?.statutoryPeriod ?? "공식 기간자료 없음"}`,
       row.nextAction,
       recommendedOwner(row.decision),
@@ -384,6 +396,18 @@ export function ActionPlanView({
         <strong>법정 처리기간과 회사 계획기간은 분리됩니다.</strong>
         <span>목표일은 현재 일정 그래프의 착수일이며 신청인 준비·보완·위원회 대기기간이 확인되지 않으면 총기간으로 사용할 수 없습니다.</span>
       </div>
+      <section className="action-plan-priority-guide" aria-label="실무 중요도 안내">
+        <div>
+          <strong>실무 중요도</strong>
+          <span>카드 순서는 선후행과 목표 착수일을 유지합니다. 중요도는 일정 게이트를 먼저 식별하기 위한 보조지표입니다.</span>
+        </div>
+        {(["P0", "P1", "P2"] as const).map((level) => (
+          <span key={level} className={`practical-priority-chip priority-${level.toLowerCase()}`}>
+            {level} · {rows.filter((row) => row.practicalPriority.level === level).length}개
+          </span>
+        ))}
+        <small>법적 효력·적용 여부의 우열이 아니며, 현재 입력과 일정이 바뀌면 함께 달라집니다.</small>
+      </section>
       <section className="action-plan-evidence" aria-label="실행계획 근거 완성도">
         <div><span>현재 실행대상</span><strong>{rows.length}</strong><small>개 절차</small></div>
         <div><span>기관명 구체화</span><strong>{evidenceSummary.exactAuthority}</strong><small>/ {rows.length}</small></div>
@@ -398,9 +422,15 @@ export function ActionPlanView({
             <header>
               <span>{String(index + 1).padStart(2, "0")} · {stageLabels[row.decision.procedure.stage]}</span>
               <strong>{row.decision.procedure.name}</strong>
-              <em>{row.inputMatchedInclusion ? "로드맵 포함" : row.category === "REQUIRED" ? "확정 필수" : "추가 확인 필요"}</em>
+              <span className="action-plan-card-badges">
+                <em>{row.inputMatchedInclusion ? "로드맵 포함" : row.category === "REQUIRED" ? "확정 필수" : "추가 확인 필요"}</em>
+                <span className={`practical-priority-chip priority-${row.practicalPriority.level.toLowerCase()}`}>
+                  {row.practicalPriority.level} · {row.practicalPriority.label}
+                </span>
+              </span>
             </header>
             <dl>
+              <div><dt>실무 중요도 근거</dt><dd>{row.practicalPriority.reasons.join(" · ")}<small>법적 효력·의무의 우열이 아닌 현재 사업의 일정관리 기준</small></dd></div>
               <div><dt>다음 행동</dt><dd>{row.nextAction}</dd></div>
               <div><dt>권장 사내 담당</dt><dd>{recommendedOwner(row.decision)}</dd></div>
               <div><dt>접수기관</dt><dd>{row.receivingAuthority.label}{row.receivingAuthority.note ? <small>{row.receivingAuthority.note}</small> : null}</dd></div>
@@ -429,8 +459,12 @@ export function ProcedureList({ decisions, schedule, onSelect }: {
 }) {
   return (
     <div className="table-shell">
+      <div className="procedure-priority-notice" role="note">
+        <strong>실무 중요도</strong>
+        <span>P0 핵심 게이트 · P1 일정 선행 · P2 조건부 확인. 법적 효력이나 의무의 우열과는 구분합니다.</span>
+      </div>
       <table className="procedure-table">
-        <thead><tr><th>판정</th><th>절차</th><th>단계</th><th>접수 기관</th><th>공식 처리기간</th><th>일정 반영</th><th><span className="sr-only">상세</span></th></tr></thead>
+        <thead><tr><th>판정</th><th>절차</th><th>실무 중요도</th><th>단계</th><th>접수 기관</th><th>공식 처리기간</th><th>일정 반영</th><th><span className="sr-only">상세</span></th></tr></thead>
         <tbody>
           {decisions.map((decision) => {
             const node = schedule.nodes.find((item) => item.procedureId === decision.procedure.id);
@@ -447,10 +481,19 @@ export function ProcedureList({ decisions, schedule, onSelect }: {
                 (item) => item.procedureId === decision.procedure.id,
               ) ??
               null;
+            const practicalPriority = practicalPriorityForProcedure(decision.procedure, {
+              applicability: decision.status,
+              isDeemed: decision.isDeemed,
+              critical: Boolean(
+                timelineNode?.extendsOperationReady ||
+                schedule.criticalProcedureIds.includes(decision.procedure.id),
+              ),
+            });
             return (
               <tr key={decision.procedure.id}>
                 <td><StatusBadge status={decision.status} isDeemed={decision.isDeemed} provisionalEffect={decision.provisionalEffect} missingInputs={decision.missingInputs} conflictRuleIds={decision.conflictRuleIds} needsLegalReview={decision.needsLegalReview} /></td>
                 <td><strong>{decision.procedure.name}</strong><small>{decision.procedure.domain}</small>{decision.specialLawImpacts?.length ? <em className="special-law-chip">{decision.specialLawImpacts[0].effectLabel} · {decision.specialLawImpacts[0].statusLabel}</em> : null}</td>
+                <td><span className={`practical-priority-chip priority-${practicalPriority.level.toLowerCase()}`}>{practicalPriority.level} · {practicalPriority.label}</span></td>
                 <td>{stageLabels[decision.procedure.stage]}</td>
                 <td>{decision.procedure.receivingAuthority}</td>
                 <td><strong>{formatResolvedOfficialDurationSummary(officialDuration, planningDuration)}</strong><small>{officialDuration?.statutoryPeriod ?? "공식 기간자료 없음"}</small></td>

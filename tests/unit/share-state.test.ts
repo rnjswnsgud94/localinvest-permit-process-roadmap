@@ -464,10 +464,12 @@ describe("versioned share state", () => {
       supplementalPermitReviewedIds: [
         "road-occupation-permit",
         "hazard-prevention-plan",
+        "industrial-water-master-plan-reflection-consultation",
       ],
       supplementalPermitTargetIds: [
         "road-occupation-permit",
         "hazard-prevention-plan",
+        "industrial-water-master-plan-reflection-consultation",
       ],
       psmCovered: true,
       psmCoversSameHazardPreventionScope: true,
@@ -475,10 +477,10 @@ describe("versioned share state", () => {
     const encoded = encodeShareState(answers, "SWIMLANE");
 
     expect(encoded).toContain(
-      "spr=road-occupation-permit.hazard-prevention-plan",
+      "spr=road-occupation-permit.hazard-prevention-plan.industrial-water-master-plan-reflection-consultation",
     );
     expect(encoded).toContain(
-      "spt=road-occupation-permit.hazard-prevention-plan",
+      "spt=road-occupation-permit.hazard-prevention-plan.industrial-water-master-plan-reflection-consultation",
     );
     expect(encoded).toContain("psm=1");
     expect(encoded).toContain("pss=1");
@@ -487,6 +489,25 @@ describe("versioned share state", () => {
       tab: "SWIMLANE",
     });
     expect(decodeInputCode(encodeInputCode(answers), fallback)).toEqual(answers);
+  });
+
+  it("rejects a stale industrial-water plan selection when additional demand is zero", () => {
+    const fallback = catalog.scenarios[0].answers;
+    const inconsistent: ScenarioAnswers = {
+      ...fallback,
+      waterDemandM3Day: 0,
+      supplementalPermitReviewedIds: [
+        ...fallback.supplementalPermitReviewedIds,
+        "industrial-water-master-plan-reflection-consultation",
+      ],
+      supplementalPermitTargetIds: [
+        ...fallback.supplementalPermitTargetIds,
+        "industrial-water-master-plan-reflection-consultation",
+      ],
+    };
+
+    expect(scenarioAnswerSchema.safeParse(inconsistent).success).toBe(false);
+    expect(() => encodeInputCode(inconsistent)).toThrow("추가 용수수요가 0");
   });
 
   it("rejects a supplemental target that was not individually reviewed", () => {

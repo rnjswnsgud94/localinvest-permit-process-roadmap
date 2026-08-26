@@ -127,7 +127,7 @@ describe("permit PDF renderer", () => {
       stage.items.filter((item) => item.category === "REQUIRED").length,
     );
 
-    expect(requiredCounts).toEqual([19, 18, 45, 4, 40, 5]);
+    expect(requiredCounts).toEqual([23, 21, 48, 4, 43, 5]);
     expect(model.flow.coreRelations.length).toBeGreaterThan(0);
     expect(model.flow.coreRelations.length).toBeLessThanOrEqual(10);
     expect(model.localOrdinances.categories.length).toBeGreaterThan(0);

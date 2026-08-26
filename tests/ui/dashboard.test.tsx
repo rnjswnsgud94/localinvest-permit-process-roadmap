@@ -428,6 +428,42 @@ describe("dashboard UI", () => {
     }));
   });
 
+  it("asks for provider confirmation before adding national industrial-water plan reflection", async () => {
+    render(<DashboardClient />);
+
+    const stepNavigation = screen.getByRole("navigation", { name: "입력 단계" });
+    fireEvent.click(within(stepNavigation).getByRole("button", { name: /^4 인프라/ }));
+
+    const planReview = screen.getByRole("group", {
+      name: "국가수도기본계획·수도정비계획 반영 필요 여부",
+    });
+    expect(within(planReview).getByRole("button", { name: "공급기관 확인 전" }))
+      .toHaveAttribute("aria-pressed", "true");
+    fireEvent.click(within(planReview).getByRole("button", {
+      name: "계획 반영·변경 필요",
+    }));
+    expect(within(planReview).getByRole("button", { name: "계획 반영·변경 필요" }))
+      .toHaveAttribute("aria-pressed", "true");
+    await waitFor(() => {
+      const params = new URLSearchParams(window.location.search);
+      expect(params.get("spr")).toContain("industrial-water-master-plan-reflection-consultation");
+      expect(params.get("spt")).toContain("industrial-water-master-plan-reflection-consultation");
+    });
+
+    fireEvent.change(screen.getByRole("spinbutton", { name: /용수 수요/ }), {
+      target: { value: "0" },
+    });
+    expect(screen.queryByRole("group", {
+      name: "국가수도기본계획·수도정비계획 반영 필요 여부",
+    })).not.toBeInTheDocument();
+    expect(screen.getByText("추가 용수수요 없음")).toBeInTheDocument();
+    await waitFor(() => {
+      const params = new URLSearchParams(window.location.search);
+      expect(params.get("spr") ?? "").not.toContain("industrial-water-master-plan-reflection-consultation");
+      expect(params.get("spt") ?? "").not.toContain("industrial-water-master-plan-reflection-consultation");
+    });
+  });
+
   it("sorts only the full-procedure table by roadmap stage or Korean name", () => {
     render(<DashboardClient />);
     fireEvent.click(screen.getByRole("tab", { name: "전체 절차" }));
@@ -850,6 +886,8 @@ describe("dashboard UI", () => {
     expect(korea100Link).toHaveAttribute("target", "_blank");
     expect(korea100Link).toHaveAttribute("rel", "noopener noreferrer");
     expect(drawer).toHaveTextContent("공식 법령 근거와 별도의 참고자료입니다.");
+    expect(within(drawer).getByRole("note", { name: "실무 중요도" }))
+      .toHaveTextContent("법적 효력·의무의 우열을 뜻하지 않습니다");
     expect(drawer).toHaveTextContent("업무일");
     expect(drawer).toHaveTextContent("법정·공식 기간과 실무 참고값");
     expect(drawer).toHaveTextContent("전국 공신력 있는 평균·중앙값 자료가 없어");

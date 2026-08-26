@@ -1,4 +1,8 @@
 export const siteReviewSupplementalPermitTargetIds = [
+  "industrial-complex-plan-change-approval",
+  "industrial-complex-management-plan-change",
+  "urban-county-management-plan-change-proposal",
+  "urban-planning-facility-implementation-plan-approval",
   "capital-region-large-scale-development-review",
   "development-restriction-zone-action-permit",
   "airport-obstacle-limitation-consultation",
@@ -11,6 +15,7 @@ export const siteReviewSupplementalPermitTargetIds = [
   "han-river-riparian-zone-factory-location-review",
   "paldang-special-measures-zone-wastewater-location-review",
   "han-river-water-pollution-load-allocation",
+  "private-road-opening-permit",
   "road-occupation-traffic-flow-plan-review",
 ] as const;
 
@@ -24,6 +29,13 @@ export const gyeonggiSiteReviewTargetIds = [
 ] as const;
 
 export const constructionEnvironmentSupplementalPermitTargetIds = [
+  "psm-pre-operation-confirmation",
+  "building-temporary-use-approval",
+  "facility-management-document-registration",
+  "construction-restart-safety-inspection",
+  "temporary-building-permit-report",
+  "forestland-temporary-use-permit-report",
+  "standing-timber-felling-permit-report",
   "road-occupation-permit",
   "fugitive-emission-facility-report",
   "fugitive-dust-business-report",
@@ -53,9 +65,14 @@ export const constructionEnvironmentSupplementalPermitTargetIds = [
   "construction-quality-plan-submission",
 ] as const;
 
+export const infrastructureSupplementalPermitTargetIds = [
+  "industrial-water-master-plan-reflection-consultation",
+] as const;
+
 export const supplementalPermitTargetIds = [
   ...siteReviewSupplementalPermitTargetIds,
   ...constructionEnvironmentSupplementalPermitTargetIds,
+  ...infrastructureSupplementalPermitTargetIds,
 ] as const;
 
 export type SupplementalPermitTargetId =
@@ -65,6 +82,10 @@ export const supplementalPermitTargetNames: Record<
   SupplementalPermitTargetId,
   string
 > = {
+  "industrial-complex-plan-change-approval": "산업단지계획 변경승인",
+  "industrial-complex-management-plan-change": "산업단지 관리기본계획 변경",
+  "urban-county-management-plan-change-proposal": "도시·군관리계획 변경 입안제안",
+  "urban-planning-facility-implementation-plan-approval": "도시·군계획시설사업 실시계획 인가",
   "capital-region-large-scale-development-review": "수도권 대규모 공업용지 조성사업 심의·협의",
   "development-restriction-zone-action-permit": "개발제한구역 입지제한·행위허가 검토",
   "airport-obstacle-limitation-consultation": "민간공항 장애물 제한표면 협의·항공학적 검토",
@@ -76,8 +97,16 @@ export const supplementalPermitTargetNames: Record<
   "water-discharge-facility-restriction-zone-review": "폐수배출시설 설치제한지역 입지 확인",
   "han-river-riparian-zone-factory-location-review": "한강수계 수변구역 공장 입지제한 확인",
   "paldang-special-measures-zone-wastewater-location-review": "팔당 특별대책지역 폐수배출시설 입지제한 확인",
-  "han-river-water-pollution-load-allocation": "한강수계 오염부하량 할당·허가제한 확인",
+  "han-river-water-pollution-load-allocation": "수질오염총량 개발·시설별 오염부하량 할당 확인",
+  "private-road-opening-permit": "사도 개설허가",
   "road-occupation-traffic-flow-plan-review": "도로점용공사장 교통소통대책 제출·검토",
+  "psm-pre-operation-confirmation": "공정안전보고서(PSM) 가동 전 이행상태 확인",
+  "building-temporary-use-approval": "건축물 임시사용승인",
+  "facility-management-document-registration": "시설물관리대장·설계도서 등 FMS 제출·등록",
+  "construction-restart-safety-inspection": "장기 중단 건설공사 재착공 전 안전점검",
+  "temporary-building-permit-report": "가설건축물 축조허가·신고",
+  "forestland-temporary-use-permit-report": "산지일시사용 허가·신고",
+  "standing-timber-felling-permit-report": "입목벌채·굴취 허가·신고",
   "road-occupation-permit": "도로점용허가",
   "fugitive-emission-facility-report": "비산배출시설 설치·운영 신고",
   "fugitive-dust-business-report": "비산먼지 발생사업 신고",
@@ -105,12 +134,17 @@ export const supplementalPermitTargetNames: Record<
   "water-tank-installation-report": "저수조 설치현황 신고",
   "building-structure-construction-report": "공작물 축조신고",
   "construction-quality-plan-submission": "품질관리·품질시험계획 수립·승인",
+  "industrial-water-master-plan-reflection-consultation": "공업용수 공급계획 반영 협의(국가·관할 수도정비계획)",
 };
 
 export const supplementalPermitTargetDescriptions: Record<
   SupplementalPermitTargetId,
   string
 > = {
+  "industrial-complex-plan-change-approval": "산업단지 개발계획·실시계획 또는 통합 산업단지계획의 변경승인 대상인지와 경미한 변경 예외 여부",
+  "industrial-complex-management-plan-change": "유치업종·업종배치·입주자격·용도구역 등 관리기본계획 변경이 선행되어야 하는지 여부",
+  "urban-county-management-plan-change-proposal": "용도지역·지구, 지구단위계획 또는 도시·군계획시설 변경을 위해 입안제안이 필요한지 여부",
+  "urban-planning-facility-implementation-plan-approval": "사업부지 또는 기반시설 공사가 도시·군계획시설사업 실시계획 인가 대상인지 여부",
   "capital-region-large-scale-development-review": "단순 입주가 아닌 30만㎡ 이상 공업용지 조성사업인지 여부(연접·분할 합산 포함)",
   "development-restriction-zone-action-permit": "정확한 필지가 개발제한구역이고 법정 허용시설·행위에 해당하는지 여부",
   "airport-obstacle-limitation-consultation": "민간공항 장애물 제한표면과 건축물·굴뚝·피뢰침·크레인 최고높이의 저촉 여부",
@@ -122,8 +156,16 @@ export const supplementalPermitTargetDescriptions: Record<
   "water-discharge-facility-restriction-zone-review": "필지별 한강·임진강 등 고시지역, 특정수질유해물질 기준과 고시상 예외를 확인한 결과",
   "han-river-riparian-zone-factory-location-review": "정확한 필지의 수변구역 여부와 KSIC·특정수질유해물질·1일 최대 오수 예외요건",
   "paldang-special-measures-zone-wastewater-location-review": "필지별 Ⅰ·Ⅱ권역, 1일 폐수량·특정수질유해물질·방류경로와 기존허가 예외",
-  "han-river-water-pollution-load-allocation": "시·군 오염총량 시행계획상 개발부하량·사업장 할당 대상과 할당량 확보 여부",
+  "han-river-water-pollution-load-allocation": "관할 수계·시군 오염총량 시행계획상 개발부하량·시설별 할당 대상과 할당량 확보 여부",
+  "private-road-opening-permit": "공장 진입로가 도로법상 도로가 아닌 사도로 개설되고 법정 허가대상인지 여부",
   "road-occupation-traffic-flow-plan-review": "서울·인천·경기에서 도로점용공사를 하며 조례상 교통소통대책 제출대상인지 여부",
+  "psm-pre-operation-confirmation": "공정안전보고서 심사대상 설비를 설치·변경하고 실제 가동 전에 이행상태 확인을 받아야 하는지 여부",
+  "building-temporary-use-approval": "전체 사용승인 전에 완성된 부분을 먼저 사용해야 하고 임시사용승인 기준을 충족하는지 여부",
+  "facility-management-document-registration": "시설물안전법상 시설물의 설계도서·시설물관리대장 등 제출·FMS 등록 대상인지 여부",
+  "construction-restart-safety-inspection": "안전관리계획 대상 건설공사가 1년 이상 중단된 뒤 재착공하는지 여부",
+  "temporary-building-permit-report": "현장사무소·창고 등 존치기간이 정해진 가설건축물을 축조하며 허가 또는 신고 대상인지 여부",
+  "forestland-temporary-use-permit-report": "산지를 복구 전제로 일시 사용하며 목적·면적에 따라 허가 또는 신고 대상인지 여부",
+  "standing-timber-felling-permit-report": "공사 전 입목의 벌채·굴취가 산림자원법상 허가 또는 신고 대상인지 여부",
   "road-occupation-permit": "실제 도로구역 점용·굴착 여부",
   "fugitive-emission-facility-report": "대상 업종·공정·유해대기오염물질 여부",
   "fugitive-dust-business-report": "공사 종류·면적·토공량 등 신고기준 충족 여부",
@@ -151,4 +193,5 @@ export const supplementalPermitTargetDescriptions: Record<
   "water-tank-installation-report": "건축물 용도·규모상 저수조 설치현황 신고대상인지 여부",
   "building-structure-construction-report": "건축물과 분리된 굴뚝·사일로·옹벽 등 신고대상 공작물인지 여부",
   "construction-quality-plan-submission": "공사비·연면적·건축물 유형상 품질관리계획 또는 품질시험계획 대상 여부",
+  "industrial-water-master-plan-reflection-consultation": "기존 공급구역·시설 여유량만으로 계획 수요를 충당할 수 없어 광역·공업용수도 시설의 신설·증설·분기와 국가수도기본계획 또는 수도정비계획 변경이 필요한지에 대한 공급기관·관할기관 확인 결과",
 };

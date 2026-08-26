@@ -205,6 +205,7 @@ const cases: readonly InvestmentRegressionCase[] = [
       waterDemandM3Day: 1_000,
       wastewaterM3Day: 800,
       supplementalPermitTargetIds: [
+        "temporary-building-permit-report",
         "fugitive-dust-business-report",
         "nonpoint-source-installation-report",
         "business-waste-generator-report",
@@ -300,6 +301,10 @@ const cases: readonly InvestmentRegressionCase[] = [
       waterDemandM3Day: 6_000,
       wastewaterM3Day: 4_000,
       supplementalPermitTargetIds: [
+        "psm-pre-operation-confirmation",
+        "building-temporary-use-approval",
+        "facility-management-document-registration",
+        "construction-restart-safety-inspection",
         "fugitive-emission-facility-report",
         "fugitive-dust-business-report",
         "nonpoint-source-installation-report",
@@ -595,6 +600,8 @@ const cases: readonly InvestmentRegressionCase[] = [
       waterDemandM3Day: 2_000,
       wastewaterM3Day: 1_200,
       supplementalPermitTargetIds: [
+        "forestland-temporary-use-permit-report",
+        "standing-timber-felling-permit-report",
         "fugitive-dust-business-report",
         "nonpoint-source-installation-report",
         "business-waste-generator-report",

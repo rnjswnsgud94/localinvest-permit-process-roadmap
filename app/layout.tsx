@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 const siteOrigin = process.env.NEXT_PUBLIC_SITE_URL
-  || (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "http://localhost:3000");
+  || (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : "https://factory-permit-dashboard.rnjswnsgud94.chatgpt.site");
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteOrigin),

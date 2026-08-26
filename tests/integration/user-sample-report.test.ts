@@ -30,9 +30,9 @@ describe("user supplied FPR1.1a72c37b sample", () => {
       APPLIES: 31,
       DOES_NOT_APPLY: 68,
       POSSIBLY_APPLIES: 52,
-      NEEDS_MORE_INFO: 11,
+      NEEDS_MORE_INFO: 24,
     });
-    expect(categoryCounts).toEqual({ REQUIRED: 89, CONFIRM: 11, NOT_REQUIRED: 62 });
+    expect(categoryCounts).toEqual({ REQUIRED: 89, CONFIRM: 24, NOT_REQUIRED: 62 });
     expect(report.summary.counts).toEqual(categoryCounts);
     expect(report.summary.roadmapBreakdown).toEqual({
       confirmed: 31,

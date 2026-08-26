@@ -66,6 +66,32 @@ const visualTrackOffsets = [
   -1, 1,
   -3, 3,
   -5, 5,
+  -7, 7,
+  -8, 8,
+  -9, 9,
+  -10, 10,
+  -11, 11,
+  -12, 12,
+  -13, 13,
+  -14, 14,
+  -15, 15,
+  -16, 16,
+  -0.5, 0.5,
+  -1.5, 1.5,
+  -2.5, 2.5,
+  -3.5, 3.5,
+  -4.5, 4.5,
+  -5.5, 5.5,
+  -6.5, 6.5,
+  -7.5, 7.5,
+  -8.5, 8.5,
+  -9.5, 9.5,
+  -10.5, 10.5,
+  -11.5, 11.5,
+  -12.5, 12.5,
+  -13.5, 13.5,
+  -14.5, 14.5,
+  -15.5, 15.5,
 ];
 
 function rounded(value: number) {
@@ -586,11 +612,38 @@ export function createObstacleAvoidingConnectorRouter(
       return routePoints;
     }
 
-    const adjustedSegments = originalSegments.map((segment, index) => {
-      // Keep endpoint tracks fixed so markers still meet the card-side anchor.
-      // Interior tracks may use a narrow lane inside the router's 8px safety
-      // corridor. This turns unavoidable shared trunks into adjacent lines.
-      if (index === 0 || index === originalSegments.length - 1) return segment;
+    const adjustedPointsFor = (segments: OccupiedSegment[]) => {
+      const points: Point[] = [routePoints[0]];
+      for (let index = 1; index < routePoints.length - 1; index += 1) {
+        const previous = segments[index - 1];
+        const next = segments[index];
+        if (previous.orientation !== next.orientation) {
+          points.push(previous.orientation === "horizontal"
+            ? { x: next.fixed, y: previous.fixed }
+            : { x: previous.fixed, y: next.fixed });
+        } else if (previous.orientation === "horizontal") {
+          points.push({ x: routePoints[index].x, y: previous.fixed });
+          points.push({ x: routePoints[index].x, y: next.fixed });
+        } else {
+          points.push({ x: previous.fixed, y: routePoints[index].y });
+          points.push({ x: next.fixed, y: routePoints[index].y });
+        }
+      }
+      points.push(routePoints[routePoints.length - 1]);
+      return points;
+    };
+    const routeIsUsable = (points: Point[]) => points.every((point) =>
+      point.x >= 0 && point.x <= width
+      && point.y >= routingTop && point.y <= height,
+    ) && pathIsClear(points, obstacles);
+    const adjustedSegments = [...originalSegments];
+
+    // Keep endpoint tracks fixed so markers still meet the card-side anchor.
+    // Pick each interior lane only after checking the complete orthogonal path.
+    // Choosing every segment independently and validating once at the end can
+    // make one bad detour discard all otherwise valid separation work.
+    for (let index = 1; index < originalSegments.length - 1; index += 1) {
+      const segment = originalSegments[index];
       for (const offset of visualTrackOffsets) {
         const candidate = segmentWithFixed(segment, segment.fixed + offset);
         if (
@@ -600,35 +653,15 @@ export function createObstacleAvoidingConnectorRouter(
           || (candidate.orientation === "horizontal" && candidate.fixed > height)
           || !visualSegmentIsAvailable(candidate)
         ) continue;
-        return candidate;
-      }
-      return segment;
-    });
-    const adjustedPoints: Point[] = [routePoints[0]];
-    for (let index = 1; index < routePoints.length - 1; index += 1) {
-      const previous = adjustedSegments[index - 1];
-      const next = adjustedSegments[index];
-      if (previous.orientation !== next.orientation) {
-        adjustedPoints.push(previous.orientation === "horizontal"
-          ? { x: next.fixed, y: previous.fixed }
-          : { x: previous.fixed, y: next.fixed });
-      } else if (previous.orientation === "horizontal") {
-        adjustedPoints.push({ x: routePoints[index].x, y: previous.fixed });
-        adjustedPoints.push({ x: routePoints[index].x, y: next.fixed });
-      } else {
-        adjustedPoints.push({ x: previous.fixed, y: routePoints[index].y });
-        adjustedPoints.push({ x: next.fixed, y: routePoints[index].y });
+        const candidateSegments = [...adjustedSegments];
+        candidateSegments[index] = candidate;
+        if (!routeIsUsable(adjustedPointsFor(candidateSegments))) continue;
+        adjustedSegments[index] = candidate;
+        break;
       }
     }
-    adjustedPoints.push(routePoints[routePoints.length - 1]);
-
-    const withinBounds = adjustedPoints.every((point) =>
-      point.x >= 0 && point.x <= width
-      && point.y >= routingTop && point.y <= height,
-    );
-    const accepted = withinBounds && pathIsClear(adjustedPoints, obstacles)
-      ? adjustedPoints
-      : routePoints;
+    const adjustedPoints = adjustedPointsFor(adjustedSegments);
+    const accepted = routeIsUsable(adjustedPoints) ? adjustedPoints : routePoints;
     const acceptedSegments = accepted.slice(1).flatMap((point, index) => {
       const segment = occupiedSegment(accepted[index], point);
       return segment ? [segment] : [];

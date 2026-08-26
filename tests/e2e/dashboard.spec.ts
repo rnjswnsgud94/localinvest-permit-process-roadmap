@@ -565,6 +565,32 @@ test("secondary permit questions start collapsed without discarding answers", as
   await expect(page).toHaveURL(/road=1/);
 });
 
+test("industrial-water plan confirmation survives sharing and clears with zero demand", async ({ page }) => {
+  await gotoHydratedDashboard(page);
+  const infrastructureStep = page.getByRole("navigation", { name: "입력 단계" })
+    .getByRole("button", { name: /^4 인프라/ });
+  await infrastructureStep.click();
+
+  await page.getByRole("spinbutton", { name: /용수 수요/ }).fill("1500");
+  const planReview = page.getByRole("group", {
+    name: "국가수도기본계획·수도정비계획 반영 필요 여부",
+  });
+  await planReview.getByRole("button", { name: "계획 반영·변경 필요" }).click();
+  await expect(page).toHaveURL(/spr=.*industrial-water-master-plan-reflection-consultation/);
+  await expect(page).toHaveURL(/spt=.*industrial-water-master-plan-reflection-consultation/);
+
+  await page.reload();
+  await page.waitForLoadState("networkidle");
+  await infrastructureStep.click();
+  await expect(page.getByRole("heading", { name: "인프라" })).toBeVisible();
+  await expect(planReview.getByRole("button", { name: "계획 반영·변경 필요" }))
+    .toHaveAttribute("aria-pressed", "true");
+
+  await page.getByRole("spinbutton", { name: /용수 수요/ }).fill("0");
+  await expect(page.getByText("추가 용수수요 없음")).toBeVisible();
+  await expect(page).not.toHaveURL(/industrial-water-master-plan-reflection-consultation/);
+});
+
 test("wizard separates official detail sources from external references", async ({ page }) => {
   await gotoHydratedDashboard(page);
   await expect(page.getByRole("heading", { name: "지역투자 인허가 로드맵" })).toBeVisible();

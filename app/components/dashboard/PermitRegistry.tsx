@@ -11,6 +11,7 @@ import {
 } from "@/app/components/dashboard/constants";
 import { catalog } from "@/lib/data/catalog";
 import type { LegalSource, Procedure } from "@/lib/domain/schemas";
+import { practicalPriorityForProcedure } from "@/lib/engine/practical-priority";
 import {
   formatOfficialDurationSummary,
   hasQuantifiedOfficialPeriod,
@@ -96,6 +97,7 @@ const registryBaseEntries = catalog.procedures.map((procedure) => {
   const duration = procedure.durationId ? durationsById.get(procedure.durationId) : undefined;
   return {
     procedure,
+    practicalPriority: practicalPriorityForProcedure(procedure),
     legalSources: legalSourcesFor(procedure),
     durationSources: durationSourcesFor(procedure),
     duration,
@@ -157,6 +159,8 @@ export function PermitRegistry({
       ...entry.procedure.followUpObligations,
       ...legalSourceLabels,
       durationStatusLabels[durationStatus],
+      entry.practicalPriority.level,
+      entry.practicalPriority.label,
     ].join(" "));
 
     return {
@@ -202,6 +206,9 @@ export function PermitRegistry({
           <p>
             전체 {registryEntries.length}개 절차를 법령, 기관, 제출서류와 결과물까지 한 번에 검색합니다.
             평가기준일은 {assessmentDate}이며, 이후 시행 근거와 기간은 현재 미적용으로 표시합니다.
+          </p>
+          <p className="practical-priority-disclaimer">
+            P0·P1·P2는 착공·가동 일정 관리를 위한 실무 중요도입니다. 법적 효력이나 적용 여부의 우열을 뜻하지 않습니다.
           </p>
         </div>
       </header>
@@ -302,6 +309,7 @@ export function PermitRegistry({
           >
             <option value="NAME">가나다순</option>
             <option value="STAGE">일정 단계순</option>
+            <option value="PRIORITY">실무 중요도순</option>
           </select>
         </label>
       </div>
@@ -322,7 +330,12 @@ export function PermitRegistry({
                     ? "시행 예정 근거 · 현재 미적용"
                     : verificationLabels[entry.procedure.verificationStatus]}</span>
                 </span>
-                <strong>{entry.procedure.name}</strong>
+                <span className="permit-registry-title-row">
+                  <strong>{entry.procedure.name}</strong>
+                  <span className={`practical-priority-chip priority-${entry.practicalPriority.level.toLowerCase()}`}>
+                    {entry.practicalPriority.level} · {entry.practicalPriority.label}
+                  </span>
+                </span>
                 {entry.procedure.aliases.length ? (
                   <span className="permit-registry-aliases">
                     다른 이름 · {entry.procedure.aliases.join(", ")}

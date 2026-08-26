@@ -3213,7 +3213,7 @@ export const specialLawProcedures: Procedure[] = [
   {
     id: "power-grid-impact-assessment",
     name: "전력계통영향평가",
-    aliases: ["계통영향평가"],
+    aliases: ["계통영향평가", "한전 기술평가", "전력계통영향평가 시범운영"],
     description: "대규모 전기사용 사업이 전력계통에 미치는 영향을 분석해 전력공급 가능성과 보강대책을 심의받는 절차입니다.",
     outcome: "전력계통영향평가 심의결과",
     stage: "SITE_REVIEW",
@@ -3236,7 +3236,7 @@ export const specialLawProcedures: Procedure[] = [
     durationId: "duration-power-grid-impact-assessment",
     verificationStatus: "INTERNAL_REVIEWED",
     reviewedAt: "2026-08-21",
-    reviewNote: "대상지역·전력용량과 시행령상 제외사업은 현행 분산에너지법령 및 관할기관에서 확인해야 합니다. 선택한 업종별 특례는 별도 카드에 표시합니다.",
+    reviewNote: "대상지역·전력용량과 시행령상 제외사업은 현행 분산에너지법령 및 관할기관에서 확인해야 합니다. 기업 실무목록의 ‘한전 기술평가’ 또는 ‘시범운영’ 표기는 검색용 별칭으로만 연결하며 별도의 법정 인허가로 중복 계산하지 않습니다. 선택한 업종별 특례는 별도 카드에 표시합니다.",
     deemedByProcedureIds: [],
     deemedProcedureIds: [],
   },

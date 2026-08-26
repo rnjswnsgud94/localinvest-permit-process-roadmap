@@ -256,6 +256,20 @@ export const scenarioAnswerSchema = z.object({
     });
   }
   const reviewed = new Set(answers.supplementalPermitReviewedIds);
+  const industrialWaterPlanId = "industrial-water-master-plan-reflection-consultation";
+  if (
+    answers.waterDemandM3Day === 0
+    && (
+      reviewed.has(industrialWaterPlanId)
+      || answers.supplementalPermitTargetIds.includes(industrialWaterPlanId)
+    )
+  ) {
+    context.addIssue({
+      code: "custom",
+      path: ["supplementalPermitTargetIds"],
+      message: "추가 용수수요가 0이면 국가수도기본계획·수도정비계획 반영 검토값을 선택할 수 없습니다.",
+    });
+  }
   for (const targetId of answers.supplementalPermitTargetIds) {
     if (reviewed.has(targetId)) continue;
     context.addIssue({

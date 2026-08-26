@@ -168,16 +168,17 @@ function addPracticalSheet(workbook: Workbook, report: PermitReportModel) {
   const sheet = workbook.addWorksheet("실무 관리표", { properties: { tabColor: { argb: palette.teal } } });
   const headers = [
     "순번", "진행상태", "담당자", "내부 목표일", "내부 메모",
-    "단계", "판정", "절차", "판정 이유", "계획 일정", "일정 메모",
+    "실무 우선순위", "우선순위 근거", "단계", "판정", "절차", "판정 이유", "계획 일정", "일정 메모",
     "법정·공식 처리기간", "접수기관", "법정 결정권자", "결과물",
     "주요 제출자료", "후속 의무", "추가 확인 입력", "특례 반영", "근거·검토 메모",
   ];
   addSheetHeading(
     sheet,
     "인허가 실무 관리표",
-    "노란색 4개 열은 프로젝트 관리용으로 자유롭게 입력하십시오. 판정·기간·기관 정보는 다운로드 시점의 사전검토 결과이며 최종 처분이나 법률자문이 아닙니다.",
+    `노란색 4개 열은 프로젝트 관리용으로 자유롭게 입력하십시오. ${report.practicalPriorityNotice} 판정·기간·기관 정보는 다운로드 시점의 사전검토 결과이며 최종 처분이나 법률자문이 아닙니다.`,
     headers.length,
   );
+  sheet.getRow(2).height = 42;
   sheet.addRow([]);
   sheet.addRow(headers);
   report.procedures.forEach((procedure, index) => {
@@ -187,6 +188,8 @@ function addPracticalSheet(workbook: Workbook, report: PermitReportModel) {
       null,
       null,
       null,
+      `${procedure.practicalPriority} · ${procedure.practicalPriorityLabel}`,
+      procedure.practicalPriorityReasons.join(" · "),
       procedure.stage,
       procedure.categoryLabel,
       procedure.name,
@@ -206,9 +209,10 @@ function addPracticalSheet(workbook: Workbook, report: PermitReportModel) {
   });
   setColumns(sheet, [
     { width: 7 }, { width: 12 }, { width: 13 }, { width: 13 }, { width: 22 },
-    { width: 14 }, { width: 14 }, { width: 28 }, { width: 38 }, { width: 22 },
-    { width: 34 }, { width: 32 }, { width: 27 }, { width: 27 }, { width: 24 },
-    { width: 42 }, { width: 34 }, { width: 28 }, { width: 38 }, { width: 44 },
+    { width: 18 }, { width: 46 }, { width: 14 }, { width: 14 }, { width: 28 },
+    { width: 38 }, { width: 22 }, { width: 34 }, { width: 32 }, { width: 27 },
+    { width: 27 }, { width: 24 }, { width: 42 }, { width: 34 }, { width: 28 },
+    { width: 38 }, { width: 44 },
   ]);
   configureTableSheet(sheet, 4, headers.length, 5);
 
@@ -226,11 +230,29 @@ function addPracticalSheet(workbook: Workbook, report: PermitReportModel) {
       error: "목록에서 진행상태를 선택해 주세요.",
     };
     sheet.getCell(rowNumber, 4).numFmt = "yyyy-mm-dd";
-    const category = report.procedures[rowNumber - 5]?.category;
+    const procedure = report.procedures[rowNumber - 5];
+    const category = procedure?.category;
+    sheet.getCell(rowNumber, 6).fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: {
+        argb: procedure?.practicalPriority === "P0"
+          ? palette.redSoft
+          : procedure?.practicalPriority === "P1"
+            ? palette.amberSoft
+            : palette.slateSoft,
+      },
+    };
+    sheet.getCell(rowNumber, 6).font = {
+      name: "맑은 고딕",
+      size: 9,
+      bold: true,
+      color: { argb: palette.navyDark },
+    };
     if (category === "CONFIRM") {
-      sheet.getCell(rowNumber, 7).fill = { type: "pattern", pattern: "solid", fgColor: { argb: palette.amberSoft } };
+      sheet.getCell(rowNumber, 9).fill = { type: "pattern", pattern: "solid", fgColor: { argb: palette.amberSoft } };
     } else {
-      sheet.getCell(rowNumber, 7).fill = { type: "pattern", pattern: "solid", fgColor: { argb: palette.tealSoft } };
+      sheet.getCell(rowNumber, 9).fill = { type: "pattern", pattern: "solid", fgColor: { argb: palette.tealSoft } };
     }
   }
 }
@@ -295,12 +317,12 @@ function addSummarySheet(workbook: Workbook, report: PermitReportModel) {
   sheet.getCell(noticeStart, 1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: palette.teal } };
   sheet.getCell(noticeStart, 1).alignment = { vertical: ooxmlVerticalCenter };
   sheet.mergeCells(noticeStart + 1, 1, noticeStart + 2, 8);
-  sheet.getCell(noticeStart + 1, 1).value = `첫 시트의 노란색 관리열에 진행상태·담당자·내부 목표일·메모를 입력해 실무 체크리스트로 사용하십시오.\n${report.disclaimer}`;
+  sheet.getCell(noticeStart + 1, 1).value = `첫 시트의 노란색 관리열에 진행상태·담당자·내부 목표일·메모를 입력해 실무 체크리스트로 사용하십시오.\n${report.practicalPriorityNotice}\n${report.disclaimer}`;
   sheet.getCell(noticeStart + 1, 1).font = { name: "맑은 고딕", size: 9, color: { argb: palette.ink } };
   sheet.getCell(noticeStart + 1, 1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: palette.tealSoft } };
   sheet.getCell(noticeStart + 1, 1).alignment = { vertical: "top", wrapText: true };
   sheet.getCell(noticeStart + 1, 1).border = thinBorder;
-  sheet.getRow(noticeStart + 1).height = 62;
+  sheet.getRow(noticeStart + 1).height = 82;
   // @alosha/xlsx does not serialize a matching selection record for a
   // row-only frozen pane. Desktop Excel repairs that incomplete sheet view
   // when opening the workbook, so keep this short summary unfrozen instead.

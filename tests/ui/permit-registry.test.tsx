@@ -33,11 +33,11 @@ describe("permit registry", () => {
     );
   });
 
-  it("sorts the encyclopedia by name or roadmap stage without changing its entries", () => {
+  it("sorts the encyclopedia by name, roadmap stage, or practical priority without changing its entries", () => {
     renderRegistry();
     const resultNames = () => screen.getAllByRole("button", { name: /상세 보기$/ })
       .map((button) => button.getAttribute("aria-label")!.replace(/ 상세 보기$/, ""));
-    const expectedNames = (mode: "NAME" | "STAGE") => [...catalog.procedures]
+    const expectedNames = (mode: "NAME" | "STAGE" | "PRIORITY") => [...catalog.procedures]
       .sort((left, right) => compareProcedures(left, right, mode))
       .map((procedure) => procedure.name);
     const sort = screen.getByRole("combobox", { name: "전체 인허가 정렬" });
@@ -50,12 +50,25 @@ describe("permit registry", () => {
     expect(resultNames()).toEqual(expectedNames("STAGE"));
     expect(screen.getByRole("status")).toHaveTextContent("일정 단계순");
 
+    fireEvent.change(sort, { target: { value: "PRIORITY" } });
+    expect(resultNames()).toEqual(expectedNames("PRIORITY"));
+    expect(screen.getByRole("status")).toHaveTextContent("실무 중요도순");
+
     fireEvent.change(screen.getByRole("searchbox", { name: "법령·기관·서류 통합검색" }), {
       target: { value: "교통영향평가" },
     });
     fireEvent.click(screen.getByRole("button", { name: "필터 초기화" }));
-    expect(sort).toHaveValue("STAGE");
-    expect(resultNames()).toEqual(expectedNames("STAGE"));
+    expect(sort).toHaveValue("PRIORITY");
+    expect(resultNames()).toEqual(expectedNames("PRIORITY"));
+  });
+
+  it("labels practical priority as a scheduling aid rather than a legal hierarchy", () => {
+    renderRegistry();
+
+    expect(screen.getByText(/법적 효력이나 적용 여부의 우열을 뜻하지 않습니다/))
+      .toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "공장설립·증설·업종변경 승인 상세 보기" }))
+      .toHaveTextContent("P0 · 핵심 게이트");
   });
 
   it("searches aliases, law titles, authorities, submissions and outcomes", () => {
@@ -81,7 +94,7 @@ describe("permit registry", () => {
       target: { value: "NO_NATIONWIDE_TOTAL" },
     });
     expect(screen.getByRole("status")).toHaveTextContent(
-      `전체 ${catalog.procedures.length}개 중 32개 절차`,
+      `전체 ${catalog.procedures.length}개 중 40개 절차`,
     );
     expect(screen.queryByRole("button", { name: "AI 데이터센터 인허가 일괄처리 결과 상세 보기" }))
       .not.toBeInTheDocument();
@@ -117,7 +130,7 @@ describe("permit registry", () => {
     });
 
     expect(screen.getByRole("status")).toHaveTextContent(
-      `전체 ${catalog.procedures.length}개 중 35개 절차`,
+      `전체 ${catalog.procedures.length}개 중 43개 절차`,
     );
     const result = screen.getByRole("button", {
       name: "AI 데이터센터 인허가 일괄처리 결과 상세 보기",

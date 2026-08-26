@@ -32,6 +32,7 @@ import { Swimlane } from "@/app/components/dashboard/Swimlane";
 import { Wizard } from "@/app/components/dashboard/Wizard";
 import { catalog, type ScenarioAnswers } from "@/lib/data/catalog";
 import { evaluateProject } from "@/lib/engine/pipeline";
+import { practicalPriorityForProcedure } from "@/lib/engine/practical-priority";
 import type { DurationScenario } from "@/lib/engine/schedule";
 import { formatCalendarPeriod } from "@/lib/format-duration";
 import {
@@ -351,13 +352,40 @@ export function DashboardClient() {
     const haystack = `${decision.procedure.name} ${decision.procedure.aliases.join(" ")} ${decision.procedure.receivingAuthority} ${legalText}`.toLowerCase();
     return haystack.includes(search.trim().toLowerCase());
   });
-  const sortedListDecisions = [...filteredDecisions].sort((left, right) =>
-    compareProcedures(left.procedure, right.procedure, procedureSortMode),
-  );
+  const sortedListDecisions = [...filteredDecisions].sort((left, right) => {
+    if (procedureSortMode === "PRIORITY") {
+      const leftPriority = practicalPriorityForProcedure(left.procedure, {
+        applicability: left.status,
+        isDeemed: left.isDeemed,
+        critical: schedule.criticalProcedureIds.includes(left.procedure.id),
+      });
+      const rightPriority = practicalPriorityForProcedure(right.procedure, {
+        applicability: right.status,
+        isDeemed: right.isDeemed,
+        critical: schedule.criticalProcedureIds.includes(right.procedure.id),
+      });
+      if (leftPriority.rank !== rightPriority.rank) return leftPriority.rank - rightPriority.rank;
+    }
+    return compareProcedures(left.procedure, right.procedure, procedureSortMode === "PRIORITY" ? "STAGE" : procedureSortMode);
+  });
   const selectedDecision = evaluation.decisions.find((decision) => decision.procedure.id === selectedId) ?? null;
 
   function changeAnswer<K extends keyof ScenarioAnswers>(key: K, value: ScenarioAnswers[K]) {
-    setAnswers((current) => ({ ...current, [key]: value }));
+    setAnswers((current) => {
+      const next = { ...current, [key]: value };
+      if (key !== "waterDemandM3Day" || value !== 0) return next;
+
+      const planReflectionId = "industrial-water-master-plan-reflection-consultation";
+      return {
+        ...next,
+        supplementalPermitReviewedIds: current.supplementalPermitReviewedIds.filter(
+          (id) => id !== planReflectionId,
+        ),
+        supplementalPermitTargetIds: current.supplementalPermitTargetIds.filter(
+          (id) => id !== planReflectionId,
+        ),
+      };
+    });
   }
 
   function changeUserDurationOverride(
@@ -681,6 +709,7 @@ export function DashboardClient() {
                   >
                     <option value="STAGE">일정 단계순</option>
                     <option value="NAME">가나다순</option>
+                    <option value="PRIORITY">실무 중요도순</option>
                   </select>
                 </label>
               ) : null}

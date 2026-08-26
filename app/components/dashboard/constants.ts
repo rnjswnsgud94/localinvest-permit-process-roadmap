@@ -1,5 +1,6 @@
 import type { ApplicabilityStatus, Procedure } from "@/lib/domain/schemas";
 import { supplementalPermitTargetNames } from "@/lib/data/supplemental-permit-targets";
+import { practicalPriorityForProcedure } from "@/lib/engine/practical-priority";
 
 export const stageLabels = {
   SITE_REVIEW: "입지 사전검토",
@@ -10,22 +11,29 @@ export const stageLabels = {
   POST_OPERATION: "가동 이후",
 } as const;
 
-export type ProcedureSortMode = "STAGE" | "NAME";
+export type ProcedureSortMode = "STAGE" | "NAME" | "PRIORITY";
 
 export const procedureSortLabels: Record<ProcedureSortMode, string> = {
   STAGE: "일정 단계순",
   NAME: "가나다순",
+  PRIORITY: "실무 중요도순",
 };
 
 const procedureStageOrder = Object.keys(stageLabels) as Procedure["stage"][];
 
 export function compareProcedures(
-  left: Pick<Procedure, "id" | "name" | "stage">,
-  right: Pick<Procedure, "id" | "name" | "stage">,
+  left: Procedure,
+  right: Procedure,
   mode: ProcedureSortMode,
 ) {
   const nameOrder = left.name.localeCompare(right.name, "ko-KR");
   if (mode === "NAME") return nameOrder || left.id.localeCompare(right.id);
+  if (mode === "PRIORITY") {
+    return practicalPriorityForProcedure(left).rank - practicalPriorityForProcedure(right).rank
+      || procedureStageOrder.indexOf(left.stage) - procedureStageOrder.indexOf(right.stage)
+      || nameOrder
+      || left.id.localeCompare(right.id);
+  }
   return procedureStageOrder.indexOf(left.stage) - procedureStageOrder.indexOf(right.stage)
     || nameOrder
     || left.id.localeCompare(right.id);
@@ -362,6 +370,9 @@ export function inputLabel(path: string) {
   const supplementalPrefix = "confirmation.supplementalPermitTargets.";
   if (path.startsWith(supplementalPrefix)) {
     const id = path.slice(supplementalPrefix.length);
+    if (id === "industrial-water-master-plan-reflection-consultation") {
+      return `인프라 공급계획 확인 · ${supplementalPermitTargetNames[id]}`;
+    }
     return `공사·환경 정밀검토 · ${supplementalPermitTargetNames[id as keyof typeof supplementalPermitTargetNames] ?? id}`;
   }
   const specialLawPrefix = "confirmation.specialLawProcessTokens.";

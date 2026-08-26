@@ -47,6 +47,38 @@ function decision(
 }
 
 describe("supplemental permit threshold review", () => {
+  it("requires both additional water demand and an official plan-reflection confirmation", () => {
+    const procedureId = "industrial-water-master-plan-reflection-consultation";
+    const unreviewed = evaluate({
+      waterDemandM3Day: 1_500,
+      supplementalPermitReviewedIds: [],
+      supplementalPermitTargetIds: [],
+    });
+    const included = evaluate({
+      waterDemandM3Day: 1_500,
+      supplementalPermitReviewedIds: [procedureId],
+      supplementalPermitTargetIds: [procedureId],
+    });
+    const existingCapacity = evaluate({
+      waterDemandM3Day: 1_500,
+      supplementalPermitReviewedIds: [procedureId],
+      supplementalPermitTargetIds: [],
+    });
+    const noAdditionalDemand = evaluate({
+      waterDemandM3Day: 0,
+      supplementalPermitReviewedIds: [procedureId],
+      supplementalPermitTargetIds: [procedureId],
+    });
+
+    expect(procedureCategoryForDecision(decision(unreviewed, procedureId))).toBe("CONFIRM");
+    expect(decision(unreviewed, procedureId).missingInputs).toContain(
+      `confirmation.supplementalPermitTargets.${procedureId}`,
+    );
+    expect(procedureCategoryForDecision(decision(included, procedureId))).toBe("REQUIRED");
+    expect(procedureCategoryForDecision(decision(existingCapacity, procedureId))).toBe("NOT_REQUIRED");
+    expect(procedureCategoryForDecision(decision(noAdditionalDemand, procedureId))).toBe("NOT_REQUIRED");
+  });
+
   it("keeps proxy-only procedures in confirmation until the threshold review is completed", () => {
     const evaluation = evaluate({
       supplementalPermitReviewedIds: [],

@@ -32,6 +32,44 @@ describe("golden manufacturing scenarios", () => {
     expect(byId(offsite, "factory-completion-report-offsite")?.provisionalEffect).toBe("INCLUDE");
   });
 
+  it("switches the industrial-water plan-reflection branch only after provider confirmation", () => {
+    const procedureId = "industrial-water-master-plan-reflection-consultation";
+    const base = {
+      ...catalog.scenarios[0].answers,
+      waterDemandM3Day: 1_500,
+      supplementalPermitReviewedIds: [],
+      supplementalPermitTargetIds: [],
+    };
+    const unreviewed = evaluateProject(base);
+    const required = evaluateProject({
+      ...base,
+      supplementalPermitReviewedIds: [procedureId],
+      supplementalPermitTargetIds: [procedureId],
+    });
+    const existingCapacity = evaluateProject({
+      ...base,
+      supplementalPermitReviewedIds: [procedureId],
+    });
+    const byId = (result: typeof unreviewed) =>
+      result.decisions.find((decision) => decision.procedure.id === procedureId);
+
+    expect(byId(unreviewed)).toMatchObject({
+      status: "NEEDS_MORE_INFO",
+      provisionalEffect: null,
+      missingInputs: [
+        `confirmation.supplementalPermitTargets.${procedureId}`,
+      ],
+    });
+    expect(byId(required)).toMatchObject({
+      status: "APPLIES",
+      provisionalEffect: "INCLUDE",
+    });
+    expect(byId(existingCapacity)).toMatchObject({
+      status: "DOES_NOT_APPLY",
+      provisionalEffect: "EXCLUDE",
+    });
+  });
+
   it("adds the capital-region factory restriction review only to covered factories", () => {
     const evaluate = (totalAreaM2: number, industryCategory = "GENERAL_MANUFACTURING") =>
       evaluateProject({

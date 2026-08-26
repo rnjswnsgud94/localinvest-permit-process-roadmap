@@ -113,6 +113,26 @@ describe("official local-ordinance resolver", () => {
     );
   });
 
+  it("matches dedicated industrial-water supply ordinances", () => {
+    const matches = new Map(
+      matchOrdinancesToCategories([
+        {
+          name: "부천시 공업용수도 급수 조례",
+          level: "MUNICIPALITY",
+          jurisdictionName: "부천시",
+          amendmentDate: "2026-08-21",
+          url: "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=41190111111111&histNo=001",
+        },
+      ]).map((item) => [item.categoryId, item.ordinances]),
+    );
+
+    expect(matches.get("water-supply")).toContainEqual(
+      expect.objectContaining({
+        name: "부천시 공업용수도 급수 조례",
+      }),
+    );
+  });
+
   it("does not hide reviewed ELIS detail links when a category has more than five matches", () => {
     const records = resolveOfficialOrdinanceRecords(
       Array.from({ length: 7 }, (_, index) =>

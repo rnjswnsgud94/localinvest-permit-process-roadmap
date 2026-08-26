@@ -1547,6 +1547,28 @@ export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
                 <NumberInput label="폐수 발생" unit="㎥/일" value={answers.wastewaterM3Day} onChange={(value) => onChange("wastewaterM3Day", value)} />
               </div>
             </Question>
+            {answers.waterDemandM3Day === 0 ? (
+              <div className="inline-notice success">
+                <strong>추가 용수수요 없음</strong>
+                <span>추가 수요가 0㎥/일이므로 공업용수 공급계획 반영 협의는 현재 로드맵에서 제외합니다.</span>
+              </div>
+            ) : (
+              <Question
+                label="국가수도기본계획·수도정비계획 반영 필요 여부"
+                hint="관할 지자체·산업단지 사업시행자·수도사업자가 기존 공급구역과 시설 여유량을 검토한 결과를 입력합니다. 기업이 직접 계획 승인을 받는 절차가 아니며, 계획 반영만으로 실제 용수공급이나 공업용수도사업 인가가 완료되지는 않습니다."
+              >
+                <TriState
+                  value={supplementalPermitDecision("industrial-water-master-plan-reflection-consultation")}
+                  yesLabel="계획 반영·변경 필요"
+                  noLabel="기존 계획·용량으로 공급 가능"
+                  unknownLabel="공급기관 확인 전"
+                  onChange={(value) => setSupplementalPermitDecision(
+                    "industrial-water-master-plan-reflection-consultation",
+                    value,
+                  )}
+                />
+              </Question>
+            )}
             <ReviewSection title="설비·공급 인허가">
                 <Question label="소방시설공사 대상 여부">
                   <TriState

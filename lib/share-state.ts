@@ -795,6 +795,15 @@ function hasOrphanedPsmSameScopeAnswer(answers: ScenarioAnswers) {
     );
 }
 
+function hasStaleIndustrialWaterPlanAnswer(answers: ScenarioAnswers) {
+  const procedureId = "industrial-water-master-plan-reflection-consultation";
+  return answers.waterDemandM3Day === 0
+    && (
+      answers.supplementalPermitReviewedIds.includes(procedureId)
+      || answers.supplementalPermitTargetIds.includes(procedureId)
+    );
+}
+
 function hasOversizedArray(answers: ScenarioAnswers) {
   return [...arrayValueFields].some((key) => {
     const value = answers[key];
@@ -810,6 +819,11 @@ export function encodeInputCode(answers: ScenarioAnswers) {
   }
   if (hasUnreviewedSupplementalTarget(answers)) {
     throw new InputCodeError("정밀검토 대상 절차는 검토 완료 절차에 포함되어야 합니다.");
+  }
+  if (hasStaleIndustrialWaterPlanAnswer(answers)) {
+    throw new InputCodeError(
+      "추가 용수수요가 0이면 국가수도기본계획·수도정비계획 반영 검토값을 내보낼 수 없습니다.",
+    );
   }
   if (hasOrphanedPsmSameScopeAnswer(answers)) {
     throw new InputCodeError(

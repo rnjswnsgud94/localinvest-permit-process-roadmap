@@ -1,13 +1,13 @@
 # Coverage and gaps
 
-Catalog version: `2026.08.24-permits.18-capital-agency-detailed`
-Legal, duration and ELIS public-page review: `2026-08-24`
+Catalog version: `2026.08.26-permits.20-field-verified-gates`
+Legal, duration and ELIS public-page review: `2026-08-26`
 Snapshot mode: `SNAPSHOT_ONLY`
 
 ## Covered common layer
 
-- 162 nationwide common-layer permits, reports, inspections and preliminary reviews across site, building, environment, chemicals, industrial safety, fire, electricity, gas, energy, information/communications and marine use;
-- a duration-status record and official duration citation for all 162 procedures: 138 have at least one quantified statutory/official processing period or milestone and 24 have no safely quantifiable period while explicitly recording that a nationwide fixed total deadline is not prescribed, without substituting an invented estimate;
+- 175 nationwide common-layer permits, reports, inspections and preliminary reviews across site, building, environment, chemicals, industrial safety, fire, electricity, gas, energy, information/communications and marine use;
+- a duration-status record and official duration citation for all 175 procedures: 147 have at least one quantified statutory/official processing period or milestone and 28 have no safely quantifiable period while explicitly recording that a nationwide fixed total deadline is not prescribed, without substituting an invented estimate;
 - industrial-complex occupancy and off-site factory-establishment branches, including reviewed deeming relationships;
 - development, farmland, forest, demolition, road, traffic, groundwater and building routes, including applicable start/completion reports and completion inspections;
 - impact assessment, integrated environmental permitting and individual air/water/noise/waste routes with duplicate suppression;
@@ -27,9 +27,13 @@ Snapshot mode: `SNAPSHOT_ONLY`
 - small-stream occupation, police road-work reporting, gas-pipeline excavation confirmation, buried-heritage excavation permit followed by field investigation/reporting/preservation, pasture conversion and land-transaction contract permission;
 - marine-use consultation/impact assessment, chemical emission-reduction planning, odor-facility reporting, water-tank reporting, separate-structure reporting and construction-quality-plan milestones.
 - a separate capital-region review for factories of at least 500㎡ that preserves the statutory zone, permitted-exception and factory-construction-total checks without converting “capital region” into an automatic siting rejection;
-- explicit, user-confirmed site gates for capital-region industrial-land development of at least 300,000㎡, development-restriction zones, civilian-airport obstacle limitation surfaces, Han River riparian zones, Paldang special-measures zones and Han River pollution-load allocation;
+- explicit, user-confirmed site gates for capital-region industrial-land development of at least 300,000㎡, development-restriction zones, civilian-airport obstacle limitation surfaces, Han River riparian zones and Paldang special-measures zones;
+- a nationwide water-pollution-total-load gate that retains the published internal ID for share-link compatibility while requiring the applicable watershed law, municipal implementation plan and available development/facility load allocation to be checked;
 - a province-ordinance environmental-impact-assessment route, plus Seoul/Incheon/Gyeonggi road-occupation worksite traffic-flow-plan review, without inferring applicability from industry or city name alone.
 - explicit parcel/facility gates for education-environment protection zones, railway protection zones, building safety impact assessment, fire performance-based design, Water Supply Act factory-restriction/approval zones and water-discharge-facility restriction notices;
+- an explicit upstream consultation gate for deciding whether industrial-water demand requires reflection in the national water master plan (facility volume) or a local waterworks maintenance plan, without treating demand alone as approval or guaranteed supply;
+- field-list cross-check gates for industrial-complex plan and management-plan changes, urban/county management-plan proposals and urban/county planning-facility implementation-plan approval;
+- conditional routes for temporary buildings, private roads, temporary forest use, standing-timber felling, PSM pre-operation confirmation, partial temporary building use, FMS design-document registration and pre-restart safety inspection after a one-year construction suspension;
 - mutually exclusive Industrial Cluster Act, Port Act and Free Trade Zone Act entry-contract routes, with Free Trade Zone factory-approval deeming applied only after eligibility, completed contract and evidence are all confirmed.
 
 ## Geographic and industry scope
@@ -47,13 +51,13 @@ Snapshot mode: `SNAPSHOT_ONLY`
 3. Exact subordinate-table thresholds for environmental assessment, chemicals, waste, hazardous materials and high-pressure gas.
 4. Parcel-specific heritage, military, water-source and other site restrictions.
 5. Exact building permit/report classification and local architectural ordinance.
-6. Provider-specific power, water and wastewater capacity, contracts and lead times.
-7. New industrial-complex designation, urban-management-plan change and major grid construction.
+6. Provider-specific power, water and wastewater capacity, contracts and lead times; for industrial water, existing supply zones and spare capacity, water source/type, responsible promoter, pipeline route, cost sharing and the actual national/local plan status still require written confirmation.
+7. New industrial-complex designation and major grid construction; plan-change procedures are now listed, but the exact approved plan, change scope and deeming documents still require project-specific confirmation.
 8. Product-specific manufacturing/business permits for food, pharmaceuticals, medical devices, cosmetics, livestock products, feed, fertilizer and pesticides require a separate product-level input before deterministic inclusion.
 9. Nationwide empirical averages or percentiles for most permit preparation, supplement, committee wait and inspection-booking periods. Official caps and local service standards are shown separately and are not represented as actual averages.
 10. Detailed branch inputs for high-pressure-gas facility type, wastewater zero-discharge/treatment method, soil-test exemption and some inspection-booking routes. Until added, the roadmap shows the official branch range or milestone without selecting an arbitrary midpoint.
-11. Distributed-energy installation planning, non-road-authority road works, temporary farmland/forest use, public-sewer occupation/non-manager works/exclusion, other water-pollution sources, LPG storage and cadastral final survey need explicit target inputs and duplicate-route suppression before deterministic inclusion.
-12. Dedicated-waterworks, temporary buildings, private roads, environmental liability insurance, radiation equipment, high-pressure-gas safety-improvement planning and temporary building-use approval need additional facility and construction inputs.
+11. Distributed-energy installation planning, non-road-authority road works, temporary farmland use, public-sewer occupation/non-manager works/exclusion, other water-pollution sources, LPG storage and cadastral final survey need explicit target inputs and duplicate-route suppression before deterministic inclusion.
+12. Dedicated-waterworks, environmental liability insurance, radiation equipment and high-pressure-gas safety-improvement planning need additional facility and construction inputs.
 13. Capital-region zone classification, factory exceptions and remaining construction totals require the exact parcel, KSIC/company facts and the latest national, provincial and municipal notices; this dashboard records the review step but does not claim an automatic siting conclusion.
 14. Development-restriction, airport-height, Han River riparian, Paldang and pollution-load rules require exact parcel coordinates, current statutory maps, facility heights, discharge facts and local allocation plans; the explicit review inputs do not replace agency confirmation.
 15. Education, railway, building-safety, fire-performance, water-supply and water-discharge restriction gates require current parcel maps, facility thresholds, process/substance data and the competent authority's confirmation; industry or address labels alone do not establish applicability.
@@ -65,6 +69,6 @@ Snapshot mode: `SNAPSHOT_ONLY`
 
 ## Next three expansions
 
-1. Add structured inputs and exclusive routes for distributed energy, temporary land use, road/sewer construction and other high-priority 2026 field gaps.
+1. Add structured inputs and exclusive routes for distributed energy, temporary farmland use, non-road-authority road/sewer construction and other high-priority 2026 field gaps.
 2. Collect named industrial-complex plans and structured facility, substance and quantity thresholds from current subordinate statutes and official notices.
 3. Add provider-specific utility capacity/lead-time evidence and a reviewed Korean business-day calendar.

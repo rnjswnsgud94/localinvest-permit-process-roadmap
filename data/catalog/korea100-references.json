@@ -2,7 +2,7 @@
   "sourceName": "한 장으로 끝내는 대한민국 제도 지도",
   "sourceUrl": "https://hosungseo.github.io/korea100/",
   "repositoryUrl": "https://github.com/hosungseo/korea100",
-  "checkedAt": "2026-08-24",
+  "checkedAt": "2026-08-26",
   "references": [
     { "procedureId": "factory-establishment-approval", "modelSlug": "factory-establishment", "modelName": "공장설립승인", "matchType": "EXACT" },
     { "procedureId": "building-permit", "modelSlug": "building-permit", "modelName": "건축허가", "matchType": "EXACT" },
@@ -105,9 +105,22 @@
     { "procedureId": "semiconductor-cluster-plan-approval", "modelSlug": "semiconductor-cluster-designation-coordination", "modelName": "반도체클러스터 조성계획 승인·지정·조정", "matchType": "INCLUDED" },
     { "procedureId": "industrial-complex-plan-application", "modelSlug": "industrial-complex-fast-track-plan-approval", "modelName": "산업단지계획 신속승인·통합조정", "matchType": "INCLUDED" },
     { "procedureId": "industrial-complex-plan-consultation", "modelSlug": "industrial-complex-fast-track-plan-approval", "modelName": "산업단지계획 신속승인·통합조정", "matchType": "INCLUDED" },
-    { "procedureId": "industrial-complex-plan-approval", "modelSlug": "industrial-complex-fast-track-plan-approval", "modelName": "산업단지계획 신속승인·통합조정", "matchType": "INCLUDED" }
+    { "procedureId": "industrial-complex-plan-approval", "modelSlug": "industrial-complex-fast-track-plan-approval", "modelName": "산업단지계획 신속승인·통합조정", "matchType": "INCLUDED" },
+    { "procedureId": "industrial-complex-plan-change-approval", "modelSlug": "industrial-complex-fast-track-plan-approval", "modelName": "산업단지계획 신속승인·통합조정", "matchType": "INCLUDED" },
+    { "procedureId": "industrial-complex-management-plan-change", "modelSlug": "industrial-complex-management-occupancy", "modelName": "산업단지 관리기본계획·입주계약", "matchType": "INCLUDED" },
+    { "procedureId": "temporary-building-permit-report", "modelSlug": "building-permit", "modelName": "건축허가", "matchType": "INCLUDED" },
+    { "procedureId": "forestland-temporary-use-permit-report", "modelSlug": "forestland-conversion", "modelName": "산지전용 허가", "matchType": "INCLUDED" },
+    { "procedureId": "standing-timber-felling-permit-report", "modelSlug": "forestland-conversion", "modelName": "산지전용 허가", "matchType": "INCLUDED" },
+    { "procedureId": "psm-pre-operation-confirmation", "modelSlug": "process-safety-report-review", "modelName": "유해·위험방지계획서·공정안전보고서 심사", "matchType": "INCLUDED" },
+    { "procedureId": "building-temporary-use-approval", "modelSlug": "building-permit", "modelName": "건축허가", "matchType": "INCLUDED" },
+    { "procedureId": "construction-restart-safety-inspection", "modelSlug": "construction-safety-quality-management-plan", "modelName": "건설공사 안전·품질관리계획", "matchType": "INCLUDED" }
   ],
   "unmatched": [
+    { "procedureId": "urban-county-management-plan-change-proposal", "reason": "NO_EQUIVALENT_MODEL" },
+    { "procedureId": "urban-planning-facility-implementation-plan-approval", "reason": "NO_EQUIVALENT_MODEL" },
+    { "procedureId": "private-road-opening-permit", "reason": "NO_EQUIVALENT_MODEL" },
+    { "procedureId": "facility-management-document-registration", "reason": "NO_EQUIVALENT_MODEL" },
+    { "procedureId": "industrial-water-master-plan-reflection-consultation", "reason": "NO_EQUIVALENT_MODEL" },
     { "procedureId": "capital-region-factory-restriction-review", "reason": "NO_EQUIVALENT_MODEL" },
     { "procedureId": "capital-region-large-scale-development-review", "reason": "NO_EQUIVALENT_MODEL" },
     { "procedureId": "development-restriction-zone-action-permit", "reason": "NO_EQUIVALENT_MODEL" },
