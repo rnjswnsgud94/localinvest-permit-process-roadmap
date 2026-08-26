@@ -2,11 +2,20 @@ import type { ScenarioAnswers } from "@/lib/data/catalog";
 import type { SupplementalPermitTargetId } from "@/lib/data/supplemental-permit-targets";
 
 const INLAND_PROVINCES = new Set([
+  "서울특별시",
   "충청북도",
   "대전광역시",
   "세종특별자치시",
   "광주광역시",
   "대구광역시",
+]);
+
+const FORMER_GWANGJU_DISTRICTS = new Set([
+  "동구",
+  "서구",
+  "남구",
+  "북구",
+  "광산구",
 ]);
 
 function isSelected(answers: ScenarioAnswers, procedureId: SupplementalPermitTargetId) {
@@ -41,7 +50,13 @@ export function buildInputConsistencyWarnings(answers: ScenarioAnswers) {
   }
 
   if (
-    INLAND_PROVINCES.has(answers.province) &&
+    (
+      INLAND_PROVINCES.has(answers.province)
+      || (
+        answers.province === "전남광주통합특별시"
+        && FORMER_GWANGJU_DISTRICTS.has(answers.city)
+      )
+    ) &&
     (
       isSelected(answers, "marine-use-consultation") ||
       isSelected(answers, "marine-use-impact-assessment")

@@ -64,6 +64,18 @@ const supplementalPermitCondition = (
         { eq: { path: "safety.psmCovered", value: false } },
       ],
     }
+  : procedureId === "psm-pre-operation-confirmation"
+    ? {
+        all: [
+          {
+            eq: {
+              path: "confirmation.supplementalPermitTargets.psm-pre-operation-confirmation",
+              value: true,
+            },
+          },
+          { eq: { path: "safety.psmCovered", value: true } },
+        ],
+      }
   : procedureId === "industrial-water-master-plan-reflection-consultation"
     ? {
         all: [
@@ -160,6 +172,11 @@ const supplementalPermitRequiredInputs = (
       "confirmation.supplementalPermitTargets.hazard-prevention-plan",
       "safety.psmCovered",
     ]
+  : procedureId === "psm-pre-operation-confirmation"
+    ? [
+        "confirmation.supplementalPermitTargets.psm-pre-operation-confirmation",
+        "safety.psmCovered",
+      ]
   : procedureId === "industrial-water-master-plan-reflection-consultation"
     ? [
         "utilities.waterDemandM3Day",
@@ -265,6 +282,7 @@ const sourceSeeds: SourceSeed[] = [
   { id: "src-eia-act-current", title: "환경영향평가법", authority: "기후에너지환경부", url: "https://www.law.go.kr/법령/환경영향평가법" },
   { id: "src-integrated-environment-act-20260707", title: "환경오염시설의 통합관리에 관한 법률", authority: "기후에너지환경부", url: "https://www.law.go.kr/법령/환경오염시설의통합관리에관한법률", effectiveDate: "2026-07-07", mst: "287993" },
   { id: "src-air-management-area-act-current", title: "대기관리권역의 대기환경개선에 관한 특별법", authority: "기후에너지환경부", url: "https://www.law.go.kr/법령/대기관리권역의대기환경개선에관한특별법" },
+  { id: "src-air-conservation-enforcement-rule-20260223", title: "대기환경보전법 시행규칙", authority: "기후에너지환경부", url: "https://www.law.go.kr/LSW/lsSideInfoP.do?docCls=jo&joBrNo=00&joNo=0058&lsiSeq=283605&urlMode=lsScJoRltInfoR", effectiveDate: "2026-02-23", documentType: "ENFORCEMENT_RULE" },
   { id: "src-noise-vibration-act-current", title: "소음·진동관리법", authority: "기후에너지환경부", url: "https://www.law.go.kr/법령/소음진동관리법" },
   { id: "src-waste-control-act-current", title: "폐기물관리법", authority: "기후에너지환경부", url: "https://www.law.go.kr/법령/폐기물관리법" },
   { id: "src-construction-waste-act-current", title: "건설폐기물의 재활용촉진에 관한 법률", authority: "기후에너지환경부", url: "https://www.law.go.kr/법령/건설폐기물의재활용촉진에관한법률" },
@@ -2605,6 +2623,39 @@ expandedCitations.push(
     summary: "현행 국가수도기본계획은 국가산단·특화단지의 시급한 용수공급을 위해 용인·포항 공급사업을 변경하고 울산온산 국가산단 공급사업을 신규 반영한 공식 부분변경 사례를 포함한다.",
   },
   {
+    id: "cit-exp-fugitive-dust-before-construction-start",
+    sourceId: "src-air-conservation-enforcement-rule-20260223",
+    article: "제58조제1항",
+    paragraph: null,
+    subparagraph: null,
+    item: null,
+    role: "SEQUENCE",
+    sourceVersion: sourceVersion("src-air-conservation-enforcement-rule-20260223"),
+    summary: "건설공사에 해당하는 비산먼지 발생사업은 공사에 착공하기 전에 신고하도록 정하므로, 대상 공사의 착공 이정표보다 앞서 신고를 마쳐야 한다.",
+  },
+  {
+    id: "cit-exp-industrial-plan-change-to-management-plan-change",
+    sourceId: "src-industrial-cluster-act-20260701",
+    article: "제33조제12항",
+    paragraph: null,
+    subparagraph: null,
+    item: null,
+    role: "SEQUENCE",
+    sourceVersion: sourceVersion("src-industrial-cluster-act-20260701"),
+    summary: "국가산업단지 개발계획이 변경된 경우 시·도지사는 관리기관에 그 내용을 통보하고, 관리기관은 이를 관리기본계획에 반영해야 한다. 다른 산업단지나 변경유형은 별도 확인이 필요하다.",
+  },
+  {
+    id: "cit-exp-psm-report-to-pre-operation-confirmation",
+    sourceId: "src-osh-act-20260601",
+    article: "제46조제2항",
+    paragraph: null,
+    subparagraph: null,
+    item: null,
+    role: "SEQUENCE",
+    sourceVersion: sourceVersion("src-osh-act-20260601"),
+    summary: "공정안전보고서를 제출해 심사를 받은 사업주는 보고서 내용을 실제로 이행하고 있는지 고용노동부장관의 확인을 받아야 하므로, 보고서 심사와 이행상태 확인은 하나의 후속 경로를 이룬다.",
+  },
+  {
     id: "cit-exp-water-discharge-facility-restriction-zone-review-decree",
     sourceId: "src-water-environment-decree-current",
     article: "제32조",
@@ -3032,6 +3083,15 @@ const additionalCitationIdsByProcedure: Record<string, string[]> = {
   "industrial-water-master-plan-reflection-consultation": [
     "cit-exp-industrial-water-master-plan-reflection-consultation-decree",
     "cit-exp-industrial-water-master-plan-reflection-consultation-current-plan",
+  ],
+  "fugitive-dust-business-report": [
+    "cit-exp-fugitive-dust-before-construction-start",
+  ],
+  "industrial-complex-plan-change-approval": [
+    "cit-exp-industrial-plan-change-to-management-plan-change",
+  ],
+  "industrial-complex-management-plan-change": [
+    "cit-exp-industrial-plan-change-to-management-plan-change",
   ],
   "water-discharge-facility-restriction-zone-review": [
     "cit-exp-water-discharge-facility-restriction-zone-review-decree",
@@ -4960,6 +5020,10 @@ const startEdge = (
 
 export const expandedEdges: ProcedureEdge[] = [
   edge("edge-exp-industrial-complex-plan-change-to-building", "industrial-complex-plan-change-approval", "building-permit", "rule-exp-industrial-complex-plan-change-approval", "승인·고시된 산업단지계획 변경내용과 의제서류·협의결과를 건축허가 도서에 반영합니다. 변경승인이 항상 개별 건축허가를 의제하는 것은 아닙니다.", "PRACTICAL"),
+  {
+    ...edge("edge-exp-industrial-plan-change-to-management-plan-change", "industrial-complex-plan-change-approval", "industrial-complex-management-plan-change", "rule-exp-industrial-complex-plan-change-approval", "국가산업단지는 개발계획 변경내용을 통보받은 뒤 관리기본계획에 반영합니다. 그 밖의 산업단지·변경유형은 실제 반영 필요성과 순서를 관리기관에 확인합니다.", "PRACTICAL"),
+    citationIds: ["cit-exp-industrial-plan-change-to-management-plan-change"],
+  },
   edge("edge-exp-industrial-management-plan-change-to-occupancy", "industrial-complex-management-plan-change", "industrial-complex-occupancy-contract", "rule-exp-industrial-complex-management-plan-change", "유치업종·업종배치 등 관리기본계획 변경이 필요한 경우 승인·고시 상태를 확인한 뒤 입주계약 또는 변경계약을 진행합니다.", "PRACTICAL"),
   edge("edge-exp-urban-management-plan-proposal-to-development", "urban-county-management-plan-change-proposal", "development-activity-permit", "rule-exp-urban-county-management-plan-change-proposal", "입안제안 반영 통보만으로 충분하지 않으므로 후속 입안·심의·결정·고시까지 확인한 뒤 개발행위허가 경로를 확정합니다.", "PRACTICAL"),
   edge("edge-exp-urban-facility-plan-to-start", "urban-planning-facility-implementation-plan-approval", "construction-start-report", "rule-exp-urban-planning-facility-implementation-plan-approval", "도시·군계획시설사업 실시계획 인가·고시와 의제 인허가 조건을 확인한 뒤 해당 시설공사를 착수합니다. 화면의 건축공사 착공은 전용 시설공사 이정표가 없는 경우를 위한 대리 이정표입니다.", "PRACTICAL"),
@@ -4967,7 +5031,17 @@ export const expandedEdges: ProcedureEdge[] = [
   edge("edge-exp-temporary-building-to-start", "temporary-building-permit-report", "construction-start-report", "rule-exp-temporary-building-permit-report", "현장사무소·창고 등 필요한 가설건축물의 허가·신고와 안전조건을 갖춘 뒤 본 공사 착수일정과 연계합니다.", "PRACTICAL"),
   edge("edge-exp-forest-temporary-use-to-start", "forestland-temporary-use-permit-report", "construction-start-report", "rule-exp-forestland-temporary-use-permit-report", "산지일시사용 허가·신고 조건과 재해방지·복구계획을 확정한 뒤 해당 산지 사용공사를 착수합니다. 화면의 건축공사 착공은 대리 이정표입니다.", "PRACTICAL"),
   edge("edge-exp-standing-timber-to-start", "standing-timber-felling-permit-report", "construction-start-report", "rule-exp-standing-timber-felling-permit-report", "별도 벌채·굴취 절차가 필요한 경우 허가·신고 조건을 갖춘 뒤 해당 부지 정리공사를 시작합니다. 산지 인허가에 포함된 범위는 중복 적용하지 않습니다.", "PRACTICAL"),
-  edge("edge-exp-process-safety-report-to-pre-operation-confirmation", "process-safety-report", "psm-pre-operation-confirmation", "rule-exp-psm-pre-operation-confirmation", "공정안전보고서 심사를 마치고 설비 설치·변경을 완료한 뒤 실제 가동 전에 보고서 이행상태 확인을 받습니다."),
+  {
+    ...edge("edge-exp-fugitive-dust-to-start", "fugitive-dust-business-report", "construction-start-report", "rule-exp-fugitive-dust-business-report", "신고대상 건설공사는 실제 공사 착수 전에 비산먼지 신고와 억제조치를 갖춰야 합니다. 건축공사 착공신고와의 직접 법정 선후관계가 아니라 실제 착공 이정표를 대신한 실무 연결입니다.", "PRACTICAL"),
+    citationIds: ["cit-exp-fugitive-dust-before-construction-start"],
+  },
+  startEdge("edge-exp-hazard-plan-to-start", "hazard-prevention-plan", "construction-start-report", "rule-exp-hazard-prevention-plan", "건축공사 착공신고와 직접 법정 선후관계는 아닙니다. 대상 기계·설비 작업 15일 전 제출기한과 심사·확인 일정을 건축 공정표에 병행 반영합니다."),
+  edge("edge-exp-soil-facility-report-to-start", "soil-contamination-facility-report", "construction-start-report", "rule-exp-soil-contamination-facility-report", "건축공사 착공신고와 직접 법정 선후관계는 아닙니다. 특정토양오염관리대상시설을 실제 설치하기 전에 신고와 오염방지계획을 확인하도록 공정표에서 별도 관리합니다.", "ADVISORY"),
+  {
+    ...edge("edge-exp-process-safety-report-to-pre-operation-confirmation", "process-safety-report", "psm-pre-operation-confirmation", "rule-exp-psm-pre-operation-confirmation", "공정안전보고서 심사를 마치고 설비 설치·변경을 완료한 뒤 실제 가동 전에 보고서 이행상태 확인을 받습니다."),
+    citationIds: ["cit-exp-psm-report-to-pre-operation-confirmation"],
+  },
+  edge("edge-exp-start-to-temporary-use", "construction-start-report", "building-temporary-use-approval", "rule-exp-building-temporary-use-approval", "착공신고 후 공사가 완료된 일부 구역을 최종 사용승인 전에 사용해야 할 때, 해당 부분의 안전·방화·피난 기준과 잔여공사 분리조건을 갖춰 임시사용승인을 신청합니다.", "PRACTICAL"),
   edge("edge-exp-temporary-use-to-final-use", "building-temporary-use-approval", "building-use-approval", "rule-exp-building-temporary-use-approval", "임시사용승인은 승인된 일부 범위·기간에만 적용되므로 잔여공사를 마치고 최종 사용승인을 별도로 진행합니다.", "PRACTICAL"),
   edge("edge-exp-fms-registration-to-use", "facility-management-document-registration", "building-use-approval", "rule-exp-facility-management-document-registration", "제1종·제2종시설물의 시설물관리대장·설계도서 제출 여부를 준공·사용승인 전에 확인하고 감리보고서 후속기한을 별도로 관리합니다.", "PRACTICAL"),
   edge("edge-exp-safety-plan-to-restart-inspection", "construction-safety-management-plan-approval", "construction-restart-safety-inspection", "rule-exp-construction-restart-safety-inspection", "안전관리계획 대상 공사가 1년 이상 중단된 경우 기존 계획·점검자료를 바탕으로 공사재개 전 안전점검과 필요한 보수·보강을 완료합니다.", "PRACTICAL"),

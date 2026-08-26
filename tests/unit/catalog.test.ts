@@ -956,6 +956,35 @@ describe("catalog integrity", () => {
     expect(edges.get("edge-exp-middle-water-to-building")?.to).toBe("building-permit");
     expect(edges.get("edge-exp-middle-water-to-building")?.strength).toBe("LEGAL_HARD");
     expect(edges.has("edge-exp-start-to-middle-water-report")).toBe(false);
+
+    const fugitiveDustEdge = edges.get("edge-exp-fugitive-dust-to-start");
+    expect(fugitiveDustEdge).toMatchObject({
+      from: "fugitive-dust-business-report",
+      to: "construction-start-report",
+      strength: "PRACTICAL",
+      citationIds: ["cit-exp-fugitive-dust-before-construction-start"],
+    });
+    expect(
+      catalog.citations.find(
+        (item) => item.id === "cit-exp-fugitive-dust-before-construction-start",
+      ),
+    ).toMatchObject({
+      sourceId: "src-air-conservation-enforcement-rule-20260223",
+      article: "제58조제1항",
+      role: "SEQUENCE",
+    });
+    expect(
+      catalog.legalSources.find(
+        (item) => item.id === "src-air-conservation-enforcement-rule-20260223",
+      )?.status,
+    ).toBe("AUTHORITATIVE");
+    expect(edges.get("edge-exp-hazard-plan-to-start")?.relation).toBe("START_TO_START");
+    expect(edges.get("edge-exp-soil-facility-report-to-start")?.strength).toBe("ADVISORY");
+    expect(edges.get("edge-exp-start-to-temporary-use")?.strength).toBe("PRACTICAL");
+    expect(edges.get("edge-exp-industrial-plan-change-to-management-plan-change")?.citationIds)
+      .toContain("cit-exp-industrial-plan-change-to-management-plan-change");
+    expect(edges.get("edge-exp-process-safety-report-to-pre-operation-confirmation")?.citationIds)
+      .toContain("cit-exp-psm-report-to-pre-operation-confirmation");
   });
 
   it("labels Government24 periods as official processing periods, not statutory minima", () => {

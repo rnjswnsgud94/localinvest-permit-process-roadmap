@@ -1,5 +1,9 @@
 import { scenarioAnswerSchema, type ScenarioAnswers } from "@/lib/data/catalog";
-import { isSupportedProvince } from "@/lib/regions";
+import {
+  canonicalizeSupportedProvince,
+  isSupportedProvince,
+} from "@/lib/regions";
+import { listSupportedMunicipalities } from "@/lib/regions/local-ordinances";
 
 export const MAX_SHARE_STATE_LENGTH = 8_000;
 export const INPUT_CODE_PREFIX = "FPR1.";
@@ -9,6 +13,46 @@ const MAX_ARRAY_ITEMS = 250;
 const ARRAY_CODEC_KEY = "ac";
 const ARRAY_CODEC_VERSION = "1";
 const EMPTY_ARRAY_ITEM_TOKEN = "%00";
+
+const dependentAnswerGroups: readonly {
+  parent: keyof ScenarioAnswers;
+  children: readonly (keyof ScenarioAnswers)[];
+  message: string;
+}[] = [
+  {
+    parent: "airEmissionFacility",
+    children: ["airTotalManagementBusinessTarget"],
+    message: "대기배출시설이 대상이 아닌 입력에서 대기 총량관리사업장 대상 선택을 해제했습니다.",
+  },
+  {
+    parent: "chemicalsHandled",
+    children: [
+      "chemicalManufactureOrImport",
+      "hazardousChemicalBusiness",
+      "chemicalRegistrationRequired",
+      "restrictedOrToxicChemicalImport",
+    ],
+    message: "화학물질을 취급하지 않는 입력에서 화학물질 후속 대상 선택을 해제했습니다.",
+  },
+  {
+    parent: "hazardousMaterials",
+    children: [
+      "hazardousMaterialsTank",
+      "hazardousMaterialsPreventionRulesRequired",
+    ],
+    message: "지정수량 이상 위험물이 대상이 아닌 입력에서 위험물 후속 대상 선택을 해제했습니다.",
+  },
+  {
+    parent: "highPressureGas",
+    children: ["highPressureGasBusinessStartTarget"],
+    message: "고압가스가 대상이 아닌 입력에서 사업·저장소 개시신고 대상 선택을 해제했습니다.",
+  },
+  {
+    parent: "fireFacilityWork",
+    children: ["fireWorkSupervisionTarget", "firstFireSelfInspectionTarget"],
+    message: "소방시설공사가 대상이 아닌 입력에서 소방 후속절차 대상 선택을 해제했습니다.",
+  },
+];
 
 export class ShareStateTooLongError extends RangeError {
   constructor(readonly actualLength: number) {
@@ -698,11 +742,100 @@ function decodeState(
     }
     warnings.push("예전 공유 주소에는 통합 입주계약 세부 입력이 없어 기존 산업단지 정보 또는 미입력 상태로 안전하게 복원했습니다.");
   }
+  if (candidate.psmCovered !== true) {
+    const psmPreOperationId = "psm-pre-operation-confirmation";
+    const reviewedIds = Array.isArray(candidate.supplementalPermitReviewedIds)
+      ? candidate.supplementalPermitReviewedIds.filter(
+          (value): value is string => typeof value === "string",
+        )
+      : [];
+    const targetIds = Array.isArray(candidate.supplementalPermitTargetIds)
+      ? candidate.supplementalPermitTargetIds.filter(
+          (value): value is string => typeof value === "string",
+        )
+      : [];
+    if (targetIds.includes(psmPreOperationId)) {
+      candidate.supplementalPermitReviewedIds = reviewedIds;
+      candidate.supplementalPermitTargetIds = targetIds.filter(
+        (id) => id !== psmPreOperationId,
+      );
+      warnings.push("PSM 대상이 확인되지 않은 입력과 충돌하는 공정안전보고서 가동 전 이행상태 확인 선택을 해제했습니다.");
+    }
+  }
+  if (candidate.waterDemandM3Day === 0) {
+    const industrialWaterPlanId =
+      "industrial-water-master-plan-reflection-consultation";
+    const reviewedIds = Array.isArray(candidate.supplementalPermitReviewedIds)
+      ? candidate.supplementalPermitReviewedIds.filter(
+          (value): value is string => typeof value === "string",
+        )
+      : [];
+    const targetIds = Array.isArray(candidate.supplementalPermitTargetIds)
+      ? candidate.supplementalPermitTargetIds.filter(
+          (value): value is string => typeof value === "string",
+        )
+      : [];
+    if (
+      reviewedIds.includes(industrialWaterPlanId)
+      || targetIds.includes(industrialWaterPlanId)
+    ) {
+      candidate.supplementalPermitReviewedIds = reviewedIds.filter(
+        (id) => id !== industrialWaterPlanId,
+      );
+      candidate.supplementalPermitTargetIds = targetIds.filter(
+        (id) => id !== industrialWaterPlanId,
+      );
+      warnings.push("추가 용수수요가 0인 입력과 충돌하는 국가수도기본계획·수도정비계획 반영 검토값을 해제했습니다.");
+    }
+  }
+  if (
+    candidate.psmCoversSameHazardPreventionScope !== null
+    && (
+      candidate.psmCovered !== true
+      || !(
+        Array.isArray(candidate.supplementalPermitTargetIds)
+        && candidate.supplementalPermitTargetIds.includes(
+          "hazard-prevention-plan",
+        )
+      )
+    )
+  ) {
+    candidate.psmCoversSameHazardPreventionScope = null;
+    warnings.push("PSM과 유해위험방지계획서가 모두 대상이 아닌 입력에서 동일설비 범위 선택을 해제했습니다.");
+  }
+  for (const group of dependentAnswerGroups) {
+    if (
+      candidate[group.parent] === true
+      || !group.children.some((key) => candidate[key] === true)
+    ) continue;
+    for (const key of group.children) {
+      if (candidate[key] === true) candidate[key] = null;
+    }
+    warnings.push(group.message);
+  }
   const parsed = scenarioAnswerSchema.safeParse(candidate);
   if (!parsed.success) {
     return { answers: fallback, warning: "공유 주소 일부가 올바르지 않아 기본값을 사용했습니다." };
   }
   let answers = parsed.data;
+  const canonicalProvince = canonicalizeSupportedProvince(answers.province);
+  if (canonicalProvince !== answers.province) {
+    const formerProvince = answers.province;
+    answers = { ...answers, province: canonicalProvince };
+    warnings.push(
+      `종전 ${formerProvince} 공유 지역을 ${canonicalProvince} 출범에 맞춰 변환하고 시·군·구는 그대로 복원했습니다.`,
+    );
+  }
+  if (
+    answers.city
+    && isSupportedProvince(answers.province)
+    && !listSupportedMunicipalities(answers.province).includes(answers.city)
+  ) {
+    answers = { ...answers, city: "" };
+    warnings.push(
+      "선택한 시·군·구가 현행 관할 목록에 없어 시·군·구를 비웠습니다. 현행 행정구역을 다시 선택하십시오.",
+    );
+  }
   if (answers.province !== "" && !isSupportedProvince(answers.province)) {
     const safeProvince = isSupportedProvince(fallback.province)
       ? fallback.province
@@ -804,6 +937,20 @@ function hasStaleIndustrialWaterPlanAnswer(answers: ScenarioAnswers) {
     );
 }
 
+function hasStalePsmPreOperationAnswer(answers: ScenarioAnswers) {
+  const procedureId = "psm-pre-operation-confirmation";
+  return answers.psmCovered !== true
+    && answers.supplementalPermitTargetIds.includes(procedureId);
+}
+
+function hasStaleDependentAnswer(answers: ScenarioAnswers) {
+  return dependentAnswerGroups.some(
+    (group) =>
+      answers[group.parent] !== true
+      && group.children.some((key) => answers[key] === true),
+  );
+}
+
 function hasOversizedArray(answers: ScenarioAnswers) {
   return [...arrayValueFields].some((key) => {
     const value = answers[key];
@@ -823,6 +970,16 @@ export function encodeInputCode(answers: ScenarioAnswers) {
   if (hasStaleIndustrialWaterPlanAnswer(answers)) {
     throw new InputCodeError(
       "추가 용수수요가 0이면 국가수도기본계획·수도정비계획 반영 검토값을 내보낼 수 없습니다.",
+    );
+  }
+  if (hasStalePsmPreOperationAnswer(answers)) {
+    throw new InputCodeError(
+      "PSM 대상이 확인된 사업에서만 공정안전보고서 가동 전 이행상태 확인을 내보낼 수 있습니다.",
+    );
+  }
+  if (hasStaleDependentAnswer(answers)) {
+    throw new InputCodeError(
+      "상위 대상 조건과 충돌하는 후속절차 선택이 있어 입력 코드로 내보낼 수 없습니다.",
     );
   }
   if (hasOrphanedPsmSameScopeAnswer(answers)) {
@@ -876,6 +1033,26 @@ export function decodeInputCode(
     MAX_INPUT_STATE_LENGTH,
     "입력 코드의 데이터가 허용 길이를 초과했습니다.",
   );
+  const rawProvince = encodedStateParams.get("pr") ?? "";
+  const rawCity = encodedStateParams.get("ct") ?? "";
+  const canonicalProvince = canonicalizeSupportedProvince(rawProvince);
+  const shouldClearCity =
+    rawCity !== ""
+    && isSupportedProvince(canonicalProvince)
+    && !listSupportedMunicipalities(canonicalProvince).includes(rawCity);
+  const regionMigratedStateParams = new URLSearchParams(encodedState);
+  if (canonicalProvince !== rawProvince) {
+    regionMigratedStateParams.set("pr", canonicalProvince);
+  }
+  if (shouldClearCity) regionMigratedStateParams.set("ct", "");
+  regionMigratedStateParams.sort();
+  const safeCurrentJurisdictionMigration =
+    encodedVersion === "15"
+    && (canonicalProvince !== rawProvince || shouldClearCity)
+    && (
+      restored.warning?.includes("공유 지역을") === true
+      || restored.warning?.includes("현행 관할 목록에 없어") === true
+    );
   const safeLegacyMigration =
     encodedVersion !== "15" &&
     restored.warning !== undefined &&
@@ -885,7 +1062,11 @@ export function decodeInputCode(
       "지원 범위 밖",
       "너무 길어",
     ].some((message) => restored.warning?.includes(message));
-  if (restored.warning && !safeLegacyMigration) {
+  if (
+    restored.warning
+    && !safeLegacyMigration
+    && !safeCurrentJurisdictionMigration
+  ) {
     throw new InputCodeError(
       `입력 코드를 적용할 수 없습니다. ${restored.warning.replaceAll("공유 주소", "입력 코드")}`,
     );
@@ -898,7 +1079,14 @@ export function decodeInputCode(
     "SWIMLANE",
     encodedStateParams.get(ARRAY_CODEC_KEY) === ARRAY_CODEC_VERSION,
   );
-  if (encodedVersion === "15" && canonicalState !== encodedState) {
+  if (
+    encodedVersion === "15"
+    && canonicalState !== encodedState
+    && !(
+      safeCurrentJurisdictionMigration
+      && canonicalState === regionMigratedStateParams.toString()
+    )
+  ) {
     throw new InputCodeError("입력 코드가 변경되었거나 일부 항목이 손상되었습니다.");
   }
   return restored.answers;

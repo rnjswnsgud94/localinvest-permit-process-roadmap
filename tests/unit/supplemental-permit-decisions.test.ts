@@ -79,6 +79,23 @@ describe("supplemental permit threshold review", () => {
     expect(procedureCategoryForDecision(decision(noAdditionalDemand, procedureId))).toBe("NOT_REQUIRED");
   });
 
+  it("shows PSM pre-operation confirmation only for a confirmed PSM target", () => {
+    const procedureId = "psm-pre-operation-confirmation";
+    const selected: Partial<ScenarioAnswers> = {
+      supplementalPermitReviewedIds: [procedureId],
+      supplementalPermitTargetIds: [procedureId],
+    };
+
+    const notCovered = evaluate({ ...selected, psmCovered: false });
+    const unknown = evaluate({ ...selected, psmCovered: null });
+    const covered = evaluate({ ...selected, psmCovered: true });
+
+    expect(procedureCategoryForDecision(decision(notCovered, procedureId))).toBe("NOT_REQUIRED");
+    expect(procedureCategoryForDecision(decision(unknown, procedureId))).toBe("CONFIRM");
+    expect(decision(unknown, procedureId).missingInputs).toContain("safety.psmCovered");
+    expect(procedureCategoryForDecision(decision(covered, procedureId))).toBe("REQUIRED");
+  });
+
   it("keeps proxy-only procedures in confirmation until the threshold review is completed", () => {
     const evaluation = evaluate({
       supplementalPermitReviewedIds: [],
@@ -93,10 +110,13 @@ describe("supplemental permit threshold review", () => {
       const gyeonggiOnly = gyeonggiSiteReviewTargetIds.includes(
         procedureId as (typeof gyeonggiSiteReviewTargetIds)[number],
       );
+      const excludedByKnownParent = procedureId === "psm-pre-operation-confirmation";
       expect(procedureCategoryForDecision(result), procedureId).toBe(
-        capitalOnly || gyeonggiOnly ? "NOT_REQUIRED" : "CONFIRM",
+        capitalOnly || gyeonggiOnly || excludedByKnownParent
+          ? "NOT_REQUIRED"
+          : "CONFIRM",
       );
-      if (capitalOnly || gyeonggiOnly) {
+      if (capitalOnly || gyeonggiOnly || excludedByKnownParent) {
         expect(result.missingInputs, procedureId).not.toContain(
           `confirmation.supplementalPermitTargets.${procedureId}`,
         );

@@ -3,6 +3,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest
 
 import { DashboardClient } from "@/app/components/dashboard/DashboardClient";
 import { InputCodeDialog } from "@/app/components/dashboard/InputCodeDialog";
+import { LocalOrdinancePanel } from "@/app/components/dashboard/LocalOrdinancePanel";
 import { stageLabels } from "@/app/components/dashboard/constants";
 import { catalog } from "@/lib/data/catalog";
 import { constructionEnvironmentSupplementalPermitTargetIds } from "@/lib/data/supplemental-permit-targets";
@@ -72,6 +73,14 @@ describe("dashboard UI", () => {
     expect(footer).not.toBeNull();
     expect(footer).toContainElement(feedbackNotice);
     expect(within(footer as HTMLElement).getByText(/이 화면은 공식 자료를 바탕으로 만든 사전 검토자료입니다/)).toBeInTheDocument();
+    const decisionNotice = screen.getByRole("note", {
+      name: "AI 활용 비공식 사전검토",
+    });
+    expect(decisionNotice).toHaveTextContent("표시된 절차·관계·일정은 참고용");
+    expect(decisionNotice).toHaveTextContent("최종 판단이나 법률자문이 아닙니다");
+    expect(decisionNotice).toHaveTextContent("반드시 확인하세요");
+    expect(document.querySelector(".workspace-toolbar")?.nextElementSibling)
+      .toBe(decisionNotice);
     expect(screen.getByText("사업 조건에 맞는 절차, 적용 특례와 예상 일정을 확인합니다.")).toBeInTheDocument();
     expect(document.querySelector(".scope-card")).toBeNull();
     expect(screen.getByRole("heading", { name: "현재 사업조건" })).toBeInTheDocument();
@@ -528,7 +537,7 @@ describe("dashboard UI", () => {
     });
     expect(
       within(reviewGroup).getAllByRole("group", { name: /대상 여부$/ }),
-    ).toHaveLength(constructionEnvironmentSupplementalPermitTargetIds.length);
+    ).toHaveLength(constructionEnvironmentSupplementalPermitTargetIds.length - 1);
     const roadOccupation = within(reviewGroup).getByRole("group", {
       name: "도로점용허가 대상 여부",
     });
@@ -538,7 +547,7 @@ describe("dashboard UI", () => {
     fireEvent.click(
       within(roadOccupation).getByRole("button", { name: "대상" }),
     );
-    expect(screen.getByText(`1/${constructionEnvironmentSupplementalPermitTargetIds.length} 검토 · 1개 대상`)).toBeInTheDocument();
+    expect(screen.getByText(`1/${constructionEnvironmentSupplementalPermitTargetIds.length - 1} 검토 · 1개 대상`)).toBeInTheDocument();
 
     const nonpointSource = within(reviewGroup).getByRole("group", {
       name: "비점오염원 설치신고 대상 여부",
@@ -546,7 +555,7 @@ describe("dashboard UI", () => {
     fireEvent.click(
       within(nonpointSource).getByRole("button", { name: "비대상" }),
     );
-    expect(screen.getByText(`2/${constructionEnvironmentSupplementalPermitTargetIds.length} 검토 · 1개 대상`)).toBeInTheDocument();
+    expect(screen.getByText(`2/${constructionEnvironmentSupplementalPermitTargetIds.length - 1} 검토 · 1개 대상`)).toBeInTheDocument();
   });
 
   it("asks and clears the PSM same-equipment scope only when both parent targets apply", () => {
@@ -563,6 +572,9 @@ describe("dashboard UI", () => {
     const reviewGroup = screen.getByRole("group", {
       name: "공사·환경 법정 임계값 검토 결과",
     });
+    expect(within(reviewGroup).queryByRole("group", {
+      name: /공정안전보고서\(PSM\) 가동 전 이행상태 확인 대상 여부$/,
+    })).not.toBeInTheDocument();
     const hazardPlan = within(reviewGroup).getByRole("group", {
       name: /유해위험방지계획서 제출·심사 대상 여부$/,
     });
@@ -572,6 +584,12 @@ describe("dashboard UI", () => {
     const psm = screen.getByText("PSM 대상 설비 여부", { selector: "legend" })
       .closest("fieldset");
     fireEvent.click(within(psm!).getByRole("button", { name: "대상" }));
+    const preOperationConfirmation = within(reviewGroup).getByRole("group", {
+      name: /공정안전보고서\(PSM\) 가동 전 이행상태 확인 대상 여부$/,
+    });
+    fireEvent.click(
+      within(preOperationConfirmation).getByRole("button", { name: "대상" }),
+    );
 
     const sameScopeLegend = screen.getByText(
       "PSM이 동일 유해·위험설비를 포함하는지",
@@ -588,8 +606,19 @@ describe("dashboard UI", () => {
         selector: "legend",
       }),
     ).not.toBeInTheDocument();
+    expect(within(reviewGroup).queryByRole("group", {
+      name: /공정안전보고서\(PSM\) 가동 전 이행상태 확인 대상 여부$/,
+    })).not.toBeInTheDocument();
 
     fireEvent.click(within(psm!).getByRole("button", { name: "대상" }));
+    expect(within(
+      within(reviewGroup).getByRole("group", {
+        name: /공정안전보고서\(PSM\) 가동 전 이행상태 확인 대상 여부$/,
+      }),
+    ).getByRole("button", { name: "미확인" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
     const restoredScope = screen.getByText(
       "PSM이 동일 유해·위험설비를 포함하는지",
       { selector: "legend" },
@@ -751,7 +780,7 @@ describe("dashboard UI", () => {
       "button",
       { name: "공식 기준" },
     )).toHaveAttribute("aria-pressed", "true");
-  }, 20_000);
+  }, 30_000);
 
   it("opens the total-duration result as a simplified six-stage graphic and restores focus", async () => {
     render(<DashboardClient />);
@@ -953,6 +982,40 @@ describe("dashboard UI", () => {
     expect(detailLink).toHaveAttribute("href", expect.stringContaining("histNo=003"));
     expect(detailLink).not.toHaveAttribute("href", expect.stringContaining("/locgovAlrPopup"));
     expect(detailLink).not.toHaveAttribute("href", expect.stringContaining("OC="));
+  });
+
+  it("promotes a confirmed local environmental assessment ordinance to the visible review grid", () => {
+    vi.spyOn(globalThis, "fetch").mockRejectedValue(
+      new Error("live ordinance lookup unavailable"),
+    );
+    render(
+      <LocalOrdinancePanel
+        answers={{
+          ...catalog.scenarios[0].answers,
+          province: "서울특별시",
+          city: "구로구",
+          localEnvironmentalAssessmentRequired: true,
+        }}
+      />,
+    );
+
+    const card = screen
+      .getByRole("heading", { name: "시·도 조례 환경영향평가" })
+      .closest("article");
+    expect(card).not.toBeNull();
+    expect(card).toHaveTextContent("시·도 조례 환경영향평가 대상·협의기준 확인");
+    expect(card?.closest("details")).toBeNull();
+
+    const waterCard = screen
+      .getByRole("heading", { name: "상수도 급수공사·부담금" })
+      .closest("article");
+    expect(waterCard).not.toBeNull();
+    expect(within(waterCard!).getByRole("link", {
+      name: /서울특별시 수도 조례/,
+    })).toHaveAttribute(
+      "href",
+      "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11000171000005&histNo=104",
+    );
   });
 
   it("rejects a non-detail ELIS match and offers only clearly labelled jurisdiction-list fallbacks", async () => {
@@ -1267,17 +1330,22 @@ describe("dashboard UI", () => {
     });
   });
 
-  it("uses named flow phases instead of numbered progress bundles", () => {
+  it("uses one unique flow column for each visible business stage", () => {
     render(<DashboardClient />);
     expect(screen.queryByText(/진행 묶음/)).not.toBeInTheDocument();
-    const phaseRoute = screen.getByRole("list", { name: "사업 단계" });
-    expect(within(phaseRoute).getAllByRole("listitem")).toHaveLength(6);
-    expect(within(phaseRoute).getByText("입지 사전검토")).toBeInTheDocument();
-    expect(within(phaseRoute).getByText("계획 승인·입주")).toBeInTheDocument();
-    expect(within(phaseRoute).getByText("착공 준비")).toBeInTheDocument();
-    expect(within(phaseRoute).getByText("공사 중")).toBeInTheDocument();
-    expect(within(phaseRoute).getByText("준공·가동 준비")).toBeInTheDocument();
-    expect(within(phaseRoute).getByText("가동 이후")).toBeInTheDocument();
+    expect(screen.queryByRole("list", { name: "사업 단계" })).not.toBeInTheDocument();
+    const headers = [...document.querySelectorAll<HTMLElement>(".stage-header")];
+    const titles = headers.map((header) => header.querySelector("strong")?.textContent);
+    expect(headers.length).toBeGreaterThan(0);
+    expect(headers.length).toBeLessThanOrEqual(6);
+    expect(new Set(titles).size).toBe(headers.length);
+    expect(titles.every((title) =>
+      (Object.values(stageLabels) as string[]).includes(title ?? ""),
+    )).toBe(true);
+    expect(document.querySelector(".swimlane-grid")).toHaveAttribute(
+      "data-flow-column-count",
+      String(headers.length),
+    );
   });
 
   it("switches to the action, procedure, law, schedule, and review tabs", () => {

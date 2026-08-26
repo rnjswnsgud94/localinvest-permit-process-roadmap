@@ -373,16 +373,20 @@ export function DashboardClient() {
   function changeAnswer<K extends keyof ScenarioAnswers>(key: K, value: ScenarioAnswers[K]) {
     setAnswers((current) => {
       const next = { ...current, [key]: value };
-      if (key !== "waterDemandM3Day" || value !== 0) return next;
+      const staleProcedureId = key === "waterDemandM3Day" && value === 0
+        ? "industrial-water-master-plan-reflection-consultation"
+        : key === "psmCovered" && value === false
+          ? "psm-pre-operation-confirmation"
+          : null;
+      if (!staleProcedureId) return next;
 
-      const planReflectionId = "industrial-water-master-plan-reflection-consultation";
       return {
         ...next,
         supplementalPermitReviewedIds: current.supplementalPermitReviewedIds.filter(
-          (id) => id !== planReflectionId,
+          (id) => id !== staleProcedureId,
         ),
         supplementalPermitTargetIds: current.supplementalPermitTargetIds.filter(
-          (id) => id !== planReflectionId,
+          (id) => id !== staleProcedureId,
         ),
       };
     });
@@ -574,6 +578,14 @@ export function DashboardClient() {
               <button type="button" onClick={() => window.print()}>화면 인쇄</button>
             </div>
           </div>
+          <div
+            className="decision-banner"
+            role="note"
+            aria-labelledby="decision-notice-title"
+          >
+            <span className="decision-icon" aria-hidden="true">!</span>
+            <p><strong id="decision-notice-title">AI 활용 비공식 사전검토</strong> 표시된 절차·관계·일정은 참고용이며 행정기관의 최종 판단이나 법률자문이 아닙니다. 실제 신청 전 관할 인허가 담당기관과 분야별 전문가에게 반드시 확인하세요.</p>
+          </div>
           <div className="summary-strip" aria-label="판정 요약">
             <div className="summary-card summary-schedule">
               <button
@@ -637,7 +649,6 @@ export function DashboardClient() {
           </div>
           <SpecialLawSummary industryCategory={answers.industryCategory} evaluations={evaluation.specialLawEvaluations} />
           <ProjectInputSummary answers={answers} />
-          <div className="decision-banner" role="note"><span className="decision-icon" aria-hidden="true">i</span><p><strong>화면의 결과는 사전 검토용입니다.</strong> 신청 전에는 필지·시설 규모·물질 수량과 최신 관할기준을 담당기관에 확인해야 합니다.</p></div>
           <OrdinanceDisclosure
             key={`${answers.province}:${answers.city}`}
             answers={answers}

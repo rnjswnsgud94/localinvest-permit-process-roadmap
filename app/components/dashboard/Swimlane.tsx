@@ -43,6 +43,7 @@ import {
 } from "@/lib/format-duration";
 
 const lanes = Object.keys(laneLabels) as Array<keyof typeof laneLabels>;
+const stages = Object.keys(stageLabels) as Array<keyof typeof stageLabels>;
 export const denseProcedureColumnThreshold = 10;
 export { orthogonalConnectorPath };
 
@@ -80,6 +81,11 @@ const durationById = new Map(
 );
 
 
+function dateText(value: string | undefined) {
+  if (!value) return "일정 미입력";
+  return value.replaceAll("-", ".");
+}
+
 function planningLabel(
   node: ProjectTimelineNode | undefined,
   checkpoint: ScheduleCompletedCheckpoint | undefined,
@@ -87,46 +93,15 @@ function planningLabel(
   if (checkpoint) return formatCompletedCheckpoint(checkpoint);
   if (!node) return "예상 일정 · 공사일 입력 시 계산";
   const duration = formatTimelineProcessingDuration(node);
-  if (node.excludedFromOperationReady) return `가동 후 별도 · ${duration}`;
+  const start = node.startDate ? `${dateText(node.startDate)} 착수 · ` : "";
+  if (node.excludedFromOperationReady) return `${start}가동 후 별도 · ${duration}`;
   if (node.processingDuration === null) {
-    return "예상 총경과 미규정 · 사용자 예상값 입력 가능";
+    return `${start}예상 총경과 미규정 · 사용자 예상값 입력 가능`;
   }
   if (node.overlapsConstruction) {
-    return `일정 반영 ${duration} · 공사와 ${node.overlapWithConstructionDays}일 병행`;
+    return `${start}일정 반영 ${duration} · 공사와 ${node.overlapWithConstructionDays}일 병행`;
   }
-  return `일정 반영 ${duration}`;
-}
-
-function dateText(value: string | undefined) {
-  if (!value) return "일정 미입력";
-  return value.replaceAll("-", ".");
-}
-
-const stageGroupTitles: Record<keyof typeof stageLabels, string> = {
-  SITE_REVIEW: "입지·사업성 검토",
-  PLAN_AND_OCCUPANCY: "사업계획·입주 승인",
-  PRE_CONSTRUCTION: "착공 전 승인·신고",
-  DURING_CONSTRUCTION: "공사 병행 점검",
-  PRE_OPERATION: "준공·가동 승인",
-  POST_OPERATION: "가동 후 등록·관리",
-};
-
-function flowGroupTitle(decisions: ProcedureDecision[]) {
-  const names = decisions.map((decision) => decision.procedure.name).join(" ");
-  if (/사용승인|완료신고|완성검사|준공/.test(names)) return "준공·완성검사";
-  if (/착공/.test(names)) return "착공 준비 완료";
-  if (/건축허가|개발행위/.test(names)) return "개발·건축 허가";
-  if (/공장설립|입주계약|사업계획/.test(names)) return "입지·공장설립 승인";
-  if (/등록|사업개시|가동/.test(names)) return "등록·가동 준비";
-
-  const stageOrder = Object.keys(stageLabels) as Array<keyof typeof stageLabels>;
-  const stage = stageOrder
-    .map((candidate) => ({
-      candidate,
-      count: decisions.filter((decision) => decision.procedure.stage === candidate).length,
-    }))
-    .sort((left, right) => right.count - left.count || stageOrder.indexOf(left.candidate) - stageOrder.indexOf(right.candidate))[0]?.candidate;
-  return stage ? stageGroupTitles[stage] : "절차 착수";
+  return `${start}일정 반영 ${duration}`;
 }
 
 export function Swimlane({
@@ -199,22 +174,11 @@ export function Swimlane({
     ),
     [scheduledDecisions],
   );
-  const offsets = useMemo(
-    () => useDateOffsets
-      ? [...new Set(
-          scheduledDecisions.map(
-            (decision) => timelineNodes.get(decision.procedure.id)?.startOffsetDays ?? 0,
-          ),
-        )].sort((a, b) => a - b)
-      : [...new Set(
-          scheduledDecisions.map(
-            (decision) =>
-              completedCheckpointByProcedure.has(decision.procedure.id)
-                ? 0
-                : scheduleNodes.get(decision.procedure.id)?.wave ?? 0,
-          ),
-        )].sort((a, b) => a - b),
-    [completedCheckpointByProcedure, scheduleNodes, scheduledDecisions, timelineNodes, useDateOffsets],
+  const usedStages = useMemo(
+    () => stages.filter((stage) =>
+      scheduledDecisions.some((decision) => decision.procedure.stage === stage),
+    ),
+    [scheduledDecisions],
   );
   const activeEdges = useMemo(
     () => {
@@ -249,46 +213,85 @@ export function Swimlane({
       : [...current, lane]);
   }
 
-  const decisionsByOffset = useMemo(
+  const decisionsByStage = useMemo(
     () => {
-      const grouped = new Map<number, ProcedureDecision[]>(
-        offsets.map((offset) => [offset, []]),
+      const grouped = new Map<keyof typeof stageLabels, ProcedureDecision[]>(
+        usedStages.map((stage) => [stage, []]),
       );
       for (const decision of scheduledDecisions) {
-        const offset = useDateOffsets
-          ? timelineNodes.get(decision.procedure.id)?.startOffsetDays ?? 0
-          : completedCheckpointByProcedure.has(decision.procedure.id)
-            ? 0
-            : scheduleNodes.get(decision.procedure.id)?.wave ?? 0;
-        grouped.get(offset)?.push(decision);
+        grouped.get(decision.procedure.stage)?.push(decision);
       }
       return grouped;
     },
-    [completedCheckpointByProcedure, offsets, scheduleNodes, scheduledDecisions, timelineNodes, useDateOffsets],
+    [scheduledDecisions, usedStages],
   );
-  const columnItemCounts = useMemo(
+  const stageItemCounts = useMemo(
     () => new Map(
-      offsets.map((offset) => [offset, decisionsByOffset.get(offset)?.length ?? 0]),
+      usedStages.map((stage) => [stage, decisionsByStage.get(stage)?.length ?? 0]),
     ),
-    [decisionsByOffset, offsets],
+    [decisionsByStage, usedStages],
   );
-  const denseOffsets = useMemo(
+  const denseStages = useMemo(
     () => new Set(
-      offsets.filter((offset) =>
-        (columnItemCounts.get(offset) ?? 0) >= denseProcedureColumnThreshold,
+      usedStages.filter((stage) =>
+        (stageItemCounts.get(stage) ?? 0) >= denseProcedureColumnThreshold,
       ),
     ),
-    [columnItemCounts, offsets],
+    [stageItemCounts, usedStages],
   );
-  const flowColumnTemplate = offsets.length
-    ? offsets
-        .map((offset) =>
-          denseOffsets.has(offset)
+  const flowColumnTemplate = usedStages.length
+    ? usedStages
+        .map((stage) =>
+          denseStages.has(stage)
             ? "minmax(440px, 2fr)"
             : "minmax(220px, 1fr)",
         )
         .join(" ")
     : "minmax(220px, 1fr)";
+  const positionKeyByProcedure = useMemo(
+    () => new Map(scheduledDecisions.map((decision) => {
+      const procedureId = decision.procedure.id;
+      const position = useDateOffsets
+        ? `day:${timelineNodes.get(procedureId)?.startOffsetDays ?? 0}`
+        : completedCheckpointByProcedure.has(procedureId)
+          ? "completed:0"
+          : `wave:${scheduleNodes.get(procedureId)?.wave ?? 0}`;
+      return [procedureId, position];
+    })),
+    [completedCheckpointByProcedure, scheduleNodes, scheduledDecisions, timelineNodes, useDateOffsets],
+  );
+  const positionItemCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const position of positionKeyByProcedure.values()) {
+      counts.set(position, (counts.get(position) ?? 0) + 1);
+    }
+    return counts;
+  }, [positionKeyByProcedure]);
+  const stageHeaderSummary = useMemo(
+    () => new Map(usedStages.map((stage) => {
+      const stageDecisions = decisionsByStage.get(stage) ?? [];
+      const startDates = [...new Set(stageDecisions
+        .map((decision) => timelineNodes.get(decision.procedure.id)?.startDate)
+        .filter((value): value is string => Boolean(value)))]
+        .sort();
+      const waves = [...new Set(stageDecisions
+        .map((decision) => scheduleNodes.get(decision.procedure.id)?.wave)
+        .filter((value): value is number => typeof value === "number"))]
+        .sort((left, right) => left - right);
+      const sequenceRange = waves.length === 0
+        ? "카드별 일정 확인"
+        : waves.length === 1
+          ? `선후행 ${waves[0] + 1}단계`
+          : `선후행 ${waves[0] + 1}~${waves[waves.length - 1] + 1}단계`;
+      const dateRange = startDates.length === 0
+        ? sequenceRange
+        : startDates.length === 1
+          ? `${dateText(startDates[0])} 착수`
+          : `${dateText(startDates[0])}~${dateText(startDates[startDates.length - 1])} 착수`;
+      return [stage, `${stageDecisions.length}개 절차 · ${dateRange}`];
+    })),
+    [decisionsByStage, scheduleNodes, timelineNodes, usedStages],
+  );
 
   const sequenceCitationIds = useMemo(
     () => verifiedSequenceCitationIds({
@@ -601,11 +604,6 @@ export function Swimlane({
 
   return (
     <section className="swimlane-shell" aria-label="선후행 순서와 병렬 진행을 표시한 인허가 흐름">
-      <ol className="phase-route" aria-label="사업 단계">
-        {Object.entries(stageLabels).map(([stage, label], index) => (
-          <li key={stage}><span>{index + 1}</span><strong>{label}</strong></li>
-        ))}
-      </ol>
       <div className="flow-connector-toolbar">
         <div className="flow-connector-heading">
           <span>병목 가시화</span>
@@ -667,7 +665,7 @@ export function Swimlane({
         <span><i className="legend-overlap" /> 공사와 병행</span>
         <span><i className="legend-critical" /> 총기간 연장</span>
       </div>
-      <p className="flow-instruction">기본은 현재 입력·기간값으로 계산한 병목 후보와 선후행 조문이 연결된 관계를 표시합니다. 점선은 법적 강제순서로 단정하지 않으며, 법정 분류·전체 연결에서 검토 범위를 넓힐 수 있습니다. 같은 열은 선행조건 충족 후 병행할 수 있습니다.</p>
+      <p className="flow-instruction">열은 최대 6개 사업단계로 묶었습니다. 기본은 현재 입력·기간값으로 계산한 병목 후보와 선후행 조문이 연결된 관계를 표시하며, 점선은 법적 강제순서로 단정하지 않습니다. 같은 단계 안에서도 카드의 착수일과 선행절차를 확인하세요.</p>
       {bottleneckTargets.length ? (
         <section className="bottleneck-focus" aria-label="연결이 집중되는 확인 지점">
           <header>
@@ -727,6 +725,7 @@ export function Swimlane({
           data-total-edge-count={flowEdgeDescriptors.length}
           data-evidence-edge-count={connectorEdges.filter((item) => item.verifiedSequence).length}
           data-context-edge-count={connectorEdges.filter((item) => item.contextual).length}
+          data-flow-column-count={usedStages.length}
         >
           {connectorLayout.width > 0 && connectorLayout.height > 0 ? (
             <svg
@@ -817,20 +816,20 @@ export function Swimlane({
               ))}
             </svg>
           ) : null}
-          <div className="swimlane-corner">주관 기관 / 착수 시점</div>
-          {offsets.map((offset, index) => {
-            const groupDecisions = decisionsByOffset.get(offset) ?? [];
-            const sample = groupDecisions[0];
-            const node = sample ? timelineNodes.get(sample.procedure.id) : undefined;
-            const checkpoint = sample
-              ? completedCheckpointByProcedure.get(sample.procedure.id)
-              : undefined;
-            const count = groupDecisions.length;
+          <div className="swimlane-corner">주관 기관 / 사업 단계</div>
+          {usedStages.map((stage) => {
+            const stageNumber = stages.indexOf(stage) + 1;
+            const summary = stageHeaderSummary.get(stage) ?? "카드별 일정 확인";
             return (
-              <div className="stage-header flow-header" key={offset}>
-                <span>{String(index + 1).padStart(2, "0")}</span>
-                <strong>{flowGroupTitle(groupDecisions)}</strong>
-                <small>{checkpoint ? `${dateText(checkpoint.completedDate ?? checkpoint.confirmedAsOfDate)} · 완료 이정표` : useDateOffsets ? `${dateText(node?.startDate)} · 시작 후 ${offset}일` : "선후행 기준"} · {count > 1 ? `${count}개 절차` : "1개 절차"}</small>
+              <div
+                className="stage-header flow-header"
+                key={stage}
+                aria-label={`${stageLabels[stage]} · ${summary}`}
+                data-stage={stage}
+              >
+                <span>{String(stageNumber).padStart(2, "0")}</span>
+                <strong>{stageLabels[stage]}</strong>
+                <small>{summary}</small>
               </div>
             );
           })}
@@ -841,23 +840,30 @@ export function Swimlane({
                 <strong>{laneLabels[lane]}</strong>
                 <span className="lane-toggle" aria-hidden="true">{collapsedLanes.includes(lane) ? "+" : "−"}</span>
               </button>
-              {offsets.map((offset) => {
-                const cells = (decisionsByOffset.get(offset) ?? [])
+              {usedStages.map((stage) => {
+                const cells = (decisionsByStage.get(stage) ?? [])
                   .filter((decision) => decision.procedure.lane === lane)
                   .sort((left, right) => {
                     const leftNode = timelineNodes.get(left.procedure.id);
                     const rightNode = timelineNodes.get(right.procedure.id);
-                    return (leftNode?.finishOffsetDays ?? 0) - (rightNode?.finishOffsetDays ?? 0)
+                    const leftPosition = useDateOffsets
+                      ? leftNode?.startOffsetDays ?? 0
+                      : scheduleNodes.get(left.procedure.id)?.wave ?? 0;
+                    const rightPosition = useDateOffsets
+                      ? rightNode?.startOffsetDays ?? 0
+                      : scheduleNodes.get(right.procedure.id)?.wave ?? 0;
+                    return leftPosition - rightPosition
+                      || (leftNode?.finishOffsetDays ?? 0) - (rightNode?.finishOffsetDays ?? 0)
                       || left.procedure.name.localeCompare(right.procedure.name, "ko");
                   });
-                const parallelCount = columnItemCounts.get(offset) ?? 0;
-                const isDense = denseOffsets.has(offset);
+                const isDense = denseStages.has(stage);
                 return (
                   <div
                     className={`lane-cell flow-cell${isDense ? " is-dense" : ""}`}
-                    key={`${lane}-${offset}`}
+                    key={`${lane}-${stage}`}
                     data-item-count={cells.length}
-                    data-column-item-count={parallelCount}
+                    data-column-item-count={stageItemCounts.get(stage) ?? 0}
+                    data-stage={stage}
                     aria-hidden={collapsedLanes.includes(lane)}
                   >
                     {cells.map((decision) => {
@@ -865,6 +871,9 @@ export function Swimlane({
                       const completedCheckpoint = completedCheckpointByProcedure.get(
                         decision.procedure.id,
                       );
+                      const parallelCount = positionItemCounts.get(
+                        positionKeyByProcedure.get(decision.procedure.id) ?? "",
+                      ) ?? 0;
                       const incoming = predecessorsByProcedure.get(decision.procedure.id) ?? [];
                       return (
                         <article

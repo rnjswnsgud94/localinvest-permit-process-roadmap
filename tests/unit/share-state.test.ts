@@ -508,6 +508,48 @@ describe("versioned share state", () => {
 
     expect(scenarioAnswerSchema.safeParse(inconsistent).success).toBe(false);
     expect(() => encodeInputCode(inconsistent)).toThrow("추가 용수수요가 0");
+
+    const restored = decodeShareState(
+      encodeShareState(inconsistent, "SWIMLANE"),
+      fallback,
+    );
+    expect(restored.answers.waterDemandM3Day).toBe(0);
+    expect(restored.answers.supplementalPermitReviewedIds).not.toContain(
+      "industrial-water-master-plan-reflection-consultation",
+    );
+    expect(restored.answers.supplementalPermitTargetIds).not.toContain(
+      "industrial-water-master-plan-reflection-consultation",
+    );
+    expect(restored.warning).toContain("추가 용수수요가 0인 입력과 충돌");
+  });
+
+  it("clears a stale PSM pre-operation selection from shared URLs", () => {
+    const fallback = catalog.scenarios[0].answers;
+    const procedureId = "psm-pre-operation-confirmation";
+    const inconsistent: ScenarioAnswers = {
+      ...fallback,
+      psmCovered: false,
+      supplementalPermitReviewedIds: [
+        ...fallback.supplementalPermitReviewedIds,
+        procedureId,
+      ],
+      supplementalPermitTargetIds: [
+        ...fallback.supplementalPermitTargetIds,
+        procedureId,
+      ],
+    };
+
+    expect(scenarioAnswerSchema.safeParse(inconsistent).success).toBe(false);
+    expect(() => encodeInputCode(inconsistent)).toThrow("PSM 대상이 확인된 사업");
+
+    const restored = decodeShareState(
+      encodeShareState(inconsistent, "SWIMLANE"),
+      fallback,
+    );
+    expect(restored.answers.supplementalPermitReviewedIds).toContain(procedureId);
+    expect(restored.answers.supplementalPermitTargetIds).not.toContain(procedureId);
+    expect(restored.answers.psmCovered).toBe(false);
+    expect(restored.warning).toContain("PSM 대상이 확인되지 않은 입력과 충돌");
   });
 
   it("rejects a supplemental target that was not individually reviewed", () => {
@@ -544,6 +586,90 @@ describe("versioned share state", () => {
     expect(() => decodeInputCode(externallyBuiltCode, fallback)).toThrow(
       "입력 코드를 적용할 수 없습니다",
     );
+    const restored = decodeShareState(payload, fallback);
+    expect(restored.answers.psmCovered).toBe(false);
+    expect(restored.answers.psmCoversSameHazardPreventionScope).toBeNull();
+    expect(restored.warning).toContain("동일설비 범위 선택을 해제");
+  });
+
+  it("requires a confirmed PSM target before selecting pre-operation confirmation", () => {
+    const fallback = catalog.scenarios[0].answers;
+    const procedureId = "psm-pre-operation-confirmation";
+    const inconsistent: ScenarioAnswers = {
+      ...fallback,
+      psmCovered: null,
+      supplementalPermitReviewedIds: [
+        ...fallback.supplementalPermitReviewedIds,
+        procedureId,
+      ],
+      supplementalPermitTargetIds: [
+        ...fallback.supplementalPermitTargetIds,
+        procedureId,
+      ],
+    };
+
+    expect(scenarioAnswerSchema.safeParse(inconsistent).success).toBe(false);
+    expect(() => encodeInputCode(inconsistent)).toThrow("PSM 대상이 확인된 사업");
+    const restored = decodeShareState(
+      encodeShareState(inconsistent, "SWIMLANE"),
+      fallback,
+    );
+    expect(restored.answers.psmCovered).toBeNull();
+    expect(restored.answers.supplementalPermitReviewedIds).toContain(procedureId);
+    expect(restored.answers.supplementalPermitTargetIds).not.toContain(procedureId);
+    expect(restored.warning).toContain("PSM 대상이 확인되지 않은 입력과 충돌");
+  });
+
+  it("clears hidden positive follow-up answers without discarding the shared project", () => {
+    const fallback = catalog.scenarios[0].answers;
+    const inconsistent: ScenarioAnswers = {
+      ...fallback,
+      province: "서울특별시",
+      city: "구로구",
+      airEmissionFacility: false,
+      airTotalManagementBusinessTarget: true,
+      chemicalsHandled: false,
+      chemicalManufactureOrImport: true,
+      hazardousChemicalBusiness: true,
+      chemicalRegistrationRequired: true,
+      restrictedOrToxicChemicalImport: true,
+      hazardousMaterials: false,
+      hazardousMaterialsTank: true,
+      hazardousMaterialsPreventionRulesRequired: true,
+      highPressureGas: false,
+      highPressureGasBusinessStartTarget: true,
+      fireFacilityWork: false,
+      fireWorkSupervisionTarget: true,
+      firstFireSelfInspectionTarget: true,
+    };
+
+    expect(scenarioAnswerSchema.safeParse(inconsistent).success).toBe(false);
+    expect(() => encodeInputCode(inconsistent)).toThrow("상위 대상 조건과 충돌");
+    const payload = encodeShareState(inconsistent, "SWIMLANE");
+    const restored = decodeShareState(payload, fallback);
+    expect(restored.answers).toMatchObject({
+      province: "서울특별시",
+      city: "구로구",
+      airEmissionFacility: false,
+      airTotalManagementBusinessTarget: null,
+      chemicalsHandled: false,
+      chemicalManufactureOrImport: null,
+      hazardousChemicalBusiness: null,
+      chemicalRegistrationRequired: null,
+      restrictedOrToxicChemicalImport: null,
+      hazardousMaterials: false,
+      hazardousMaterialsTank: null,
+      hazardousMaterialsPreventionRulesRequired: null,
+      highPressureGas: false,
+      highPressureGasBusinessStartTarget: null,
+      fireFacilityWork: false,
+      fireWorkSupervisionTarget: null,
+      firstFireSelfInspectionTarget: null,
+    });
+    expect(restored.warning).toContain("후속 대상 선택을 해제");
+    expect(() => decodeInputCode(encodeInputCodePayload(payload), fallback)).toThrow(
+      "입력 코드를 적용할 수 없습니다",
+    );
   });
 
   it("ignores injected v8-only special-law fields in a legacy-version URL", () => {
@@ -573,6 +699,56 @@ describe("versioned share state", () => {
     expect(restored.answers.province).toBe("경기도");
     expect(restored.answers.city).toBe("수원시");
     expect(restored.warning).toBeUndefined();
+  });
+
+  it.each([
+    ["광주광역시", "광산구"],
+    ["전라남도", "광양시"],
+  ])("migrates a former %s share location without losing its municipality", (province, city) => {
+    const fallback = catalog.scenarios[0].answers;
+    const legacyAnswers: ScenarioAnswers = {
+      ...fallback,
+      province,
+      city,
+    };
+    const shared = encodeShareState(legacyAnswers, "SWIMLANE");
+    const restored = decodeShareState(shared, fallback);
+
+    expect(restored.answers.province).toBe("전남광주통합특별시");
+    expect(restored.answers.city).toBe(city);
+    expect(restored.warning).toContain(`종전 ${province} 공유 지역`);
+    expect(restored.warning).not.toContain("지원 범위 밖 지역");
+    expect(decodeInputCode(encodeInputCode(legacyAnswers), fallback)).toMatchObject({
+      province: "전남광주통합특별시",
+      city,
+    });
+  });
+
+  it.each([
+    ["인천광역시", "중구"],
+    ["서울특별시", "해운대구"],
+  ])("clears a stale %s/%s municipality and keeps the rest of the project", (province, city) => {
+    const fallback = catalog.scenarios[0].answers;
+    const staleAnswers: ScenarioAnswers = {
+      ...fallback,
+      province,
+      city,
+      products: "관할 복원 검증 제품",
+    };
+    const shared = encodeShareState(staleAnswers, "SWIMLANE");
+    const restored = decodeShareState(shared, fallback);
+
+    expect(restored.answers).toMatchObject({
+      province,
+      city: "",
+      products: "관할 복원 검증 제품",
+    });
+    expect(restored.warning).toContain("현행 관할 목록에 없어");
+    expect(decodeInputCode(encodeInputCode(staleAnswers), fallback)).toMatchObject({
+      province,
+      city: "",
+      products: "관할 복원 검증 제품",
+    });
   });
 
   it("falls back safely when a shared region is outside the nationwide scope", () => {

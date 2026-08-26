@@ -270,6 +270,62 @@ export const scenarioAnswerSchema = z.object({
       message: "추가 용수수요가 0이면 국가수도기본계획·수도정비계획 반영 검토값을 선택할 수 없습니다.",
     });
   }
+  const psmPreOperationId = "psm-pre-operation-confirmation";
+  if (
+    answers.psmCovered !== true
+    && answers.supplementalPermitTargetIds.includes(psmPreOperationId)
+  ) {
+    context.addIssue({
+      code: "custom",
+      path: ["supplementalPermitTargetIds"],
+      message: "PSM 대상이 확인된 사업에서만 공정안전보고서 가동 전 이행상태 확인을 선택할 수 있습니다.",
+    });
+  }
+  for (const dependency of [
+    {
+      parent: "airEmissionFacility",
+      children: ["airTotalManagementBusinessTarget"],
+      message: "대기 총량관리사업장 대상은 대기배출시설이 대상일 때만 입력할 수 있습니다.",
+    },
+    {
+      parent: "chemicalsHandled",
+      children: [
+        "chemicalManufactureOrImport",
+        "hazardousChemicalBusiness",
+        "chemicalRegistrationRequired",
+        "restrictedOrToxicChemicalImport",
+      ],
+      message: "화학물질 후속 대상은 화학물질을 취급할 때만 입력할 수 있습니다.",
+    },
+    {
+      parent: "hazardousMaterials",
+      children: [
+        "hazardousMaterialsTank",
+        "hazardousMaterialsPreventionRulesRequired",
+      ],
+      message: "위험물 후속 대상은 지정수량 이상 위험물이 대상일 때만 입력할 수 있습니다.",
+    },
+    {
+      parent: "highPressureGas",
+      children: ["highPressureGasBusinessStartTarget"],
+      message: "고압가스 사업·저장소 개시신고는 고압가스가 대상일 때만 입력할 수 있습니다.",
+    },
+    {
+      parent: "fireFacilityWork",
+      children: ["fireWorkSupervisionTarget", "firstFireSelfInspectionTarget"],
+      message: "소방 후속절차는 소방시설공사가 대상일 때만 입력할 수 있습니다.",
+    },
+  ] as const) {
+    if (
+      answers[dependency.parent] === true
+      || !dependency.children.some((key) => answers[key] === true)
+    ) continue;
+    context.addIssue({
+      code: "custom",
+      path: [dependency.children.find((key) => answers[key] === true)!],
+      message: dependency.message,
+    });
+  }
   for (const targetId of answers.supplementalPermitTargetIds) {
     if (reviewed.has(targetId)) continue;
     context.addIssue({

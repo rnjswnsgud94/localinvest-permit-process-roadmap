@@ -260,6 +260,12 @@ export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
       return true;
     },
   );
+  const visibleConstructionEnvironmentTargetIds =
+    constructionEnvironmentSupplementalPermitTargetIds.filter(
+      (procedureId) =>
+        procedureId !== "psm-pre-operation-confirmation"
+        || answers.psmCovered === true,
+    );
   const aiDataCenterSpecialLaws = getAiDataCenterSpecialLawDefinitions(
     answers.province,
   );
@@ -290,8 +296,8 @@ export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
   ).length;
   const constructionEnvironmentReviewedCount =
     answers.supplementalPermitReviewedIds.filter((procedureId) =>
-      constructionEnvironmentSupplementalPermitTargetIds.includes(
-        procedureId as (typeof constructionEnvironmentSupplementalPermitTargetIds)[number],
+      visibleConstructionEnvironmentTargetIds.includes(
+        procedureId as (typeof visibleConstructionEnvironmentTargetIds)[number],
       )
     ).length;
   const gasSafetyAnsweredCount = answeredCount([
@@ -443,6 +449,12 @@ export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
     procedureId: SupplementalPermitTargetId,
     value: boolean | null,
   ) {
+    if (
+      procedureId === "psm-pre-operation-confirmation"
+      && value === true
+      && answers.psmCovered !== true
+    ) return;
+
     const mutuallyExclusiveTarget: Partial<
       Record<SupplementalPermitTargetId, SupplementalPermitTargetId>
     > = {
@@ -1386,7 +1398,7 @@ export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
             <details className="wizard-optional-section supplemental-permit-review">
               <summary>
                 <strong>공사·환경 법정 임계값 정밀검토</strong>
-                <span>{constructionEnvironmentReviewedCount}/{constructionEnvironmentSupplementalPermitTargetIds.length} 검토 · {answers.supplementalPermitTargetIds.filter((procedureId) => constructionEnvironmentSupplementalPermitTargetIds.includes(procedureId as (typeof constructionEnvironmentSupplementalPermitTargetIds)[number])).length}개 대상</span>
+                <span>{constructionEnvironmentReviewedCount}/{visibleConstructionEnvironmentTargetIds.length} 검토 · {answers.supplementalPermitTargetIds.filter((procedureId) => visibleConstructionEnvironmentTargetIds.includes(procedureId as (typeof visibleConstructionEnvironmentTargetIds)[number])).length}개 대상</span>
               </summary>
               <div className="wizard-optional-body">
                 <p className="supplemental-permit-intro">단순 업종·신축·전력·용수만으로 확정할 수 없는 절차입니다. 법정 시설·수량·공사기준을 대조한 항목만 대상 또는 비대상으로 표시하고, 아직 보지 않은 항목은 미확인으로 남겨 주세요.</p>
@@ -1395,7 +1407,7 @@ export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
                   role="group"
                   aria-label="공사·환경 법정 임계값 검토 결과"
                 >
-                  {constructionEnvironmentSupplementalPermitTargetIds.map((procedureId) => {
+                  {visibleConstructionEnvironmentTargetIds.map((procedureId) => {
                     const procedureName = procedureNameById.get(procedureId) ?? procedureId;
                     return (
                       <div className="supplemental-permit-decision-row" key={procedureId}>
@@ -1543,7 +1555,29 @@ export function Wizard({ answers, activeStep, onStepChange, onChange }: Props) {
             <Question label="추가 인프라 수요" hint="0은 추가 수요 없음, 빈칸은 미확인으로 판정합니다.">
               <div className="stacked-fields">
                 <NumberInput label="전력 증가분" unit="MW" value={answers.powerIncreaseMw} onChange={(value) => onChange("powerIncreaseMw", value)} />
-                <NumberInput label="용수 수요" unit="㎥/일" value={answers.waterDemandM3Day} onChange={(value) => onChange("waterDemandM3Day", value)} />
+                <NumberInput
+                  label="용수 수요"
+                  unit="㎥/일"
+                  value={answers.waterDemandM3Day}
+                  onChange={(value) => {
+                    onChange("waterDemandM3Day", value);
+                    if (value !== 0) return;
+                    const procedureId =
+                      "industrial-water-master-plan-reflection-consultation";
+                    onChange(
+                      "supplementalPermitReviewedIds",
+                      answers.supplementalPermitReviewedIds.filter(
+                        (id) => id !== procedureId,
+                      ),
+                    );
+                    onChange(
+                      "supplementalPermitTargetIds",
+                      answers.supplementalPermitTargetIds.filter(
+                        (id) => id !== procedureId,
+                      ),
+                    );
+                  }}
+                />
                 <NumberInput label="폐수 발생" unit="㎥/일" value={answers.wastewaterM3Day} onChange={(value) => onChange("wastewaterM3Day", value)} />
               </div>
             </Question>

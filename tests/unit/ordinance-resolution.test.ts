@@ -133,6 +133,31 @@ describe("official local-ordinance resolver", () => {
     );
   });
 
+  it("matches the official Seoul water ordinance without classifying sewerage ordinances as water supply", () => {
+    const matches = new Map(
+      matchOrdinancesToCategories([
+        {
+          name: "서울특별시 수도 조례",
+          level: "PROVINCE",
+          jurisdictionName: "서울특별시",
+          amendmentDate: "2023-12-29",
+          url: "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11000171000005&histNo=104",
+        },
+        {
+          name: "서울특별시 하수도 사용 조례",
+          level: "PROVINCE",
+          jurisdictionName: "서울특별시",
+          amendmentDate: "2025-09-29",
+          url: "https://www.elis.go.kr/alrpop/alrDtlsPop?alrNo=11000110000010&histNo=059",
+        },
+      ]).map((item) => [item.categoryId, item.ordinances]),
+    );
+
+    expect(matches.get("water-supply")?.map((item) => item.name)).toEqual([
+      "서울특별시 수도 조례",
+    ]);
+  });
+
   it("does not hide reviewed ELIS detail links when a category has more than five matches", () => {
     const records = resolveOfficialOrdinanceRecords(
       Array.from({ length: 7 }, (_, index) =>

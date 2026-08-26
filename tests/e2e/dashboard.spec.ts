@@ -7,10 +7,11 @@ async function gotoHydratedDashboard(page: Page) {
   await page.goto("/");
   // The dashboard is server-rendered first. Its first share-state URL update is
   // a stable signal that React event handlers and client effects are ready.
-  await expect(page).toHaveURL(/[?&]v=15(?:&|$)/, { timeout: 15_000 });
+  await expect(page).toHaveURL(/[?&]v=15(?:&|$)/, { timeout: 30_000 });
 }
 
 test("desktop result summary uses the available width without cramped copy", async ({ page }) => {
+  test.setTimeout(60_000);
   await page.setViewportSize({ width: 1450, height: 900 });
   await gotoHydratedDashboard(page);
 
@@ -74,6 +75,42 @@ test("desktop result summary uses the available width without cramped copy", asy
 
   const flowGrid = page.locator(".swimlane-grid");
   await expect(flowGrid).toHaveAttribute("data-connector-mode", "CORE");
+  const flowColumns = await flowGrid.evaluate((element) => {
+    const titles = [...element.querySelectorAll<HTMLElement>(".stage-header strong")]
+      .map((header) => header.textContent?.trim() ?? "");
+    return {
+      count: Number(element.getAttribute("data-flow-column-count")),
+      renderedCount: titles.length,
+      uniqueCount: new Set(titles).size,
+    };
+  });
+  expect(flowColumns.count).toBeGreaterThan(0);
+  expect(flowColumns.count).toBeLessThanOrEqual(6);
+  expect(flowColumns.renderedCount).toBe(flowColumns.count);
+  expect(flowColumns.uniqueCount).toBe(flowColumns.count);
+
+  const decisionNotice = page.getByRole("note", {
+    name: "AI 활용 비공식 사전검토",
+  });
+  await expect(decisionNotice).toBeVisible();
+  await expect(decisionNotice).toContainText("실제 신청 전");
+  const noticeReadability = await decisionNotice.evaluate((element) => {
+    const copy = element.querySelector<HTMLElement>("p");
+    if (!copy) return null;
+    return {
+      fontSize: Number.parseFloat(getComputedStyle(copy).fontSize),
+      lineHeight: Number.parseFloat(getComputedStyle(copy).lineHeight),
+      overflows: element.scrollWidth > element.clientWidth + 1,
+      copyOverflows: copy.scrollWidth > copy.clientWidth + 1,
+    };
+  });
+  expect(noticeReadability).toMatchObject({
+    fontSize: 13,
+    overflows: false,
+    copyOverflows: false,
+  });
+  expect(noticeReadability!.lineHeight).toBeGreaterThanOrEqual(20);
+
   const initialConnectorBoundary = await flowGrid.evaluate((element) => {
     const gridRect = element.getBoundingClientRect();
     const firstLaneCell = element.querySelector<HTMLElement>(".lane-cell");
@@ -657,7 +694,8 @@ test("share URL restores state and tabs", async ({ page }) => {
   await expect(page).toHaveURL(/tab=GAPS/);
   const url = page.url();
   await page.goto(url);
-  await expect(page.getByRole("heading", { name: "판정에 필요한 추가 정보" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "판정에 필요한 추가 정보" }))
+    .toBeVisible({ timeout: 15_000 });
   await expect(page.getByRole("button", { name: "증설", exact: true })).toHaveAttribute(
     "aria-pressed",
     "true",

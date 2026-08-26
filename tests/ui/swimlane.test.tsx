@@ -24,7 +24,11 @@ function denseFixture(count: number): {
   ] as const;
   const decisions = source.map((decision, index) => ({
     ...decision,
-    procedure: { ...decision.procedure, lane: fixtureLanes[index % 2] },
+    procedure: {
+      ...decision.procedure,
+      lane: fixtureLanes[index % 2],
+      stage: "PRE_CONSTRUCTION" as const,
+    },
   }));
   const ids = decisions.map((decision) => decision.procedure.id);
   return {
@@ -228,6 +232,60 @@ describe("swimlane dense procedure columns", () => {
     expect(clickedDecision).toBeDefined();
     fireEvent.click(clickedCard);
     expect(onSelect).toHaveBeenCalledWith(clickedDecision!.procedure.id);
+  });
+
+  it("groups many schedule positions into unique business-stage columns", () => {
+    const fixture = denseFixture(12);
+    const fixtureStages = [
+      "SITE_REVIEW",
+      "PLAN_AND_OCCUPANCY",
+      "PRE_CONSTRUCTION",
+    ] as const;
+    fixture.decisions = fixture.decisions.map((decision, index) => ({
+      ...decision,
+      procedure: {
+        ...decision.procedure,
+        stage: fixtureStages[index % fixtureStages.length],
+      },
+    }));
+    fixture.schedule.nodes = fixture.schedule.nodes.map((node, index) => ({
+      ...node,
+      wave: index,
+      parallel: false,
+    }));
+
+    const view = render(
+      <Swimlane
+        decisions={fixture.decisions}
+        schedule={fixture.schedule}
+        selectedId={null}
+        onSelect={vi.fn()}
+      />,
+    );
+    const grid = view.container.querySelector(".swimlane-grid");
+    const headers = [...view.container.querySelectorAll<HTMLElement>(".stage-header")];
+    const headerTitles = headers.map((header) =>
+      header.querySelector("strong")?.textContent,
+    );
+
+    expect(grid).toHaveAttribute("data-flow-column-count", "3");
+    expect(headers).toHaveLength(3);
+    expect(new Set(headerTitles).size).toBe(3);
+    expect(headerTitles).toEqual([
+      "입지 사전검토",
+      "계획 승인·입주",
+      "착공 준비",
+    ]);
+    expect(view.container.querySelectorAll(".procedure-card")).toHaveLength(12);
+    expect(view.container).not.toHaveTextContent("입지·사업성 검토");
+    expect(view.container).not.toHaveTextContent("착공 전 승인·신고");
+    expect(headers.map((header) => header.querySelector("small")?.textContent)).toEqual([
+      "4개 절차 · 선후행 1~10단계",
+      "4개 절차 · 선후행 2~11단계",
+      "4개 절차 · 선후행 3~12단계",
+    ]);
+    expect(view.container.querySelectorAll('[role="columnheader"]')).toHaveLength(0);
+    expect(view.container.querySelectorAll(".procedure-meta em")).toHaveLength(0);
   });
 
   it("routes forward dependencies orthogonally and rejects unmeasured cards", () => {

@@ -21,6 +21,14 @@ import {
   type SupplementalPermitTargetId,
 } from "@/lib/data/supplemental-permit-targets";
 import { evaluateProject } from "@/lib/engine/pipeline";
+import { supportedRegions } from "@/lib/regions";
+import { listSupportedMunicipalities } from "@/lib/regions/local-ordinances";
+import {
+  decodeInputCode,
+  decodeShareState,
+  encodeInputCode,
+  encodeShareState,
+} from "@/lib/share-state";
 
 type Evaluation = ReturnType<typeof evaluateProject>;
 
@@ -760,7 +768,7 @@ const cases: readonly InvestmentRegressionCase[] = [
       plannedConstructionEndDate: "2030-12-31",
       equipmentInstallationCompletionDate: "2030-10-31",
       commissioningStartDate: "2030-11-01",
-      province: "전라남도",
+      province: "전남광주통합특별시",
       city: "나주시",
       industryCategory: "AI_DATA_CENTER",
       increaseAreaM2: 45_000,
@@ -895,6 +903,429 @@ const cases: readonly InvestmentRegressionCase[] = [
       SEMICONDUCTOR_CLUSTER_PLAN_DEEMING: "ACTIVE",
     },
   },
+  {
+    name: "서울 AI 데이터센터 신설·특별법 시행 후 일괄처리 진행",
+    answers: investmentAnswers({
+      assessmentDate: "2027-05-01",
+      plannedConstructionStartDate: "2028-01-01",
+      plannedConstructionEndDate: "2030-12-31",
+      province: "서울특별시",
+      city: "구로구",
+      industryCategory: "AI_DATA_CENTER",
+      increaseAreaM2: 120_000,
+      totalAreaM2: 120_000,
+      siteDevelopmentAreaM2: 80_000,
+      localEnvironmentalAssessmentRequired: true,
+      gridImpactAssessmentRequired: true,
+      aiDataCenterActFacilityConfirmed: true,
+      aiDataCenterOneStopStatus: "IN_PROGRESS",
+      appliedSpecialLawIds: [
+        "AIDC_ONE_STOP",
+        "AIDC_GRID_IMPACT_EXEMPTION",
+        "AIDC_BUILDING_STANDARDS",
+      ],
+      powerIncreaseMw: 200,
+    }),
+    include: [
+      "local-environmental-impact-assessment",
+      "power-grid-impact-assessment",
+      "ai-data-center-one-stop-application",
+      "ai-data-center-business-report",
+      "building-permit",
+      "construction-start-report",
+      "building-use-approval",
+    ],
+    exclude: [
+      "capital-region-factory-restriction-review",
+      "ai-data-center-one-stop-result",
+      "factory-establishment-approval",
+      "factory-completion-report-complex",
+      "factory-completion-report-offsite",
+    ],
+    deemed: [],
+    orderedPairs: [
+      ["ai-data-center-one-stop-application", "building-permit"],
+      ["building-permit", "construction-start-report"],
+      ["construction-start-report", "building-use-approval"],
+    ],
+    completionProcedureId: "building-use-approval",
+    specialLawStatuses: {
+      AIDC_ONE_STOP: "ACTIVE",
+      AIDC_GRID_IMPACT_EXEMPTION: "MISMATCH",
+      AIDC_BUILDING_STANDARDS: "ACTIVE",
+    },
+  },
+  {
+    name: "인천 항만배후단지 전자부품 공장·입주계약 완료",
+    answers: investmentAnswers({
+      province: "인천광역시",
+      city: "영종구",
+      industryCategory: "ELECTRONICS_COMMUNICATION",
+      entryContractRegime: "PORT_ACT",
+      entryEligibilityConfirmed: true,
+      entryContractStatus: "COMPLETED",
+      entryZoneName: "인천항 1종 항만배후단지",
+      entryManagingAuthority: "인천항만공사",
+      entryContractEvidence: "검증계약-2026-01",
+      increaseAreaM2: 25_000,
+      totalAreaM2: 25_000,
+      siteDevelopmentAreaM2: 90_000,
+      localEnvironmentalAssessmentRequired: true,
+    }),
+    include: [
+      "port-hinterland-entry-contract",
+      "capital-region-factory-restriction-review",
+      "local-environmental-impact-assessment",
+      "factory-establishment-approval",
+      "factory-completion-report-offsite",
+    ],
+    exclude: [
+      "industrial-complex-occupancy-contract",
+      "free-trade-zone-entry-contract",
+      "factory-completion-report-complex",
+      "factory-completion-report-free-trade-zone",
+    ],
+    deemed: [],
+    orderedPairs: [
+      ["port-hinterland-entry-contract", "building-permit"],
+      ["building-use-approval", "factory-completion-report-offsite"],
+    ],
+    completionProcedureId: "factory-completion-report-offsite",
+  },
+  {
+    name: "경기 용인 반도체 개별입지·수도권·팔당·대규모 개발",
+    answers: investmentAnswers({
+      province: "경기도",
+      city: "용인시",
+      industryCategory: "SEMICONDUCTOR_ELECTRONICS",
+      increaseAreaM2: 180_000,
+      totalAreaM2: 180_000,
+      siteDevelopmentAreaM2: 350_000,
+      environmentalAssessmentType: "ENVIRONMENTAL",
+      localEnvironmentalAssessmentRequired: true,
+      airEmissionFacility: true,
+      waterDischargeFacility: true,
+      noiseVibrationFacility: true,
+      chemicalsHandled: true,
+      gridImpactAssessmentRequired: true,
+      powerIncreaseMw: 120,
+      supplementalPermitTargetIds: [
+        "capital-region-large-scale-development-review",
+        "paldang-special-measures-zone-wastewater-location-review",
+        "road-occupation-permit",
+      ],
+    }),
+    include: [
+      "capital-region-factory-restriction-review",
+      "capital-region-large-scale-development-review",
+      "paldang-special-measures-zone-wastewater-location-review",
+      "local-environmental-impact-assessment",
+      "environmental-impact-assessment",
+      "air-emission-installation-permit",
+      "water-discharge-installation-permit",
+      "factory-completion-report-offsite",
+    ],
+    exclude: [
+      "industrial-complex-occupancy-contract",
+      "integrated-environmental-permit",
+      "factory-completion-report-complex",
+    ],
+    deemed: [],
+    orderedPairs: [
+      ["capital-region-factory-restriction-review", "factory-establishment-approval"],
+      ["local-environmental-impact-assessment", "factory-establishment-approval"],
+      ["environmental-impact-assessment", "factory-establishment-approval"],
+      ["building-use-approval", "factory-completion-report-offsite"],
+    ],
+    completionProcedureId: "factory-completion-report-offsite",
+  },
+  {
+    name: "강원 화천 목재 공장·특별법 과거값 잔존",
+    answers: investmentAnswers({
+      province: "강원특별자치도",
+      city: "화천군",
+      industryCategory: "WOOD_PAPER_PRINTING",
+      increaseAreaM2: 3_000,
+      totalAreaM2: 3_000,
+      airEmissionFacility: false,
+      waterDischargeFacility: false,
+      noiseVibrationFacility: false,
+      chemicalsHandled: false,
+      hazardousMaterials: false,
+      highPressureGas: false,
+      waterDemandM3Day: 1_500,
+      supplementalPermitTargetIds: [
+        "industrial-water-master-plan-reflection-consultation",
+      ],
+      advancedStrategicIndustryFastTrackConfirmed: true,
+      advancedStrategicIndustryApplicantRoleConfirmed: true,
+      advancedStrategicIndustryDelayRiskConfirmed: true,
+      advancedStrategicIndustryCommitteeResolved: true,
+      advancedStrategicIndustryMinisterRequestDate: "2026-08-26",
+      advancedStrategicIndustryFastTrackPermitIds: ["building-permit"],
+      semiconductorClusterPlanDeemingConfirmed: true,
+      semiconductorClusterPlanDocumentsIncluded: true,
+      semiconductorClusterPlanConsultationCompleted: true,
+      semiconductorClusterPlanApprovalPublished: true,
+      semiconductorClusterPlanApprovalPublishedDate: "2026-08-20",
+      semiconductorClusterPlanApprovalNoticeReference: "과거 공유값",
+      semiconductorClusterPlanIncludedPermitIds: ["building-permit"],
+    }),
+    include: [
+      "factory-establishment-approval",
+      "factory-completion-report-offsite",
+      "industrial-water-master-plan-reflection-consultation",
+    ],
+    exclude: [
+      "air-emission-installation-permit",
+      "water-discharge-installation-permit",
+      "integrated-environmental-permit",
+      "semiconductor-cluster-plan-approval",
+      "advanced-strategic-industry-fast-track-request",
+      "industrial-complex-occupancy-contract",
+    ],
+    deemed: [],
+    orderedPairs: [
+      ["building-permit", "construction-start-report"],
+      ["building-use-approval", "factory-completion-report-offsite"],
+    ],
+    completionProcedureId: "factory-completion-report-offsite",
+  },
+  {
+    name: "대전 바이오 공정변경·공사 재착공",
+    answers: investmentAnswers({
+      province: "대전광역시",
+      city: "유성구",
+      industryCategory: "PHARMACEUTICAL_BIO",
+      investmentType: "PROCESS_CHANGE",
+      buildingAction: "EXTENSION",
+      insideIndustrialComplex: true,
+      industrialComplexName: "대덕 검증산업단지",
+      industrialComplexIdentifier: "DJ-BIO-01",
+      industrialComplexManagingAuthority: "검증 관리기관",
+      industrialComplexOccupancyContractStatus: "IN_PROGRESS",
+      existingAreaM2: 25_000,
+      increaseAreaM2: 7_000,
+      totalAreaM2: 32_000,
+      chemicalsHandled: true,
+      airEmissionFacility: true,
+      waterDischargeFacility: true,
+      supplementalPermitTargetIds: [
+        "construction-restart-safety-inspection",
+        "facility-management-document-registration",
+      ],
+    }),
+    include: [
+      "industrial-complex-occupancy-contract",
+      "factory-completion-report-complex",
+      "air-emission-installation-permit",
+      "water-discharge-installation-permit",
+      "construction-restart-safety-inspection",
+      "facility-management-document-registration",
+    ],
+    exclude: [
+      "port-hinterland-entry-contract",
+      "free-trade-zone-entry-contract",
+      "factory-completion-report-offsite",
+    ],
+    deemed: [],
+    orderedPairs: [
+      ["construction-safety-management-plan-approval", "construction-restart-safety-inspection"],
+      ["facility-management-document-registration", "building-use-approval"],
+      ["industrial-complex-occupancy-contract", "factory-completion-report-complex"],
+    ],
+    completionProcedureId: "factory-completion-report-complex",
+  },
+  {
+    name: "대구 섬유 산단 증설·개별 대기수질",
+    answers: investmentAnswers({
+      province: "대구광역시",
+      city: "달성군",
+      industryCategory: "TEXTILE_APPAREL_LEATHER",
+      investmentType: "EXPANSION",
+      buildingAction: "EXTENSION",
+      insideIndustrialComplex: true,
+      industrialComplexName: "대구 검증산업단지",
+      industrialComplexIdentifier: "DG-TEX-01",
+      industrialComplexManagingAuthority: "검증 관리기관",
+      industrialComplexOccupancyContractStatus: "COMPLETED",
+      existingAreaM2: 12_000,
+      increaseAreaM2: 6_000,
+      totalAreaM2: 18_000,
+      airEmissionFacility: true,
+      waterDischargeFacility: true,
+      noiseVibrationFacility: true,
+    }),
+    include: [
+      "industrial-complex-occupancy-contract",
+      "air-emission-installation-permit",
+      "water-discharge-installation-permit",
+      "factory-completion-report-complex",
+    ],
+    exclude: [
+      "integrated-environmental-permit",
+      "noise-vibration-facility-report",
+      "factory-completion-report-offsite",
+    ],
+    deemed: ["factory-establishment-approval"],
+    orderedPairs: [
+      ["industrial-complex-occupancy-contract", "factory-completion-report-complex"],
+      ["building-use-approval", "factory-completion-report-complex"],
+    ],
+    completionProcedureId: "factory-completion-report-complex",
+    completedCheckpoints: [
+      {
+        procedureId: "industrial-complex-occupancy-contract",
+        label: "산업단지 입주계약 체결 완료",
+      },
+    ],
+  },
+  {
+    name: "광주 비금속광물 개별입지·지하수·개인하수",
+    answers: investmentAnswers({
+      province: "전남광주통합특별시",
+      city: "광산구",
+      industryCategory: "NONMETALLIC_MINERAL",
+      increaseAreaM2: 9_000,
+      totalAreaM2: 9_000,
+      groundwaterDevelopment: true,
+      publicSewerConnection: false,
+      privateSewageTreatmentFacility: true,
+      airEmissionFacility: true,
+      noiseVibrationFacility: true,
+    }),
+    include: [
+      "groundwater-development-use-permit-report",
+      "groundwater-completion-report",
+      "private-sewage-treatment-installation-report",
+      "private-sewage-treatment-completion-inspection",
+      "air-emission-installation-permit",
+      "noise-vibration-facility-report",
+      "factory-completion-report-offsite",
+    ],
+    exclude: [
+      "water-discharge-installation-permit",
+      "industrial-complex-occupancy-contract",
+      "factory-completion-report-complex",
+    ],
+    deemed: [],
+    orderedPairs: [
+      ["groundwater-development-use-permit-report", "groundwater-completion-report"],
+      ["private-sewage-treatment-installation-report", "private-sewage-treatment-completion-inspection"],
+      ["private-sewage-treatment-completion-inspection", "building-use-approval"],
+    ],
+    completionProcedureId: "factory-completion-report-offsite",
+  },
+  {
+    name: "제주 의료기기 공장·농지·재해·국가유산",
+    answers: investmentAnswers({
+      province: "제주특별자치도",
+      city: "제주시",
+      industryCategory: "MEDICAL_PRECISION_OPTICAL",
+      landCategory: "FARMLAND",
+      increaseAreaM2: 499,
+      totalAreaM2: 499,
+      permitCoordination: "NONE",
+      environmentalAssessmentType: "SMALL",
+      disasterImpactAssessmentType: "DISASTER_IMPACT_REVIEW",
+      nationalHeritageAssessmentType: "IMPACT_DIAGNOSIS",
+      roadConnectionRequired: true,
+    }),
+    include: [
+      "farmland-conversion-permit",
+      "small-environmental-impact-assessment",
+      "disaster-impact-assessment-consultation",
+      "national-heritage-impact-diagnosis",
+      "road-connection-permit",
+      "small-factory-registration",
+    ],
+    exclude: [
+      "environmental-impact-assessment",
+      "industrial-complex-occupancy-contract",
+      "factory-establishment-approval",
+      "factory-completion-report-offsite",
+      "factory-completion-report-complex",
+    ],
+    deemed: [],
+    orderedPairs: [
+      ["disaster-impact-assessment-consultation", "building-permit"],
+      ["national-heritage-impact-diagnosis", "building-permit"],
+      ["building-use-approval", "small-factory-registration"],
+    ],
+    completionProcedureId: "small-factory-registration",
+  },
+  {
+    name: "충북 음성 전기장비 공장·자유무역지역 완료",
+    answers: investmentAnswers({
+      province: "충청북도",
+      city: "음성군",
+      industryCategory: "ELECTRICAL_EQUIPMENT",
+      insideIndustrialComplex: true,
+      entryContractRegime: "FREE_TRADE_ZONE_ACT",
+      entryEligibilityConfirmed: true,
+      entryContractStatus: "COMPLETED",
+      entryZoneName: "검증 자유무역지역",
+      entryManagingAuthority: "검증 관리권자",
+      entryContractEvidence: "FTZ-2026-01",
+      increaseAreaM2: 20_000,
+      totalAreaM2: 20_000,
+    }),
+    include: [
+      "free-trade-zone-entry-contract",
+      "factory-completion-report-free-trade-zone",
+    ],
+    exclude: [
+      "industrial-complex-occupancy-contract",
+      "port-hinterland-entry-contract",
+      "factory-completion-report-complex",
+      "factory-completion-report-offsite",
+    ],
+    deemed: ["factory-establishment-approval"],
+    orderedPairs: [
+      ["free-trade-zone-entry-contract", "building-permit"],
+      ["building-use-approval", "factory-completion-report-free-trade-zone"],
+    ],
+    completionProcedureId: "factory-completion-report-free-trade-zone",
+    completedCheckpoints: [
+      {
+        procedureId: "free-trade-zone-entry-contract",
+        label: "자유무역지역 입주계약 체결 완료",
+      },
+    ],
+  },
+  {
+    name: "전남 가구 공장·산지·군사·하천",
+    answers: investmentAnswers({
+      province: "전남광주통합특별시",
+      city: "장성군",
+      industryCategory: "FURNITURE_OTHER_MANUFACTURING",
+      landCategory: "FOREST",
+      increaseAreaM2: 8_000,
+      totalAreaM2: 8_000,
+      militaryProtectionConsultationRequired: true,
+      riverOccupationRequired: true,
+      forestRestorationObligation: true,
+    }),
+    include: [
+      "forestland-conversion-permit",
+      "military-protection-consultation",
+      "river-occupation-permit",
+      "factory-completion-report-offsite",
+    ],
+    exclude: [
+      "farmland-conversion-permit",
+      "industrial-complex-occupancy-contract",
+      "factory-completion-report-complex",
+    ],
+    deemed: [],
+    orderedPairs: [
+      ["forestland-conversion-permit", "factory-establishment-approval"],
+      ["military-protection-consultation", "building-permit"],
+      ["river-occupation-permit", "building-permit"],
+      ["building-use-approval", "factory-completion-report-offsite"],
+    ],
+    completionProcedureId: "factory-completion-report-offsite",
+  },
 ];
 
 function expectCategory(
@@ -907,13 +1338,27 @@ function expectCategory(
   return result;
 }
 
-describe("ten reviewed investment portfolio regressions", () => {
-  it("defines ten materially different and fully reviewed threshold cases", () => {
-    expect(cases).toHaveLength(10);
-    expect(new Set(cases.map((scenario) => scenario.name))).toHaveLength(10);
+describe("twenty reviewed investment portfolio regressions", () => {
+  it("defines twenty materially different and fully reviewed threshold cases", () => {
+    expect(cases).toHaveLength(20);
+    expect(new Set(cases.map((scenario) => scenario.name))).toHaveLength(20);
+    expect(new Set(cases.map((scenario) => scenario.answers.province))).toEqual(
+      new Set(supportedRegions),
+    );
+    expect(new Set(cases.map((scenario) => scenario.answers.city))).toHaveLength(20);
+    expect(new Set(cases.map((scenario) => scenario.answers.industryCategory)).size).toBeGreaterThanOrEqual(15);
+    expect(new Set(cases.map((scenario) => scenario.answers.investmentType)).size).toBeGreaterThanOrEqual(3);
+    expect(new Set(cases.map((scenario) => scenario.answers.entryContractRegime))).toEqual(
+      new Set(["NONE", "PORT_ACT", "FREE_TRADE_ZONE_ACT"]),
+    );
     expect(
       new Set(cases.flatMap((scenario) => scenario.answers.supplementalPermitTargetIds)),
-    ).toEqual(new Set(constructionEnvironmentSupplementalPermitTargetIds));
+    ).toEqual(new Set([
+      ...constructionEnvironmentSupplementalPermitTargetIds,
+      "capital-region-large-scale-development-review",
+      "paldang-special-measures-zone-wastewater-location-review",
+      "industrial-water-master-plan-reflection-consultation",
+    ]));
 
     for (const scenario of cases) {
       expect(
@@ -921,6 +1366,20 @@ describe("ten reviewed investment portfolio regressions", () => {
         scenario.name,
       ).toEqual(new Set(supplementalPermitTargetIds));
       expect(scenario.answers.airTotalManagementBusinessTarget, scenario.name).not.toBeNull();
+      const municipalities = listSupportedMunicipalities(
+        scenario.answers.province,
+      );
+      if (municipalities.length) {
+        expect(
+          municipalities,
+          `${scenario.name}: current municipality`,
+        ).toContain(scenario.answers.city);
+      } else {
+        expect(
+          scenario.answers.city,
+          `${scenario.name}: single-tier jurisdiction`,
+        ).toBe("");
+      }
       for (const procedureId of scenario.answers.supplementalPermitTargetIds) {
         expect(supplementalPermitTargetIds, `${scenario.name}: ${procedureId}`).toContain(
           procedureId,
@@ -936,6 +1395,20 @@ describe("ten reviewed investment portfolio regressions", () => {
     const timeline = schedule.projectTimeline;
 
     expect(evaluation, `${scenario.name}: deterministic evaluation`).toEqual(repeated);
+    expect(
+      decodeShareState(
+        encodeShareState(scenario.answers, "SWIMLANE"),
+        catalog.scenarios[0].answers,
+      ),
+      `${scenario.name}: share URL round trip`,
+    ).toEqual({ answers: scenario.answers, tab: "SWIMLANE" });
+    expect(
+      decodeInputCode(
+        encodeInputCode(scenario.answers),
+        catalog.scenarios[0].answers,
+      ),
+      `${scenario.name}: portable input-code round trip`,
+    ).toEqual(scenario.answers);
     expect(
       evaluation.decisions.flatMap((item) => item.conflictRuleIds),
       `${scenario.name}: conflicting rules`,
@@ -956,6 +1429,35 @@ describe("ten reviewed investment portfolio regressions", () => {
       [...schedule.warnings, ...timeline!.warnings].join(" "),
       `${scenario.name}: cycle warning`,
     ).not.toContain("순환");
+
+    for (const edgeId of schedule.activeEdgeIds) {
+      const edge = catalog.edges.find((candidate) => candidate.id === edgeId);
+      expect(edge, `${scenario.name}: active edge ${edgeId}`).toBeDefined();
+      const from = timeline!.nodes.find(
+        (node) => node.procedureId === edge!.from,
+      );
+      const to = timeline!.nodes.find(
+        (node) => node.procedureId === edge!.to,
+      );
+      expect(from, `${scenario.name}: active edge source ${edge!.from}`).toBeDefined();
+      expect(to, `${scenario.name}: active edge target ${edge!.to}`).toBeDefined();
+      if (edge!.relation === "START_TO_START") {
+        expect(
+          from!.startDate <= to!.startDate,
+          `${scenario.name}: ${edgeId} start-to-start chronology`,
+        ).toBe(true);
+      } else if (edge!.relation === "FINISH_TO_FINISH") {
+        expect(
+          from!.finishDate <= to!.finishDate,
+          `${scenario.name}: ${edgeId} finish-to-finish chronology`,
+        ).toBe(true);
+      } else {
+        expect(
+          from!.finishDate <= to!.startDate,
+          `${scenario.name}: ${edgeId} finish-to-start chronology`,
+        ).toBe(true);
+      }
+    }
 
     const roadmapDecisions = evaluation.decisions.filter(
       (item) => procedureCategoryForDecision(item) !== "NOT_REQUIRED",
@@ -1155,14 +1657,16 @@ describe("ten reviewed investment portfolio regressions", () => {
     ).toBe(report.flow.stages.flatMap((stage) => stage.items).length);
     expect(report.flow.coreRelations.length, `${scenario.name}: report core relations`).toBeLessThanOrEqual(10);
     expect(report.localOrdinances.categories.length, `${scenario.name}: report ELIS categories`).toBeGreaterThan(0);
-    if (scenario.answers.province === "전라남도") {
+    if (scenario.answers.province === "전남광주통합특별시") {
       const ordinances = report.localOrdinances.categories.flatMap(
         (category) => category.ordinances,
       );
-      expect(
-        ordinances.some((ordinance) => ordinance.jurisdictionName === "나주시"),
-        `${scenario.name}: canonical current municipality links`,
-      ).toBe(true);
+      if (scenario.answers.city === "나주시") {
+        expect(
+          ordinances.some((ordinance) => ordinance.jurisdictionName === "나주시"),
+          `${scenario.name}: canonical current municipality links`,
+        ).toBe(true);
+      }
       expect(
         ordinances.some((ordinance) => ordinance.transitionNotice !== null),
         `${scenario.name}: former Jeonnam transition links`,

@@ -41,6 +41,10 @@ function priorityReason(categoryId: string, answers: ScenarioAnswers): string | 
   if (categoryId === "building-review-design" && hasBuildingWork) return "선택한 건축행위의 지역 심의·설계기준 확인";
   if (categoryId === "parking-installation" && hasBuildingWork && hasArea) return "공장 면적에 따른 부설주차장 기준 확인";
   if (categoryId === "traffic-impact" && answers.trafficImpactAssessmentRequired !== false) return "교통영향평가 지역 추가기준 확인";
+  if (
+    categoryId === "local-environmental-impact-assessment"
+    && answers.localEnvironmentalAssessmentRequired === true
+  ) return "시·도 조례 환경영향평가 대상·협의기준 확인";
   if (categoryId === "landscape-review" && hasBuildingWork) return "건축·개발사업의 경관심의 기준 확인";
   if (
     categoryId === "air-water-standards" &&

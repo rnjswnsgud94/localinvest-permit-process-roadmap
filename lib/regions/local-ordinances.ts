@@ -784,6 +784,7 @@ export const localOrdinanceReviewCategories: readonly LocalOrdinanceReviewCatego
       "수도시설의 원인자부담금",
       "수도급수 및 상수도특별회계 설치 조례",
       "수도급수 및 상수도 특별회계 설치 조례",
+      "서울특별시 수도 조례",
       "상수도 조례",
     ],
     affects: "급수공사 승인·준공검사, 시설분담금·원인자부담금과 대규모 수요 협의",

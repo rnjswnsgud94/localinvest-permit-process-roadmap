@@ -25,6 +25,15 @@ export const supportedRegions = [
   ...nonCapitalRegions,
 ] as const;
 
+const supportedProvinceAliases: Readonly<Record<string, string>> = {
+  "광주광역시": "전남광주통합특별시",
+  "전라남도": "전남광주통합특별시",
+};
+
+export function canonicalizeSupportedProvince(value: string) {
+  return supportedProvinceAliases[value] ?? value;
+}
+
 export function isCapitalRegionProvince(value: string) {
   return (capitalRegions as readonly string[]).includes(value);
 }
